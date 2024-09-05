@@ -20,8 +20,24 @@ jobs:
     steps:
       - name: Checkout your repository using git
         uses: actions/checkout@v4
-      - name: Install noto-cjk
-        run: sudo apt-get install -y fonts-noto-cjk
+
+      - name: Cache Fonts
+        id: cache-fonts
+        uses: actions/cache@v2
+        with:
+          path: ~/.local/share/fonts
+          key: fonts-${{ hashFiles('fonts.list') }}
+          restore-keys: fonts-
+
+      - name: Install fonts (if not cached)
+        if: steps.cache-fonts.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get install -y fonts-noto-cjk
+          echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections
+          sudo apt-get install -y ttf-mscorefonts-installer --reinstall
+          mkdir -p ~/.local/share/fonts/ttf/MesloLGS\ NF
+          cp public/fonts/MesloLGS/*.ttf ~/.local/share/fonts/ttf/MesloLGS\ NF
+
       - name: Install, build, and upload the site
         uses: withastro/action@v2
         with:

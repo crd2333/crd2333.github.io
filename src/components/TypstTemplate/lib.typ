@@ -34,11 +34,10 @@
   show ref: set text(colors.blue)
   show link: set text(colors.blue)
   // 设置字体与语言
-  // set text(font: 字体.宋体, size: 字号.五号, lang: lang)
+  set text(font: 字体.宋体, size: 字号.五号, lang: lang)
   set par(first-line-indent: 2em)
   set list(marker: ([●], [○], [■], [□], [►])) // 设置 bullet list 的 marker，相比默认更像 markdown，另外刻意调大了一点（适合老年人
   set enum(numbering: numbly("{1}.", "{2:a}.", "{3:i}."), full: true)
-  // show emph: text.with(font: 字体.楷体) // 中文斜体显示为楷体
 
   // 设置标题
   show heading.where(level: 1): it => {
@@ -46,14 +45,10 @@
     // align(center, text(weight: "bold", font: 字体.黑体, size: 18pt, it))
     align(center, text(weight: "bold", size: 18pt, it))
   }
-  // show heading.where(level: 2): set text(weight: "bold", font: 字体.黑体, size: 14pt)
-  // show heading.where(level: 3): set text(weight: "bold", font: 字体.黑体, size: 13pt)
-  // show heading.where(level: 4): set text(weight: "bold", font: 字体.黑体, size: 12pt)
-  // show heading.where(level: 5): set text(weight: "bold", font: 字体.黑体, size: 11pt)
-  show heading.where(level: 2): set text(weight: "bold", size: 14pt)
-  show heading.where(level: 3): set text(weight: "bold", size: 13pt)
-  show heading.where(level: 4): set text(weight: "bold", size: 12pt)
-  show heading.where(level: 5): set text(weight: "bold", size: 11pt)
+  show heading.where(level: 2): set text(weight: "bold", font: 字体.黑体, size: 14pt)
+  show heading.where(level: 3): set text(weight: "bold", font: 字体.黑体, size: 13pt)
+  show heading.where(level: 4): set text(weight: "bold", font: 字体.黑体, size: 12pt)
+  show heading.where(level: 5): set text(weight: "bold", font: 字体.黑体, size: 11pt)
   set heading(numbering: (..nums) => { // 设置标题编号
     nums.pos().map(str).join(".") + " "
   })

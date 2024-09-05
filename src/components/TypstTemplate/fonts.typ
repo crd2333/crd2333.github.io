@@ -1,15 +1,12 @@
 // typst 读取字体的规则是从前往后，如果找不到对应就往后找
-// 下面是我觉得还算好看的字体，不过基本只使用了宋体和黑体，英文统一用 Arial，中文分宋体、黑体和楷体
+// 下面是我觉得还算好看的字体，不过基本只使用了宋体和黑体，英文统一用 Arial，中文分宋体、黑体
 #let 字体 = (
   宋体: ("Arial", "Noto Serif CJK SC"),
   黑体: ("Arial", "Noto Sans CJK SC"),
   思源宋体: "Noto Serif CJK SC",
   思源黑体: "Noto Sans CJK SC",
-  楷体: ("Arial", "LXGW WenKai"),
-  ntl: "Microsoft New Tai Lue",
   meslo: "MesloLGS NF",
-  meslo-mono: "MesloLGS Nerd Font Mono",
-  tnr: "Times New Roman",
+  meslo-mono: "MesloLGS Nerd Font Mono"
 );
 
 #let 字号 = (
