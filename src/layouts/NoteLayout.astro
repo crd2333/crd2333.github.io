@@ -1,0 +1,77 @@
+---
+const { sections, section, topics_with_files, topic, file } = Astro.props;
+import Header from "../components/NoteHeader.astro";
+import Navigation from "../components/NoteNavigation.astro"
+import Footer from "../components/NoteFooter.astro"
+import '../styles/global.scss';
+---
+
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Astro</title>
+  </head>
+  <body>
+    <Header sections={sections} section={section} />
+
+    <div class="content">
+
+      <Navigation section={section} topics_with_files={topics_with_files} topic={topic} file={file} />
+
+      <main class="main-content">
+        <slot />
+      </main>
+
+    </div>
+
+    <Footer />
+
+  </body>
+</html>
+
+<style>
+  . {
+    /* margin: 0; */
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .content {
+    display: flex;
+    padding: 20px;
+  }
+
+  .main-content {
+    font-size: 12pt;
+    flex-grow: 1;
+    margin-left: 50px;
+    margin-top: 50px;
+  }
+
+  .main-content h1 {
+    font-size: 28pt;
+  }
+
+  .main-content h2 {
+    font-size: 25pt;
+  }
+
+  .main-content h3 {
+    font-size: 22pt;
+  }
+
+  .main-content h4 {
+    font-size: 19pt;
+  }
+
+  .main-content h5 {
+    font-size: 16pt;
+  }
+
+  .main-content p {
+    margin-top: 13px;
+  }
+</style>
