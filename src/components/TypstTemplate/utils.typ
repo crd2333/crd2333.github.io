@@ -64,32 +64,32 @@ font: 字体.宋体,
 }
 
 // 目录
-#let toc(
-  depth: 4,
-  toc_break: true
-) = {
-  set par(first-line-indent: 0pt)
-  set text(font: (字体.ntl, 字体.思源黑体), size: 字号.小四)
-  outline(
-    indent: true,
-    depth: depth
-  )
-  if toc_break {pagebreak()}
-}
-#let toc_note(
-  depth: 4,
-  toc_break: true
-) = {
-  set text(font: (字体.ntl, 字体.思源黑体), size: 字号.小四)
-  set par(first-line-indent: 0pt)
-  pad(y: -25pt)[
-    #outline(
-      indent: true,
-      depth: depth
-    )
-  ]
-  if toc_break {pagebreak()}
-}
+// #let toc(
+//   depth: 4,
+//   toc_break: true
+// ) = {
+//   set par(first-line-indent: 0pt)
+//   set text(font: (字体.meslo, 字体.思源黑体), size: 字号.小四)
+//   outline(
+//     indent: true,
+//     depth: depth
+//   )
+//   if toc_break {pagebreak()}
+// }
+// #let toc_note(
+//   depth: 4,
+//   toc_break: true
+// ) = {
+//   set text(font: (字体.meslo, 字体.思源黑体), size: 字号.小四)
+//   set par(first-line-indent: 0pt)
+//   pad(y: -25pt)[
+//     #outline(
+//       indent: true,
+//       depth: depth
+//     )
+//   ]
+//   if toc_break {pagebreak()}
+// }
 
 #let colors = (
   gray: luma(240),

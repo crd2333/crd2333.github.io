@@ -1,35 +1,9 @@
----
-order: 1
----
+#import "/src/components/TypstTemplate/lib.typ": *
 
-#set page(margin: 1em, height: auto)
-#let typst  = {
-  text(font: "Linux Libertine", weight: "semibold", fill: eastern)[typst]
-}
+#show: project.with(
+  title: none,
+  lang: "zh",
+)
 
-#set text(font: "/public/fonts/LXGWWenKaiMono-Regular.ttf")
-
-= Typst 笔记
-
-== #typst: Compose paper faster
-
-$ cases(
-dot(x) = A x + B u = mat(delim: "[", 0, 0, dots.h.c, 0, - a_n; 1, 0, dots.h.c, 0, - a_(n - 1); 0, 1, dots.h.c, 0, - a_(n - 2); dots.v, dots.v, dots.down, dots.v, dots.v; 0, 0, dots.h.c, 1, - a_1) x + mat(delim: "[", b_n; b_(n - 1); b_(n - 2); dots.v; b_1) u,
-
-y = C x = mat(delim: "[", 0, 0, dots.h.c, 1) x
-) $
-
-#import "@preview/tablem:0.1.0": tablem
-
-#tablem[
-  | *English* | *German* | *Chinese* | *Japanese* |
-  | --------- | -------- | --------- | ---------- |
-  | Cat       | Katze    | 猫        | 猫         |
-  | Fish      | Fisch    | 鱼        | 魚         |
-]
-
-等解决文件读取问题后可以用 tag 语法来分类，不对，用文件夹分类明显更好，这是笔记不是博客
-
-#text(font: "LXGW WenKai Mono")[中文测试]
-
-#text(font: "/public/fonts/LXGWWenKaiMono-Regular.ttf")[中文测试]
+- 很多笔记都是用 typst 写的而不是 md，由于 typst 是个比较新兴的标记语言，对 html 导出做得不够好（或者说官方压根还不支持）。使用社区自制方案以 svg 导出，会有明显的卡顿。
+- 同时，目前也没有足够好的像 MkDocs 之于 Markdown 那样的模板。

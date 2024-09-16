@@ -6,9 +6,6 @@
 #let project(
   title: "",
   lang: "zh",
-  show_toc: false,
-  toc_break: false,
-  toc_depth: 4,
   body
 ) = {
 
@@ -91,10 +88,7 @@
 
   show: fix-indent() // 一个很 tricky 的包，需放在所有 show 规则的最后
 
-  if title != none and title != "" {
-    move(dy: -25pt, text(font: 字体.黑体, size: 2.2em, weight: 700, title))
-  }
-  if show_toc {toc_note(toc_break: toc_break, depth: toc_depth)} // 目录
+  v(1em)
 
   body
   v(10em)
