@@ -22,7 +22,9 @@ import '../styles/global.scss';
       <Navigation section={section} topics_with_files={topics_with_files} topic={topic} file={file} />
 
       <main class="main-content">
-        <slot />
+        <div>
+          <slot />
+        </div>
       </main>
 
     </div>
@@ -49,8 +51,8 @@ import '../styles/global.scss';
     flex-grow: 1;
     margin-left: 50px;
     margin-right: 50px;
-    margin-top: 50px;
-    width: 100%;
+    margin-top: 25px;
+    width: 80%;
   }
 
   .main-content h1 {

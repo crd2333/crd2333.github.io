@@ -39,8 +39,7 @@
   // 设置标题
   show heading.where(level: 1): it => {
     set block(spacing: 1em)
-    // align(center, text(weight: "bold", font: 字体.黑体, size: 18pt, it))
-    align(center, text(weight: "bold", size: 18pt, it))
+    align(center, text(weight: "bold", font: 字体.黑体, size: 18pt, it))
   }
   show heading.where(level: 2): set text(weight: "bold", font: 字体.黑体, size: 14pt)
   show heading.where(level: 3): set text(weight: "bold", font: 字体.黑体, size: 13pt)

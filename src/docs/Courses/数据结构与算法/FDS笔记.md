@@ -1,3 +1,6 @@
+---
+order: 1
+---
 ## 1. 算法分析基础
 ### 1.1. algorithm 的定义
 - program 的定义：用编程语言写的，不需要是有限的（如 operation system）
