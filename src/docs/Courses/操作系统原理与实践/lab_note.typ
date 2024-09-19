@@ -9,7 +9,8 @@ draft: true
   lang: "zh",
 )
 
-= RISCV 汇编
+= lab1
+== RISCV 汇编
 - 汇编文件的后缀是 `.s` 或 `.S`。
 - 参考
   + #link("https://lgl88911.github.io/2021/02/28/RISC-V%E6%B1%87%E7%BC%96%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/")[RISC-V汇编快速入门]
@@ -29,7 +30,7 @@ draft: true
 - 主要关注伪操作
 
 
-= 链接脚本
+== 链接脚本
 - 链接脚本的后缀是 `.ld` 或 `.lds`。
 - 参考
   + #link("https://zhuanlan.zhihu.com/p/504742628")[ld - 链接脚本学习笔记与实践过程]

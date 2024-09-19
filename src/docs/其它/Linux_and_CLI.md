@@ -118,18 +118,18 @@
 ## 1.4. 终端
 ### 1.4.1. Shell 知识
 #### 1.4.1.1. 快捷键
-```ad-info
-`Ctrl +A`   跳转到行首
-`Ctrl +E`   跳转到行尾
-`Alt + B（<-）`   跳转到前一个单词的开头
-`Alt + F（->）`   跳转到下一个单词的开头
-`Ctrl + U`   剪切到行首
-`Ctrl + K`   剪切到行尾
-`Ctrl + W`   剪切到前一个单词
-`Ctrl + P`   恢复到前一个键入的命令
-`Ctrl + R`   查找过往命令
-`Ctrl + Y`   粘贴缓冲区内容（即前面剪切的），注意这里跟 `Ctrl + C/V` 不是一套体系
-```
+!!! ad-info
+    `Ctrl +A`   跳转到行首
+    `Ctrl +E`   跳转到行尾
+    `Alt + B（<-）`   跳转到前一个单词的开头
+    `Alt + F（->）`   跳转到下一个单词的开头
+    `Ctrl + U`   剪切到行首
+    `Ctrl + K`   剪切到行尾
+    `Ctrl + W`   剪切到前一个单词
+    `Ctrl + P`   恢复到前一个键入的命令
+    `Ctrl + R`   查找过往命令
+    `Ctrl + Y`   粘贴缓冲区内容（即前面剪切的），注意这里跟 `Ctrl + C/V` 不是一套体系
+
 #### 1.4.1.2. Head & Tail
 - 用于打印文件首尾内容
 - `head -n <number> <filename>` 打印文件的前 n 行
@@ -389,7 +389,7 @@ sudo pip install ueberzug
 ## 2.3. wsl 的网络问题——续
 - (23.12.18 记)，这几天 wsl 突然开始爆 “检测到 localhost 代理配置，但未镜像到 WSL。NAT 模式下的 WSL 不支持 localhost 代理”，然而我实际上用的好好的
 - 网上查找，根据 [wsl: 检测到 localhost 代理配置，但未镜像到 WSL。NAT 模式下的 WSL 不支持 localhost 代理。 · Issue #10753 · microsoft/WSL (github.com)](https://github.com/microsoft/WSL/issues/10753) 的解决方法，创建 `.wslconfig` 并添加如下内容：
-    ```sehll
+    ```shell
     [experimental]
     autoMemoryReclaim=gradual  # gradual  | dropcache | disabled
     networkingMode=mirrored

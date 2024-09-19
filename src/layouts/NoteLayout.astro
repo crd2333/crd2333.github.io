@@ -3,7 +3,7 @@ const { sections, section, topics_with_files, topic, file } = Astro.props;
 import Header from "../components/NoteHeader.astro";
 import Navigation from "../components/NoteNavigation.astro"
 import Footer from "../components/NoteFooter.astro"
-import '../styles/global.scss';
+import '../styles/NoteGlobal.scss';
 ---
 
 <html lang="zh-cn">
@@ -22,9 +22,7 @@ import '../styles/global.scss';
       <Navigation section={section} topics_with_files={topics_with_files} topic={topic} file={file} />
 
       <main class="main-content">
-        <div>
-          <slot />
-        </div>
+        <div><slot /></div>
       </main>
 
     </div>
@@ -77,6 +75,11 @@ import '../styles/global.scss';
 
   .main-content p {
     margin-top: 13px;
+  }
+
+  link-card a, a {
+    color: #0070f3;
+    text-decoration: none;
   }
 
 </style>

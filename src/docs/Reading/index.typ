@@ -1,6 +1,9 @@
----
-draft: true
----
+#import "/src/components/TypstTemplate/lib.typ": *
+
+#show: project.with(
+  title: "paper_reading",
+  lang: "zh",
+)
 
 - Acceleration via Fractal Learning Rate Schedules
 
@@ -8,6 +11,6 @@ draft: true
 
 - Error bounds for approximations with deep ReLU networks
 
-- CLIP: 看视频 #link("https://www.bilibili.com/video/BV1SL4y1s7LQ")[CLIP 论文逐段精读【论文精读】]
-
-- Attention is All You Need: 看视频 #link("https://www.bilibili.com/video/BV1pu411o7BE/")[Transformer 论文逐段精读【论文精读】]
+- 跟李沐学 AI 之论文精读
+  + CLIP: #link("https://www.bilibili.com/video/BV1SL4y1s7LQ")[CLIP 论文逐段精读【论文精读】]
+  + Attention is All You Need: #link("https://www.bilibili.com/video/BV1pu411o7BE/")[Transformer 论文逐段精读【论文精读】]

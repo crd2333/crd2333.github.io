@@ -2,4 +2,3 @@
   + makefile
   + VSCode
   + Linux 和 CLI(zsh, powershell, terminal)
-  + markdown

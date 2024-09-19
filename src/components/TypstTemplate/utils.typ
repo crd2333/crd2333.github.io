@@ -122,16 +122,18 @@ font: 字体.宋体,
 #let bluet(body) = text(fill: colors.blue, body) // blue-text
 
 // 快捷 grid
-#let grid2(body1, body2) = grid(
+#let grid2(body1, body2, ..args) = grid(
   columns: 2,
   grid.cell(align: center+horizon)[#body1],
-  grid.cell(align: center+horizon)[#body2]
+  grid.cell(align: center+horizon)[#body2],
+  ..args
 )
-#let grid3(body1, body2, body3) = grid(
+#let grid3(body1, body2, body3, ..args) = grid(
   columns: 3,
   grid.cell(align: center+horizon)[#body1],
   grid.cell(align: center+horizon)[#body2],
-  grid.cell(align: center+horizon)[#body3]
+  grid.cell(align: center+horizon)[#body3],
+  ..args
 )
 
 // pinit 的公式高亮指针
