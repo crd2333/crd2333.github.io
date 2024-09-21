@@ -143,6 +143,9 @@ export async function getStaticPaths() {
       continue;
     }
     let topics = await fsp.readdir(join(DocPath, section));
+    // only accept *.typ or *.md files or directories(no dot in the name)
+    topics = topics.filter(it => it.endsWith(".typ") || it.endsWith(".md") || it.indexOf(".") === -1);
+
     const section_index_type = topics.includes("index.typ") ? "typ" : "md";
     topics = topics.filter(it => it !== `index.${section_index_type}`);
 

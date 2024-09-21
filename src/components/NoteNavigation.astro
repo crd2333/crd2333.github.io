@@ -23,19 +23,18 @@ const TopicUrls: [string, string, boolean][] = Object.keys(topics_with_files)?.m
     </li>
     {TopicUrls.map(([url, to, single]) => (
       <li>
-        <div>
           {
-            to === topic && to !== " " && single ?
-            <a href={url} class="a2_choose">{to}</a> :
-            <a href={url} class="a2_not_choose">{to}</a>
-          }
-          {
-            single || to === " " ? null :
+            to === " " ? null :
             to === topic ?
-            <svg class="arrow" xmlns="http://www.w3.org/2000/svg" id="arrow" x="0" y="0" version="1.1" viewBox="0 0 29 29" xml:space="preserve"><path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" d="m20.5 11.5-6 6-6-6"></path></svg> :
-            <svg class="arrow" xmlns="http://www.w3.org/2000/svg" id="arrow" x="0" y="0" version="1.1" viewBox="0 0 29 29" xml:space="preserve"><path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" d="M11.5 8.5l6 6-6 6"/></svg>
+            <a href={url} class="a2_choose">
+              {to}
+              {single ? null : <svg class="arrow" xmlns="http://www.w3.org/2000/svg" id="arrow" x="0" y="0" version="1.1" viewBox="0 0 29 29" xml:space="preserve"><path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" d="m20.5 11.5-6 6-6-6"></path></svg>}
+            </a> :
+            <a href={url} class="a2_not_choose">
+              {to}
+              {single ? null : <svg class="arrow" xmlns="http://www.w3.org/2000/svg" id="arrow" x="0" y="0" version="1.1" viewBox="0 0 29 29" xml:space="preserve"><path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" d="M11.5 8.5l6 6-6 6"/></svg>}
+            </a>
           }
-        </div>
         {to === topic && !single && (
           <ul>
             {topics_with_files[topic].map((file_: string) => {
@@ -88,6 +87,8 @@ const TopicUrls: [string, string, boolean][] = Object.keys(topics_with_files)?.m
   }
 
   .sidebar .a2_choose {
+    justify-content: space-between;
+    display: flex;
     text-decoration: none;
     font-size: 13pt;
     font-weight: bold;
@@ -95,6 +96,8 @@ const TopicUrls: [string, string, boolean][] = Object.keys(topics_with_files)?.m
   }
 
   .sidebar .a2_not_choose {
+    justify-content: space-between;
+    display: flex;
     text-decoration: none;
     font-size: 13pt;
     font-weight: bold;
@@ -114,7 +117,6 @@ const TopicUrls: [string, string, boolean][] = Object.keys(topics_with_files)?.m
   }
 
   .sidebar .arrow {
-    display: flex;
     height: 20px;
     margin-top: 3px;
   }
