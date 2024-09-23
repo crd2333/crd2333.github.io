@@ -1,0 +1,7 @@
+{
+    "files.exclude": {
+        "**/.gitkeep": true,
+        "**/*.code-workspace": true,
+        "*.svg": true
+    },
+}

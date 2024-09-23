@@ -145,3 +145,4 @@
 
 == References
 - #link("https://blog.csdn.net/qq_25458977?type=blog")[CSDN 博客]
+- #link("https://github.com/Michael-Jetson/SLAM_Notes")[github 上找到的笔记]

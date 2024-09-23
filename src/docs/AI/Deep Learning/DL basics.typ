@@ -5,26 +5,52 @@
   lang: "zh",
 )
 
-= Deep Learning Networks
-== CNN
+#info(caption: "深度学习领域大致划分")[
+  + 深度学习基础
+  + 卷积神经网络(CNN）
+  + 循环神经网络(RNN)
+  + 注意力机制(Attention)
+  + 生成式模型(Generative Model)
+  + 对比学习与自监督学习(Contrastive & Self-supervised Learning)
+  + 图神经网络(GNN)
+  + 其它话题
+    + 其它模型
+    + 迁移学习与终生学习
+    + 元学习
+    + 机器学习可解释性
+    + 机器学习中的攻击与防御
+    + 网络压缩
+  + 从任务角度看
+    + CV: Computer Vision
+    + NLP: Natural Language Processing
+    + AIGC: AI Generative Content
+    + Multimodal & Large Model
+]
 
-== TCN
-- Temporal Convolutional Networks，是一种用于处理时间序列数据的卷积神经网络
-- 参考 #link("https://blog.csdn.net/weixin_39910711/article/details/124678538")[TCN（Temporal Convolutional Network，时间卷积网络）]
+- 网络上其他人的笔记
+  + #link("https://github.com/Michael-Jetson/ML_DL_CV_with_pytorch")[Michael-Jetson/ML_DL_CV_with_pytorch]
+  + #link("https://github.com/sotaBrewer824/LHY_MLDL")[sotaBrewer824/LHY_MLDL] 《李宏毅机器学习》极为详尽的笔记，写成一本书了快
 
-== RNN
+= 深度学习基础
+...
+
+= CNN
+...
+
+
+= RNN
 - RNN 主要用于处理序列数据，比如时间序列数据，它的高级变种包括 LSTM 和 GRU 等。
-=== Basic RNN
+== Basic RNN
 - RNN 的基本结构如下，其中 $W_"in", W_h, W_"out"$ 都是共享的，以此减少参数量。
-#fig("/public/assets/AI/AI_DL/img-2024-07-03-16-29-29.png")
+#fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-16-29-29.png")
 - RNN 最大的问题是梯度消失和梯度爆炸
 - RNN 本身的改进有：多层 RNN 和双向 RNN
   - 多层 RNN：将许多 RNN 层堆叠得到，在纵向上也进行序列化学习
   - 双向 RNN：当排列顺序固定，文本意义一般是固定的，人类习惯于从左往右阅读，但对于 RNN 来说，从左往右或从右往左并没有本质的区别，且二者可以并行。
   #grid(
     columns:2,
-    fig("/public/assets/AI/AI_DL/img-2024-07-03-16-33-24.png"),
-    grid.cell(align: horizon, fig("/public/assets/AI/AI_DL/img-2024-07-03-16-32-55.png"))
+    fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-16-33-24.png"),
+    grid.cell(align: horizon, fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-16-32-55.png"))
   )
 
 #info(caption: "nn.RNN的参数")[
@@ -66,7 +92,7 @@ output, hc = model(X, hc)
 
 == LSTM
 - LSTM 通过引入门控机制，缓解 RNN 的梯度消失和梯度爆炸问题，分为输入门、遗忘门、输出门和记忆单元。
-#fig("/public/assets/AI/AI_DL/img-2024-07-03-22-06-17.png")
+#fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-22-06-17.png")
 - LSTM 的用法跟 RNN 差不多，也分 `nn.LSTM` 和 `nn.LSTMCell`，以后者为例
 ```py
 lstm_cell = nn.LSTMCell(input_size, hidden_size)
@@ -85,28 +111,61 @@ for i in range(seq_length):
 == GRU
 - GRU 是 LSTM 的简化版，只有两个门：重置门和更新门（输入门和遗忘门合并），没有输出门和记忆单元（与隐藏单元合并）。
 - 参数更少，性能不减
-#fig("/public/assets/AI/AI_DL/img-2024-07-03-22-09-41.png")
+#fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-22-09-41.png")
 
-== Transformer
+= Attention & Transformer
 - #link("https://zhuanlan.zhihu.com/p/338817680")[参考链接]
 - Transformer 是一个基于注意力机制的模型。Attention is all you need.
 - 原始版本的 Transformer 由 encoder 和 decoder 组成，BERT 等模型只使用了 encoder 部分；GPT 等模型只使用了 decoder 部分。
-#fig("/public/assets/AI/AI_DL/img-2024-07-03-22-14-26.png")
+#fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-22-14-26.png")
 - Transformer 在训练和推断时刻是不同的
-  + 训练时：第$i$个decoder的输入 = encoder输出 + ground truth embeding
-  + 预测时：第$i$个decoder的输入 = encoder输出 + 第$i-1$个decoder输出
-  - 训练时因为知道ground truth embeding，相当于知道正确答案，网络可以一次训练完成（并且相比多步序列学习，结果不至于偏差太远），并且可以并行；
-  - 预测时，首先输入start，输出预测的第一个单词 然后start和新单词组成新的query，再输入decoder来预测下一个单词，循环往复直至end
+  + 训练时：第$i$个 decoder 的输入 = encoder 输出 + ground truth embeding
+  + 预测时：第$i$个 decoder 的输入 = encoder 输出 + 第 $i-1$ 个 decoder 输出
+  - 训练时因为知道 ground truth embeding，相当于知道正确答案，网络可以一次训练完成（并且相比多步序列学习，结果不至于偏差太远），并且可以并行；
+  - 预测时，首先输入 start，输出预测的第一个单词 然后 start 和新单词组成新的 query，再输入 decoder 来预测下一个单词，循环往复直至 end
 - 多头自注意力机制：将输入的序列映射到多个子空间，然后分别进行注意力计算，最后将结果拼接起来。
+
+- 更详细的内容，直接拆分出一个大章 —— LLM
+
+
+= Generative Model
+- #link("https://zhuanlan.zhihu.com/p/577974910")[概论生成网络(GAN/VAE/Flow/Diffusion)]
+
+...
+
+
+= Contrastive & Self-supervised Learning
+...
+
+
+= GNN
+...
+
+
+= 其它话题
+== 其它模型
+=== TCN
+- Temporal Convolutional Networks，是一种用于处理时间序列数据的卷积神经网络
+- 参考 #link("https://blog.csdn.net/weixin_39910711/article/details/124678538")[TCN(Temporal Convolutional Network)时间卷积网络]
+
+
+#hide[
+== 迁移学习与终身学习
+== 元学习
+== 机器学习可解释性
+== 机器学习中的攻击与防御
+== 网络压缩
+]
+
 
 = Deep Learning Tasks
 - Deep Learning 最主要的任务是 CV 和 NLP，当然后面就五花八门了起来，这里仅做引入
 - 最开始可以这么理解：CV 是处理空间信息，由此发展了卷积神经网络；NLP 是处理时序信息，由此发展了循环神经网络和 Transformer(Attention)
 - 但是到了后面，二者的边界逐渐模糊（比如，有用卷积做时序的，有用 Transformer 做视觉的）。它们逐渐融合于多模态和大模型的发展中
-- 目前的基础机制依旧是 Transformer 和 Attention，似乎还没有探测出它的极限
+- 目前的基础机制依旧是 Transformer 和 Attention，似乎还没有探测出它的极限，似乎也还没有更好的压倒性地强于它的模型出现
 
 == CV: Computer Vision
-- CV 这一块的任务主要分为：图像分类、目标检测、语义分割、风格迁移（or 图像生成）
+- CV 这一块的任务主要分为：图像分类、目标检测、语义分割、风格迁移（or 图像生成）等
 
 - 传统的 CV 主要用的是 CNN，主要理解*卷积*、池化、全连接、激活函数、Dropout、Batch Normalization 等基本组件；然后目标检测这边引入锚框、NMS、IoU 等概念；语义分割这边引入转置卷积
 
@@ -177,3 +236,8 @@ for i in range(seq_length):
   - multi-head attention
 - 关于 Transformer 的基础可以参考 #link("http://crd2333.github.io/note/Reading/%E8%B7%9F%E6%9D%8E%E6%B2%90%E5%AD%A6AI%EF%BC%88%E8%AE%BA%E6%96%87%EF%BC%89/Transformer")[原论文阅读笔记]
 
+== AIGC: AI Generative Content
+...
+
+== Multimodal & Large Model
+...

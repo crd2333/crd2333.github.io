@@ -93,6 +93,8 @@
 - 上节课操作后，所有物体都处在$[-1,1]^3$的立方体中，接下来把他画在屏幕上，这一步就叫做光栅化
   - 光栅化算法得名于光栅化显示器(CRT)，生成二维图像的过程是从上到下，从左到右一个像素一个像素来。
 - Raster == screen in German, rasterization == drawing onto the screen
+
+== 画线算法
 - DDA(Digital Differential Analyzer)：数字微分分析器，用来画直线，但受限于浮点数精度
 - Breseham's Line Drawing Algorithm：更高效的画线算法，只需要整数运算
   - 注意到每次 $x$ 加一，$y$ 的变化不会超过 $1$
@@ -108,6 +110,9 @@
   - 另一种方法是 scan-line method，从上到下、左到右扫描
     - 找到扫描线与多边形的*交点*，然后按照扫描线的方向*排序*，每两个交点之间*填充*
     - 也可以用 Breseham 的思想加速
+
+#hline()
+
 - 屏幕空间
   - *视口变换*：（暂时忽略 z 轴）将$[-1,1]^2$变换到屏幕空间的矩阵 $ M_"viewport"=mat(w/2,0,0,w/2; 0,h/2,0,h/2; 0,0,1,0; 0,0,0,1) $
 - 显示方式
@@ -143,6 +148,40 @@
   - 画家算法(Painter's Algorithm)：油画家，先画远的，再画近的覆盖掉
   - 但并不总是有效，为此引入 Z-buffering（深度缓冲）：既然没办法判断三角形整体的深度，那么就判断每个像素的深度，在渲染时存一张深度图
   - 暂不考虑相同深度，处理不了透明物体，另外 z-buffering 可能会与 MSAA 结合
+
+== \*OpenGL
+- OpenGL 是一个跨平台的图形 API，用于渲染 2D 和 3D 图形
+- OpenGL Ecosystem
+  - OpenGL, WebGL, OpenGL ES, OpenGL NG, Vulkan, DirectX ...
+- OpenGL是做什么的？
+  - 定义对象形状、材质属性和照明
+    - 从简单的图元、点、线、多边形等构建复杂的形状。
+  - 在3D空间中定位物体并解释合成相机
+  - 将对象的数学表示转换为像素
+    - 光栅化
+  - 计算每个物体的颜色
+    - 遮光
+- Three Stages in OpenGL
+  - Define Objects in World Space
+  - Set Modeling and Viewing Transformations
+  - Render the Scene
+  - 跟我们学的顺序类似
+- OpenGL Primitives
+  - GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_QUADS, GL_POLYGON, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_QUAD_STRIP
+  - 放到 `glBegin` 里决定如何解释，具体见 PPT
+- OpenGL 的命令基本遵守一定语法
+  - 所有命令以 `gl` 开头
+  - 常量名基本是大写
+  - 数据类型以 `GL` 开头
+  - 大多数命令以两个字符结尾，用于确定预期参数的数据类型
+- OpenGL 是 Event Driven Programming
+  - 通过注册回调函数(callbacks)来处理事件
+  - 事件包括键盘、鼠标、窗口大小变化等
+  #fig("/public/assets/Courses/CG/2024-09-22-16-45-55.png", width: 70%)
+- Double buffering
+  - 隐藏绘制过程，避免闪烁
+  - 有时也会用到 Triple buffering
+- WebGL Tutorial / OpenGL ES
 
 = Shading 着色
 #info()[
