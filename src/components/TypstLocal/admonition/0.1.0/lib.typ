@@ -297,3 +297,13 @@
   icon: icon,
   ..args
 )
+
+#let q(..args) = showybox(
+  frame: (
+    body-color: gray.lighten(80%),
+    border-color: gray.lighten(30%),
+    radius: 0em,
+    thickness: (left: 3pt)
+  ),
+  ..args
+)
