@@ -59,7 +59,7 @@ order: 3
     3. 如果兄弟的孩子有红色，变换策略，想办法从兄弟那边抢一个*黑色*，要看远侄子（插入和删除都是让远侄子变*红*）是*红色*还是*黑色*，如果远侄子是*黑色*(case 3)，那么由于已经过了 case 2，近侄子一定是*红色*，想办法把近侄子的*红色*转移到远侄子身上(case 4)
     4. 远侄子是*红色*，让兄弟篡位，通过左旋把兄弟（现在的父亲）变成自己人，把*红色*的远侄子染黑，最后删除自己。
 #fig("/public/assets/Courses/ADS/ads笔记/img-2024-03-04-12-08-19.png", width: 80%)
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-03-12-11-21-19.png", width: 80%)
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-03-12-11-21-19.png", width: 80%)
 
 == B+ Trees
 - 类似的有 B- 树、B
@@ -69,7 +69,7 @@ order: 3
   3. 每个 leaf 有同样的深度
   4. 每个非根的 leaf 有 $ceil(M / 2) wave M$ 个#redt[键值]
 #fig("/public/assets/Courses/ADS/ads笔记/img-2024-03-11-10-10-05.png", width: 80%)
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-03-14-13-39-08.png", width: 80%)
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-03-14-13-39-08.png", width: 80%)
 - #redt[思考为什么 root 的下限特别不一样？]因为分裂的时候，root 最多也就分裂成两个节点，因此下限是 2
 - 插入
   - 根据键值排除一些路径
@@ -197,7 +197,7 @@ $display("Recall" R = R_R / (R_R + R_N))$，正确的结果实际被返回了多
   - 结构性质: binary tree，but unbalanced
 - Target : Speed up merging in $O(N)$
 - NPL（Null Path Length）：从一个节点到一个外部节点（没有两个儿子）的路径长度（对比红黑树的黑高，那个是统计节点个数，这个则是路径长度）
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-03-18-10-06-25.png")
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-03-18-10-06-25.png")
 
 #theorem()[
 A leftist tree with r nodes on the right path must
@@ -211,7 +211,7 @@ have at least $2r - 1$ nodes \
 ]
 
 - 下面来看 insert 和 merge（insert 可以被视为 merge），首先是递归方法
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-03-18-10-51-04.png", width: 65%)
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-03-18-10-51-04.png", width: 65%)
   - 做题一般采用迭代方法，但是递归的代码记一下（程序填空）
   ```C
   PriorityQueue Merge( PriorityQueue H1, PriorityQueue H2 )
@@ -236,7 +236,7 @@ have at least $2r - 1$ nodes \
   1. 切样本（节点及其左子树为一个样本），有 $log N$ 个
   2. 选择最小根节点（用两个指针来维护）的样本接在右子树
   3. 从右路径最下开始，交换左右子树来维护 NPL
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-03-18-11-08-29.png", width: 65%)
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-03-18-11-08-29.png", width: 65%)
 
 == Skew Heaps
 - Skew heaps 之于 heaps 就像 splay trees 之于 binary search trees
@@ -262,14 +262,14 @@ A node p is #redt[heavy] if the number of descendants of p's right subtree is at
   - 设 $l$、$h$
   - 实际代价 $H$ 是右路径的总长，也就是 $l + h$
   - 重节点一定会变成轻节点，轻节点不一定会变成重节点（两边相等），放缩为一定变为重节点的情况
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-03-18-11-56-37.png")
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-03-18-11-56-37.png")
 
 = Lecture 5: Binomial Queue
 == Definition
 - Binomial Queue 是由#redt[一组] heap-ordered trees 组成的(也即 forest)。每个 heap-ordered tree 是一个 binomial tree，每个记作 $B_k$
 - $B_k$ 由两个 $B_(k-1)$ 组成，这里约定根节点小的那个作为根节点
   - 对 $"size"$ 做一个二项分解，对应到二进制的每一位，确定 $B_k$ 是否存在
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-03-30-16-22-02.png", width: 80%)
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-03-30-16-22-02.png", width: 80%)
 #corollary[$B_k$ consists of a root with $k$ children, which are $B_0,B_1,dots,B_(k-1)$. $B_k$ has exactly $2^k$ nodes. The number of nodes at depth $d$ is $display(vec(delim: "[",k, d))$.]
 == Operations
 - `FindMin`，最小值在其中一个根节点，最多 $ceil(log N)$ 个，因此 $T_p=O(log N)$
@@ -369,8 +369,8 @@ ElementType DeleteMin(BinQueue H) {
 ```
 == Analysis
 - 分析连续 $N$ 次插入的复杂度
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-03-25-12-08-40.png", width: 80%)
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-03-25-12-12-56.png", width: 80%)
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-03-25-12-08-40.png", width: 80%)
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-03-25-12-12-56.png", width: 80%)
 
 #figure(caption: "heap复杂度总结",
   tbl(
@@ -462,11 +462,11 @@ ElementType DeleteMin(BinQueue H) {
 === 八皇后问题
 - Step 1: Construct a game tree
 - Step 2: Perform a depth-first search (post-order traversal) to examine the paths
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-04-01-10-57-52.png")
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-04-01-10-57-52.png")
 
 === 加油站重建问题
 - 给定 $N(N-1)\/2$ 个 distances，重建 $N$ 个加油站的位置，假定 $x_1=0$
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-04-01-11-06-00.png")
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-04-01-11-06-00.png")
 ```c
 bool Reconstruct (DistType X[], DistSet D, int N, int left, int right){
     /* X[1]...X[left-1] and X[right+1]...X[N] are solved */
@@ -524,7 +524,7 @@ bool Backtracking(int i)
 }
 ```
 - 考虑如何构建搜索树：
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-04-01-11-40-24.png")
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-04-01-11-40-24.png")
   - 两颗同个问题的不同搜索树，上面的倾向于用值域较小的节点构建
   - 上面这个剪枝的效率更高；下面这个好像剪枝的概率更高（实际上一般认为相同）
   - 一般来说认为上面这个更好
@@ -585,7 +585,7 @@ For any $p_i$, at most #redt[$7$] points are considered, i.e. the second for-loo
 - *Recursion-tree method*
   - 边算边猜；一般不用于严格证明，仅是猜测
   - 注意 $a^(log_b N)=N^(log_b a)$
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-04-08-11-21-55.png")
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-04-08-11-21-55.png")
 - *Master method*（主方法，也叫求偶法）
   - 并没有 cover 所有情况，而是以不同角度对三种典型情况直接给出答案
 - 角度一：比较根节点和叶子节点的开销
@@ -701,12 +701,12 @@ void OptMatrix(const long r[], int N, TwoDimArray M)
 === Optimal Binary Search Tree
 - 给定 $N$ 个词 $w_1 < w_2 < dots < w_N$，以及 $N$ 个概率 $p_0, p_1, dots, p_N$，构建一棵静态二叉搜索树，使得搜索的期望代价 $T(N) = display(sum_(i=1)^N p_i dot (1+d_i))$ 最小
 - 确定一个根节点后，其左右子树就确定了（分治法的感觉来了）
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-04-15-11-12-55.png",width:93%)
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-04-15-11-12-55.png",width:93%)
   - 依旧是最优子结构问题（左子树与右子树独立）
   - 思考怎么把它变成非最优子结构问题，比如
     + 加一个约束，度数为 2 的节点不超过 $K$ 个
     + 相邻节点之间首字母的字典序不能超过 2
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-04-15-11-22-05.png")
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-04-15-11-22-05.png")
 
 === 单源最短路径算法(Bellman_Ford)
 - $D^k [s][v]$ 表示从 $s$ 到 $v$ 最多经过 $k$ 条边的最短路径
@@ -730,7 +730,7 @@ $
                       D^(k-1)[s][k] + D^(k-1) [k][v],
                     )
   $
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-04-15-11-31-20.png")
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-04-15-11-31-20.png")
   - 跳板的添加顺序不影响最后结果（思考为什么）
   - 复杂度 $O(N^3)$
 ```c
@@ -971,7 +971,7 @@ ConfigType State_flipping()
 }
 ```
 - 思考，这个算法是否一定会终止？
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-13-11-08-59.png")
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-13-11-08-59.png")
 - 复杂度：$O(w_"max" |E|)$，伪多项式时间算法
 
 === The Maximum Cut Problem
@@ -987,16 +987,16 @@ ConfigType State_flipping()
   - 由于 $A, B$ 地位是均等的，我们对 $B$ 也进行一次这样的操作
   - 显然最优解小于等于所有边权和，而这通过刚才的式子又能转化为 $2$ 倍的局部最优解
   - by the way，由 $w(A, B) =< w^*(A, B)$，可得到 $w^*(A, B)$ 大于等于总边权的一半
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-13-11-28-31.png")
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-13-11-28-31.png")
 - 虽然是近似算法，但复杂度依旧不是多项式时间
   - 考虑提前终止
     - 为什么我感觉这里应该是 $epsilon/(|V|) w(A,B)$？但是做题还是按 PPT 来
     - 思考第二个 claim 怎么证明（不等式 $(1+1/x)^x >= 2 ~~ (x>=1)$，取 $epsilon$ 使其满足要求，那么每 $n\/epsilon$ 次都至少提升两倍）
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-13-11-44-15.png")
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-13-11-44-15.png")
   - 考虑每步找更好的邻居
     - 每一步多翻转一个点，要求这个点是当前已经翻转过的基础上再翻转一个点的最好的情况($O(N)$)，一直这样翻到 $(A, B)$ 倒置成 $(B, A)$。当然这样翻有可能会发现其中几步还不如原始版本。但没关系，我们选择这 $n-1$ 个邻居中最好的那个跳过去，并且在这 $n-1$ 个邻居都比原始版本差的情况下算法终止
     - 思考 K-L flip 跟原本有什么不同
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-13-11-54-15.png")
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-13-11-54-15.png")
 
 = Randomized Algorithms
 - 定义略，没啥好说的
@@ -1024,7 +1024,7 @@ ConfigType State_flipping()
   ```
   - 存在情况 candidates come in increasing quality order，$O(N C_i + N C_h)$，即每个人都被雇佣
 - 假设 candidates arrive in random order
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-20-10-23-09.png")
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-20-10-23-09.png")
   - 实现上，只需要在开始时进行一个随机，比如，为每个人随机赋一个值，然后按这个值排序
 - Online Hiring Algorithm – hire only once
   - 前 k 个人是练手的，无论怎么样都不会选；然后，只要碰到一个最好的，直接就选了，后面的都不看了
@@ -1080,7 +1080,7 @@ ConfigType State_flipping()
 == 例子
 === The summation problem
 - 输入 $N$ 个数字，输出它们的和
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-27-10-15-31.png")
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-27-10-15-31.png")
 #algo(caption: "PRAM model")[
   ```typ
   for Pi , 1 ≤ i ≤ n pardo
@@ -1096,23 +1096,23 @@ ConfigType State_flipping()
   ```
 ]
 - WD presentation
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-27-10-29-47.png")
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-27-10-29-47.png")
 - $T(N)=log N, W(N)=N$
 
 === Prefix-Sums
 - 利用 Balanced Binary Trees 并行
-#fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-27-11-01-21.png")
+#fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-27-11-01-21.png")
 
 === merge
 - 利用 Partitioning 并行
   - 先做简化，假设 $A, B$ 中对应元素都不同，$n=m$，且都是 $2$ 的次幂
 - 先把 Merge 问题转化为 rank 问题
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-27-11-28-00.png")
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-27-11-28-00.png")
 - 再思考如何解决 rank 问题，三种方法
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-27-11-35-34.png")
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-27-11-35-34.png")
   - 以及 Parallel Ranking
     - 思考四种 cases，为什么这样划分是成立的
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-27-11-41-49.png")
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-27-11-41-49.png")
 
 === Maximum Funding
 - 找到最大值的问题
@@ -1120,20 +1120,20 @@ ConfigType State_flipping()
 - 并行算法一：这可以由把 The summation problem 中的 "+" 改为 "max"，故复杂度为 $T(n)=O(log n), W(n)=O(n)$
 - 并行算法二：让它们两两比对
   - access conflicts 不用解决（因为都是写 $1$）
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-27-11-58-38.png")
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-27-11-58-38.png")
 - 并行算法三(Doubly-logarithmic Paradigm)：
   - 3.1: 先用 $sqrt(n)$ partition，子问题用串行方法，算出的子问题解用并行算法二。这种方法多套几次
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-27-12-05-12.png")
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-27-12-05-12.png")
   - 3.2: 先用 $log log n$ partition，子问题用串行方法，$n\/h$ 个子问题用并行算法 3.1
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-27-12-11-36.png")
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-27-12-11-36.png")
 - 并行算法四(Random Sampling)：
   - 第一步，$n^(7\/8)$ 个处理器每个随机抽样放到内存中某个位置作为 $B$（可能重复），深度为 $O(1)$，总工作量为 $O(n^(7\/8))$
   - 第二步，把 $B$ 分为 $n^(3\/4)$ 个 $n^(1\/8)$ 块，使用并行算法二（两两比对）方法找到每个块的最大值，得到 $C$，深度为 $O(1)$，总工作量为 $O(n^(3\/4) dot (n^(1\/8))^2)=O(n)$
   - 第三步，把 $C$ 分为 $n^(1\/2)$ 个 $n^(1\/4)$ 块，使用并行算法二（两两比对）方法找到每个块的最大值，得到 $D$，深度为 $O(1)$，总工作量为 $O(n^(1\/2) dot (n^(1\/4))^2)=O(n)$
   - 第四步，对 $D$ 使用并行算法二（两两比对）方法找到最终的最大值，深度为 $O(1)$，总工作量为 $O((n^(1\/2))^2)=O(n)$
   - 第五步，以一定机制循环以上四步（所有的 $N$ 个元素和这个选出来的最大数 $M$ 比较，如果更大就丢到一个大小为 $n^(7\/8)$ 的数组中的随机位置。利用刚刚算法再来一遍）
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-27-12-20-47.png")
-  #fig("/public/assets/Courses/ADS/ADS笔记/img-2024-05-27-12-21-02.png")
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-27-12-20-47.png")
+  #fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-27-12-21-02.png")
 
 = External Sorting
 - 不记了
