@@ -99,5 +99,71 @@ $
 - Orthographic projection 正交投影
 
 == Photometric image formation
+- 描述了 3D 世界物理性质与 2D 图像颜色之间的关系
+- Image sensor
+- Shutter
+  - The pixel value is equal to the integral of the light intensity within the exposure time
+- Color spaces: RGB, HSV
+- Bayer filter
+  - 对于彩色图像，需要采集多种基本的颜色，最简单的方法是用滤镜的方法
+  - 如果要采集 RGB 三种颜色，则需要三种滤镜，价格昂贵。
+  - 而 Bayre Filter 在一块滤镜上设置不同颜色，由于人眼对绿色比较敏感，因此绿色较多
+- Model the light reflected by an object : Shading
+  - 后面的内容是直接 copy from GAMES101，参见 #link("https://crd2333.github.io/note/Courses/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6/index/")[计算机图形学笔记]
+
+
+= Image Processing
+== Image processing basics
+#let blur = math.text("blur")
+- 一些基本处理
+  + Increase contrast
+  + Invert
+  + Blur
+  + Sharpen
+- Convolution
+- Padding
+- 几种 filter
+  - Guassian blur & Sharpen
+    - $f(i, j)= 1/(2 pi sigma^2) e^(- (i^2+j^2)/(2 sigma^2))$
+    - $sigma$ 越大越模糊
+    - Sharpen
+      - Let $I$ be the original image
+      - High frequencies in image $I=I-blur()$
+      - Sharpened image $I'= I+(I-blur())$
+  - Edge detection filter
+  - Gradient detection filters
+  - Bilateral filter
+    - 保持边缘的同时去除噪声
+
+== Image Sampling
+- 采样时有可能发生失真（反走样/锯齿）现象
+- 主要原因是 —— 采样的速度跟不上信号变化的速度（高频信号采样不足）
+
+=== Fourier Transform
+- 傅里叶变换本质上是把函数与不同频率的三角函数做内积，得到它在不同频率下的分量
+- 即：用不同频率的正余弦函数加权表示原函数
+  #fig("/public/assets/Courses/CV/2024-09-26-11-49-09.png")
+- PPT 里展示了一些常见的信号的傅里叶变换
+
+=== Signal & Frequency
+- Convolution Theorem
+  #fig("/public/assets/Courses/CV/2024-09-26-12-00-47.png")
+  - Box filter = low-pass filter
+  - Wider kernel = lower frequency
+- Sampling
+  - Sampling a signal = multiply the single by a Dirac comb function（狄拉克函数）
+  - Sampling = Repeating Frequency Contents
+- Nyquist-Shannon theorem
+  - Consider a band-limited signal: has no frequencies above $f_0$
+  - The signal can be perfectly reconstructed if sampled with a frequency larger than $2 f_0$
+- anti-alisaing
+- 其实基本也都是图形学的内容
+
+
+== Image magnification
+- Interpolation
+  - Nearest neighbor
+  - Bilinear
+  - Bicubic
 
 

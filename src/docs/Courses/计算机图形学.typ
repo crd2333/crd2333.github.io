@@ -17,7 +17,7 @@
 
 = Overview 图形学概述
 - 课程内容主要包含
-  + 光栅化(rasterization)：把三维空间的几何形体显示在屏幕上。实时（30fps）是一个重要的挑战
+  + 光栅化(rasterization)：把三维空间的几何形体显示在屏幕上。实时(30fps)是一个重要的挑战
   + 几何表示(geometry)：如何表示一条光滑的曲线、一个曲面，如何细分以得到更复杂的曲面，形变时如何保持拓扑结构
   + 光线追踪(ray tracing)：慢但是真实。实时是一个重要的挑战。本节课还介绍实时光线追踪
   + 动画/模拟(animation/simulation)：譬如扔一个球到地上，球如何反弹、挤压、变形等
@@ -26,20 +26,34 @@
   - 实际上并没有明显的界限
   #fig("/public/assets/Courses/CG/img-2024-07-25-10-25-57.png")
 
-= Linear Algebra 向量与线性代数
-- 有点太基础了，看弹幕看出自信来了
+= Math 数学基础
+== Linear Algebra 向量与线性代数
 - 以右手坐标系讲解，但引擎可能是左手坐标系
 - 点乘判断前后；叉乘判断左右和点在凸多边形内外
+- Vector
+  - 如何表示
+  - 相加、点积、叉积
 
-= Transformation 变换
+== Transformation 变换
 #info()[
   + 二维与三维
   + 模型、视图、投影
 ]
 #let gt = $hat(g) times hat(t)$
-- 各种变换矩阵，后统一归为仿射变换
+- 各种变换矩阵，后统一归为仿射变换（在齐次坐标的概念下）
+  - 平移
+  - 缩放（反直觉是这是对原点而言的）
+  - 旋转（2D 相对于原点，3D 相对于轴）
 - 齐次坐标的引入：用矩阵乘向量统一表示平移、旋转、缩放等操作
+  - $(x,y,z)$ $->$ $(x,y,z,1)$; $(x,y,z,w)$ $->$ $(x/w,y/w,z/w)$
   - point 和 vector 的不同表示
+- 例子
+  - 绕任意点旋转
+  - 绕任意轴 $(x_1, y_1, z_1) - (x_2, y_2, z_2)$ 旋转 $theta$ 角
+    + 把这跟轴平移过原点
+    + 旋转使其跟某个轴重合，以 $z$ 轴为例，那么就先后绕 $x$ 轴和 $y$ 轴旋转
+    + 绕重合轴($z$ 轴)旋转 $theta$ 角
+    + 再做 1, 2 步的逆变换回去
 - Viewing (观测) transformation
   - View (视图) / Camera transformation
   - Projection (投影) transformation
@@ -153,7 +167,8 @@
 - OpenGL 是一个跨平台的图形 API，用于渲染 2D 和 3D 图形
 - OpenGL Ecosystem
   - OpenGL, WebGL, OpenGL ES, OpenGL NG, Vulkan, DirectX ...
-- OpenGL是做什么的？
+  - #link("https://blog.csdn.net/qq_23034515/article/details/108283747")[WebGL，OpenGL和OpenGL ES三者的关系]
+- OpenGL 是做什么的？
   - 定义对象形状、材质属性和照明
     - 从简单的图元、点、线、多边形等构建复杂的形状。
   - 在3D空间中定位物体并解释合成相机
@@ -181,6 +196,7 @@
 - Double buffering
   - 隐藏绘制过程，避免闪烁
   - 有时也会用到 Triple buffering
+- 后来看了看 OpenGL 的相关教程，感觉现在的实现和这里不太一样（可能过时了）。。。还是以网络教程为准
 - WebGL Tutorial / OpenGL ES
 
 = Shading 着色

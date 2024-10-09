@@ -27,11 +27,20 @@
     auipc x30, 0
     j     dummy
   ```
-- 主要关注伪操作
+- 关注一下之前没见过的命令
+  - `la rd symbol`，load absolute address，对非位置无关码(non-PIC)和位置无关码(PIC)有不同解释，相当于 `auipc+addi` 或 `auipc+l{d|w}`
+  - `j offset`，调用一个函数，相当于 `jal x0, offset`，不指望回来的那种
+  - `tail offset`，相当于 `auipc x6 xxx + jalr x0, xxx(x6)`，不指望回来的那种，`j offset` 的高级版
+  - `call offset`，调用一个函数，相当于 `auipc x1 xxx + jalr x1, xxx(x1)`，`jal ra, offset` 的高级版
+  - `ret`，从函数调用返回，相当于 `jalr x0, 0(x1)`
+  - 参考 #link("https://github.com/riscv-non-isa/riscv-asm-manual/blob/main/src/asm-manual.adoc#a-listing-of-standard-risc-v-pseudoinstructions")[riscv-asm-manual\#pseudoinstructions]
+
+- 关注一下伪操作
   - `.section` 用于定义段
   - `.globl` 用于定义全局变量
   - `.extern` 用于引用外部变量
   - `.align` 用于对齐
+  - 参考 #link("https://github.com/riscv-non-isa/riscv-asm-manual/blob/main/src/asm-manual.adoc#pseudo-ops")[riscv-asm-manual\#pseudo-ops]
 
 
 == 链接脚本
@@ -46,7 +55,7 @@
   + 编译，将 C 代码编译为汇编代码（同时会进行优化等）
   + 汇编，将汇编代码编译为机器码
   + 链接，将多个目标文件链接为一个可执行文件
-  #fig("/public/assets/temp/2024-09-22-22-48-43.png")
+  #fig("/public/assets/Courses/OS/2024-09-22-22-48-43.png")
 
 - 链接脚本描述了连接器如何将这些输入 `*.o` 文件映射为一个输出文件 `xxx(.exe)/(.out)` ，更具体来说：
   - 链接脚本中的输入和输出文件均为*目标文件*(Object File)，其最常见的格式为 `ELF` 文件格式，输出文件也叫*可执行文件*。每个输入文件包含一系列*属性不同*的 Input Section，输出文件中则包含一系列 Output Section
@@ -59,3 +68,13 @@
   + `.rodata` 段：read only data，如字符串常量、const 修饰的变量都会被保存到该段
   + `.text` 段：程序代码段，更进一步讲是存放处理器的机器指令。函数代码逻辑都会保存到该段
   - 实际涉及的段远不止这四个，这里只是列举了我们所熟知的段
+
+
+== 关于 timer
+- 有点不理解 timer 的工作原理
+- 看了 #link("https://wangzhou.github.io/riscv-timer%E7%9A%84%E5%9F%BA%E6%9C%AC%E9%80%BB%E8%BE%91/")[这篇文章] 更不理解了
+- 现在理解了
+
+
+== 关于中断
+- 参考 #link("https://blog.csdn.net/zzy980511/article/details/130642258")[RISC-V架构中的异常与中断详解]
