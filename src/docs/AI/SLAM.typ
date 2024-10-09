@@ -17,7 +17,7 @@
 
 = SLAM 中的 CV
 == SfM
-- 参考 #link("https://blog.csdn.net/shyjhyp11/article/details/104108926")[]
+- 参考 #link("https://blog.csdn.net/shyjhyp11/article/details/104108926")
 === 增量式的 SfM(Incremental Structure-from-Motion)
 - 步骤
   - 先从一对图像开始，计算*对极几何约束*(epipolar geometry)，*本质矩阵*(Essential Matrix)；

@@ -13,7 +13,6 @@
 - 时间：2021.11
 
 == 标题 & 摘要 & 引言 & 相关工作
-- 时间：
 - 标题：Masked Autoencoders Are Scalable Vision Learners
 - 与之前读的文章的关系
   - Transformer：纯基于注意力机制的编码器和解码器，在机器翻译任务上，它比基于RNN的架构要更好一些

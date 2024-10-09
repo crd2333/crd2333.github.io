@@ -65,7 +65,6 @@
       verilog: (name: "Verilog", icon: verilog_svg, color: rgb("#FF6666")),
       Verilog: (name: "Verilog", icon: verilog_svg, color: rgb("#FF6666")),
     ),
-    zebra-color: luma(250),
     fill: luma(250),
     // stroke-width: 1pt,
     // display-name: false,

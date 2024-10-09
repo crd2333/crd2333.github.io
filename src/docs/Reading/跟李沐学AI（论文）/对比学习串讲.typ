@@ -158,7 +158,7 @@
   - Bootstrap：在一定基础上改造
   - Latent / hidden / feature / embedding：都是指特征，不同叫法
 - BYOL 的特点在于自己跟自己学，不用负样本，类似于左脚踩右脚上天
-  - 不用负样本新奇在何处？因为它相当于一个约束，否则模型只要对所有正样本的特征都输出零，即可让 loss 为零，这显然是一个 shortcut，也叫模型坍塌(model / learning collapse)
+  - 不用负样本新奇在何处？因为它相当于一个约束，否则如果没有负样本，模型只要对所有正样本的特征都输出零，即可让 loss 为零，这显然是一个 shortcut，也叫模型坍塌(model / learning collapse)
 - 模型前向过程
   #fig("/public/assets/Reading/limu_paper/对比学习串讲/2024-10-05-14-17-16.png")
   - 输入是一个 minibatch 的图片 $x$；经过两次数据增强得到 $v$ 和 $v'$；通过 encoder 得到特征，两个 encoder 使用同样的架构但参数不同，上侧的 $f_theta$ 参数正常更新，下侧的 $f_xi$ 为动量编码器（动量更新）；随后分别通过 projection head $g_theta$ 和 $g_xi$得到 $z$ 和 $z'$，同样是上面的参数正常更新，下面的参数动量更新
@@ -179,7 +179,7 @@
     [Layer Norm], [Layer Norm], [Layer Norm], [L2], [None], [29.4],
     [Random], [—], [—], [—], [None], [28.8]
   )
-  - BN 是什么？就是把一个 batch 里所有样本的特征拿来算均值和方差，从而做归一化。这样在算某个样本 loss 的时候，其实也看到了其他样本的特征有一定信息泄露。像 MoCo 中就做了一个 shuffle BN 以防止信息泄露。
+  - BN 是什么？就是把一个 batch 里所有样本的特征拿来算均值和方差，从而做归一化。这样在算某个样本 loss 的时候，其实也看到了其他样本的特征，有一定信息泄露。像 MoCo 中就做了一个 shuffle BN 以防止信息泄露。
   - 于是博客作者认为，因为 BN 中有信息泄露，所以可以把 batch 里的其他样本想成隐式的负样本。换句话说，BYOL 其实并不仅是正样本在自己和自己学，它的实际对比任务是：当前正样本的图片，和 BN 产生的平均图片的差别（这和 SwAV 的不用负样本而是聚类中心去对比是相似的）
 - 这时候 BYOL 作者就急了（因为这样他们的工作就没有那么开创了），于是做了一系列实验，把 SimCLR 也拉下水
   #fig("/public/assets/Reading/limu_paper/对比学习串讲/2024-10-05-14-47-46.png")
