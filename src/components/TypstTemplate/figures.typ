@@ -1,9 +1,8 @@
-#import "@preview/fletcher:0.4.4" as fletcher: diagram, node, edge
+#import "@preview/fletcher:0.5.1" as fletcher: diagram, node, edge
 #import "@preview/tablem:0.1.0": tablem
-#import "@preview/lovelace:0.2.0": algorithm, pseudocode-raw, setup-lovelace
-#import "@preview/truthfy:0.3.0": truth-table, truth-table-empty
+#import "@preview/lovelace:0.3.0": pseudocode-list, pseudocode, line-label
+#import "@preview/truthfy:0.4.0": truth-table, truth-table-empty
 #import "@preview/codly:0.2.0": *
-#import "@preview/cetz:0.2.1"
 
 // 插入图片
 #let fig(alignment: center, ..args) = align(alignment, image(..args))
@@ -50,20 +49,27 @@
 #let truth-tbl-empty(alignment: center, ..args) = align(alignment, truth-table-empty(..args))
 
 // 算法框，使用 lovelace 实现
-#let algo(caption: "", body) = {
-  // 去除当以 "[]" 形式传参时 body 中的 "[]"，方法比较笨，轻喷
-  if "text" not in body.fields() {
-    body = body.children
-    body = body.at(1)
-  }
-  algorithm(
-    caption: caption,
-    pseudocode-raw(
-      indentation-guide-stroke: .4pt + aqua,
-      body
-    )
+#let my-lovelace-defaults = (
+  line-numbering: "1",
+  booktabs: true,
+  // stroke: none,
+  hooks: 0.5em,
+  indentation: 1em,
+  booktabs-stroke: 2pt + black,
+)
+#let pseudocode-list = pseudocode-list.with(..my-lovelace-defaults)
+#let algo(title: none, body, ..args) = {
+  pseudocode-list(
+    title: title + h(1fr),
+    body,
+    ..args
   )
 }
+#let comment(body) = {
+  h(1fr)
+  text(size: .85em, fill: gray, sym.triangle.stroked.r + sym.space + body)
+}
+#let no-number = [- #hide([])] // empty line and no number
 
 // 代码块，使用 codly 实现
 #let code(body) = [#body]

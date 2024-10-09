@@ -17,7 +17,6 @@
   )
 
   // 导入 show 规则
-  show: setup-lovelace
   show: checklist.with(fill: luma(95%), stroke: blue, radius: .2em)
   show: shorthand // 导入 math shorthand
   show: codly-init.with()
