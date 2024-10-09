@@ -19,9 +19,10 @@
 #let dm = $d_"model"$
 #let FFN = math.op("FFN")
 
-= Transformer(Attention is All You Need)
-== 创新点
+= Attention is All You Need
+- 时间：2017.6
 
+== 创新点
 #grid(
   columns: 2,
   grid.cell(align: left)[
