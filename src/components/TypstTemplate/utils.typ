@@ -1,7 +1,7 @@
 // 导入本地包
 #import "fonts.typ":*
-#import "/src/components/TypstLocal/admonition/0.1.0/lib.typ": *
-#import "/src/components/TypstLocal/thms/0.1.0/lib.typ": *
+#import "/src/components/TypstLocal/admonition/lib.typ": *
+#import "/src/components/TypstLocal/thms/lib.typ": *
 
 // 导入 preview 包
 // 树、图文包裹、图标、真值表
