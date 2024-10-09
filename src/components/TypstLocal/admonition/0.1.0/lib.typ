@@ -18,8 +18,8 @@
 #let iconbox(
   icon: emoji.info,    // a symbol or an image
   caption: "iconbox",  // title of the box
-  caption_size: 16pt,  // size of the caption
-  size: 12pt,          // size of content
+  caption_size: 12pt,  // size of the caption
+  size: 9pt,          // size of content
   breakable: true,     // whether the box can be broken across pages
   ..args
 ) = {
