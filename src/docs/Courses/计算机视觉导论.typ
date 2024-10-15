@@ -159,11 +159,82 @@ $
 - anti-alisaing
 - 其实基本也都是图形学的内容
 
+== Image magnification & minification
+- 图像放大时基本使用 Interpolation 或者上采样(AI)
+  - Interpolation
+    - Nearest neighbor
+    - Bilinear
+    - Bicubic
+- How to change aspect ratio
+  - 最简单的方法就是在长宽方面进行不同的缩放，但会导致形变
+  - Challenge
+    + Changing aspect ratio causes distortion
+    + Cropping may remove important contents
+  - Solution: Seam Carving for Content-Aware Image Resizing
+    - Basic idea: remove unimportant pixels, and edges are important
+    $ E(I) = |(diff I) / (diff x)| + |(diff I) / (diff y)| $
+    - Find connected path of pixels from top to bottom of which the edge energy is minimal，可以认为就是寻找最短路算法（DP 算法）。然后把这条路的像素扔掉
+    #fig("/public/assets/Courses/CV/2024-10-10-10-17-49.png", width: 70%)
+    #mitex(`\mathbf{M}(i,j)=E(i,j)+\min\big(\mathbf{M}(i-1,j-1),\mathbf{M}(i-1,j),\mathbf{M}(i-1,j+1)\big)`)
+    - seam carving 方法也可以应用于 enlarge image，原理类似
 
-== Image magnification
-- Interpolation
-  - Nearest neighbor
-  - Bilinear
-  - Bicubic
+= Model Fitting and Optimization
+== Optimization
+- 优化的基本范式，与优化基本理论与方法没什么差别
+- 一个有趣的 example: Image deblurring
+  - 已知模糊图像 $Y$ 和卷积核 $F$，通过优化的方法得到去噪后的图像 $X$
+  - 想法是找到清晰的图像 $X$，使得它做模糊处理后与已知的图像 $Y$ 差别尽可能小，于是得到目标函数：
+  $ min_X norm(Y - F*X)_2^2 $
+
+=== Model Fitting
+- 一个经典的例子：Linear Mean Square Error (MSE)
+- 如果假设数据噪声服从*高斯分布*，那么可以与*极大似然估计*联系起来 (Linear MSE = MLE with Gaussian noise assumption)
+  $
+  b_i = a_i^T + n, ~~~ n tilde.op  G(0, sigma^2) \
+  P[(a_i, b_i)|x] = P[b_i - a_i^T x] #sym.prop exp(- (b_i - a_i^T x)^2 / (2 sigma^2)) \
+  P[(a_1, b_1) (a_2, b_2) ... (a_n, b_n)|x] #sym.prop exp(- sum_i (b_i - a_i^T x)^2 / (2 sigma^2)) = exp(- norm(A x - b)_2^2 / (2 sigma^2))
+  $
+
+== Numerical methods
+- 一些问题有 analytical solution，但是大多数问题需要 numerical solution
+- Recap: Taylor expansion
+
+=== 梯度下降法 Gradient Descent
+==== Steepest descent method
+- Advantage
+  + Easy to implement
+  + Perform well when far from the minimum
+- Disadvantage
+  + Converge slowly when near the minimum
+  + Waste a lot of computation
+- Why converge slowly?
+  + Only use first-order derivative
+  + Does not use curvature
+
+==== Newton's method
+- 考虑二阶导数
+- Advantage: fast convergence near the minimum
+- Disadvantage: Hessian requires a lot of computation
+
+==== Gauss-Newton method
+- 使用 Jacobian 矩阵 $J_R^T J_R$ 近似 Hessian 矩阵 $H_F$
+- Advantage: faster than Newton's method
+- Disadvantage: $J_R^T J_R$ 不正定，未必可逆
+
+==== Levenberg-Marquardt method
+$ Delta x = -(J_R^T J_R + lambda I)^(-1) J_R^T R(x_k) $
+- Start quickly(远离目标点时使用最速梯度下降)
+- Converge quickly(接近目标点时近似高斯牛顿法，保证收敛速度快)
+- $J_R^T J_R + lambda I$ 正定，保证高斯牛顿法成立
+
+=== Robust estimation
+- Outliers: 使得最小二乘法受很大影响，它会过度放大偏离较大的误差
+- Huber loss function
+  $ L_"huber" (e) =cases( 1/2 e^2\, |e| =< delta, delta dot |e| - 1/2 delta^2\, |e| > delta) $
+  - 在误差较小时，与 MSE 一样，但是在误差较大时，它的影响会减小（减小 outliers 的影响）
+- RANSAC: Random Sample Concensus
+  - The most powerful method to handle outliers
+  - 主要思想：首先我们知道拟合一条直线只需要两个点，因此首先随机找两个点拟合一条直线，然后检查有多少点符合该直线（点到直线的距离小于一定的阈值，就 count++），一直重复该过程，选择 count 最高的直线。
+
 
 

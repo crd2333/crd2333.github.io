@@ -176,7 +176,13 @@
   }
   ```
 - `exec*()` family
-  - `ls` 的例子
+  - `exec()` 会把 process 的那一块内存清空，然后把新的程序加载进去
+    - 如果新的程序内存要求比原本的大，会“往下扩”（其实是虚拟内存机制）
+  - 可以传递：
+    + path for the executable
+    + command-line arguments to be passed to the executable
+    + possibly a set of environment variables
+  - `ls` 的例子（可以 `strace` 用 syscall 查看进程创建的情况，但是不会显示 `fork`）
   #fig("/public/assets/Courses/OS/2024-10-08-14-50-55.png", width: 80%)
 
 === 进程结束(terminated)
@@ -194,17 +200,130 @@
         // handler is as:void my_handler(int sig){...}
     ```
 - zombie
-  - 当 child 进程结束了，parent 却还没结束，这个 child 就成了 *zombie*
-  - 直到 OS collect garbage 或者 parent 处理
+  - 当 child 进程 terminate 了，这个 child 就成了 *zombie*
+  - 直到 OS collect garbage 或者 parent 调用 OS 来处理
   - parent 进程可以调用 `wait()` 或 `waitpid()` 来获取它的 exit code 并回收
+    - 为什么一定要 OS 回收？因为 child 进程可以回收基本所有东西，但维度 PCB 没有办法 deallocate
+    - 为什么不立即回收？因为 zombie 不会实际消耗 CPU 资源，而只是略微占用一点内存
   - 比如：当 parent 陷入无限循环，而且没有设置 handler 时，child `exit()`，却没有被处理，它就成了 zombie
 - orphan
-  - 当 parent 进程结束了，child 却还没结束，这个 child 就成了 *orphan*
+  - 当 parent 进程 die 了，child 却还没结束，这个 child 就成了 *orphan*
   - 它会被 `init` 进程(or `systemd`, `pid` = 1)收养(`adopted`)
 
-=== Process Scheduling
-- Process scheduler 维护两个 queue
-  + Ready queue: 进程已经准备好了，等待 CPU
-  + Wait queue: 进程等待某个事件发生
+=== Process Switching
+- Process scheduler 维护两种 queue
+  + Ready queue: 进程已经准备好了，等待 CPU（多少个 CPU 就有多少个）
+  + Wait queue: 进程等待某个事件发生，有多种类型每种一个
+  #fig("/public/assets/Courses/OS/2024-10-09-16-43-44.png", width: 80%)
+  - queue 的数据结构跟 ADS 里面有所不同，ADS 里面往往做成 node，包含实际数据；而 OS 这边为了通用性往往就是一个包含 `prev, next` 俩指针的结构，搬到哪都能用
+- Context Switch
+  - 这里的 context 指的就是 registers，因为它们只有一份，所以需要保存
+  - context switch 一定得是在 Kernel Mode，即 privileged，因为它涉及到系统资源、能改 pc
+  + 如果 switch 发生在 kernel mode，就跟实验 2 里做的一样。在 `cpu_switch_to` 把 context 存到相应 PCB 里
+  + 如果 switch 发生在 user mode，还牵涉到 per-thread kernel stack，更确切地说是 pt_regs(user context been saved)。在 `kernel_entry` 时把 context 存到 pt_regs，切换到 kernel stack，然后在 `kernel_exit` 时恢复
+    #fig("/public/assets/Courses/OS/2024-10-09-17-44-58.png")
+  - 思考 `fork()` 为什么能返回两个值(Return new_pid to parent and zero to child)？
+    - 其实是有“两套东西”
+    + 对 parent process，`fork()` 就是一个 syscall，返回值存在 pt_regs 里
+    + 对 child process，其实也是通过 pt_regs，手动把它设为 $0$
+  - When does child process start to run and from where?
+    - When forked, child is READY $->$ context switch to RUN
+    - After context switch, run from `ret_to_fork`
+    - `ret_from_fork` $->$ `ret_to_user` $->$ `kernel_exit` who restores the pt_regs
+- Code through，Linux 进程相关代码的发展史
 
+=== CPU Scheduling
+- Definition
+  - 决定 processes/threads 谁用？用多久？
+  - CPU Scheduling 对系统 performance and productivity 有很大影响
+  - The *policy* is the scheduling strategy，怎么选择下一个要执行的进程
+  - The *mechanism* is the dispatcher，怎样快速地切换到下一个进程
+- CPU-I/O Burst Cycle
+  - I/O-bound process: 主要是等 I/O。大部分的操作都是 I/O-bound 的
+  - CPU-bound process: 主要是等 CPU
+- CPU scheduler 有两种类型
+  + Non-preemptive: 一个进程想跑多久就多久
+  + Preemptive: 当一个进程被另一个进程抢占时，被抢占的进程会被放回 ready queue
+  #note()[
+    + A process goes from RUNNING to WAITING
+      - e.g. waiting for I/O to complete
+    + A process goes from RUNNING to READY
+      - e.g. when an interrupt occurs (such as a timer going off)
+    + A process goes from WAITING to READY
+      - e.g. an I/O operation has completed
+    + A process goes from RUNNING to TERMINATED
+    + A process goes from NEW to READY
+    + A process goes from READY to WAITING
+    - 在非抢占式的情况中，只有第二种情况不会发生。在抢占式的情况中，所有的情况都会发生
+    - Preemptive scheduling is good, since the OS remains in control, but is complex
+  ]
+- Dispatch latency
+  - time it takes for the dispatcher to stop one process and start another to run，这段时间是不做实际工作的
+- Scheduling Objectives(Criteria)
+  + maximize CPU Utilization, Throughput, Turnaround time
+  + minimize Waiting time, Response time
+  - 一些目标相互冲突，e.g. 频繁的 context switches 有助于 Response time，但会降低 Throughput
 
+=== Scheduling Algorithms
++ First-Come, First-Served Scheduling(FCFS)
++ Shortest-Job-First Scheduling(SJF)
++ Round-Robin Scheduling(RR)
++ Priority Scheduling
++ Multilevel Queue Scheduling
++ Multilevel Feedback Queue Scheduling
+- 一般用 Waiting Time, Turnaround Time 来比较，要学会画 Gantt 图和计算（多个 examples）
+- FCFS: 字面意思理解
+- SJF
+  - 分两种，Preemptive 和 Non-preemptive
+  - 基本上就是 ADS 里讲的那种，被证明是 optimal 的
+  - 但在执行进程前，无法得知 burst time（只能预测），所以只存在于理论与比较
+- RR
+  - 每个进程都有一个时间片(quantum)，时间片用完了就换下一个
+  - 优点是简单，缺点是可能会有很多 context switch
+  - 时间片的大小是一个 trade-off，太小会导致频繁的 context switch，太大会导致总 dispatch latency 不可接受
+- Priority
+  - 一个 Problem 是 *Starvation*，即低优先级的进程永远得不到 CPU
+  - 可以用 *priority aging* 来解决，把时间也算到优先级里
+  - Priority 可以与 RR 结合
+- Multilevel Queue Scheduling
+- Multilevel Feedback Queue Scheduling
+  - 根据反馈来调整队列，比如给一个 quantum，如果你用完了，把你往下降
+  #fig("/public/assets/Courses/OS/2024-10-15-14-55-52.png", width: 70%)
+- 怎么样算是 Good Scheduling Algorithm
+  - Few *analytical/theoretical* results are available
+  - *Simulation* is often used
+  - *Implementation* is key
+
+=== Multiple-Processor Scheduling
+- Multithreaded Multicore System
+  #fig("/public/assets/Courses/OS/2024-10-15-15-15-14.png", width: 40%)
+  - 现在大部分是 (b) 架构
+  #fig("/public/assets/Courses/OS/2024-10-15-15-15-56.png", width: 40%)
+  - CPU 中计算单元很快，但是内存访问是很慢的，需要 stall。为了利用这段 stall 的时间，我们就多用一个 thread，在这个 thread stall 时执行另一个 thread （hyperthreading，属于硬件线程，由硬件来调度，不同于 OS 里的 thread）
+- Multiple-Processor Scheduling
+  - Load Balancing
+    - Load balancing attempts to keep workload evenly distributed
+    - Push migration – periodic task checks load on each processor, and if found pushes task from overloaded CPU to other CPUs
+      - core 上工作太多，要推给其他的 core
+    - Pull migration – idle processors pulls waiting task from busy processor
+      - core 上工作太少，就从其他的 core 上拉一些任务过来
+  - Processor Affinity: 有的进程我们想要在一个 core 上跑
+    - Soft affinity – the operating system attempts to keep a thread running on the same processor, but no guarantees
+    - Hard affinity – allows a process to specify a set of processors it may run on
+- Linux Scheduling
+  - Nice command: 数越小，优先级越高
+    - `ps -e -o uid,pid,ppid,pri,ni,cmd`
+  - linux 0.11 源码
+    - Implemented with an array (no queue yet)
+    - Round-Robin + Priority，体现了 aging 思想
+    - 思考各在何处体现
+    - 不足之处：$O(N)$ 的效率，priority 修改的响应性不好
+  - linux-xxx，略
+  - linux 2.6
+    - 实现了 $O(1)$ 的调度
+    - 不好的点在于 policy, mechanism 没有分开，且依赖于 `bsfl` 指令
+  - 后来引入了 Completely Fair Scheduler(CFS)，用 Red-Black Tree 来实现
+
+= Inter-Process Communications(IPCs)
+- 与之对应的 intra-process 表示进程内部
+- 前面我们把进程介绍为独立的单元，互相之间只有 switch，但实际上进程之间因为 Information sharing, Computation speedup, Modularity, Convenience 等原因需要进行通信
