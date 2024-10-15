@@ -31,7 +31,7 @@
 
 === 全局式的SfM(Global Structure-from-Motion)
 - 步骤
-  - 先给定一对图像对(pair)，同样要计算Essential Matrix，然后同样的decompose出来相机的相对运动（Relative Motion，包含：相对旋转矩阵 R 和相对平移矩阵 t）；使用同样的方法，算出所有的图像对的 E和 Motion，比如有n张图，就有个图像对。
+  - 先给定一对图像对(pair)，同样要计算Essential Matrix，然后同样的decompose出来相机的相对运动（Relative Motion，包含：相对旋转矩阵 R 和相对平移矩阵 t）；使用同样的方法，算出所有的图像对的 E 和 Motion，比如有 n 张图，就有 $C_n^2$ 个图像对。
   - 然后根据这些所有的图像对，算出的 Relative Motion，解一个优化问题（称之为：Register all cameras），把所有相机的朝向(Rotation)和中心点坐标(center)一次性的求出来。
   - 最后当然离不开 Bundle Adjustment，因为这才是最后要解的 reprojection error 的 minimize。前面初始化的效果越好，后面Bundle Adjustment 的效果就越好。一般情况下，使用 Global Structure-from-Motion，最后收敛的也就越快。
 - 通过 Essential Matrices 和 Decomposition，算出来相对的旋转 R 、相对的平移 t，怎样把他们放到世界坐标系中，如何把他们 register 到一起，这个就是这一步要解决的问题。这步一般可以分成两步 Rotation Averaging 和 Translation Averaging
@@ -132,7 +132,7 @@
   - 然后提一嘴 RGB-D 相机
 
 #quote(caption: "网上看到的一段话，不是很理解什么意思")[
-  BA和图优化，是把位姿和空间点放在一块，进行优化。特征点非常多，机器人轨迹越走越长，特征点增长的也很快。因此位姿图优化的意义在于：在优化几次以后把特征点固定住不再优化，只当做位姿估计的约束，之后主要优化位姿。
+  #tab BA和图优化，是把位姿和空间点放在一块，进行优化。特征点非常多，机器人轨迹越走越长，特征点增长的也很快。因此位姿图优化的意义在于：在优化几次以后把特征点固定住不再优化，只当做位姿估计的约束，之后主要优化位姿。
 
   也就是说，不要红色的路标点了，只要位姿。位姿里的三角形是位姿，蓝色的线是两个位姿之间的变换。
 

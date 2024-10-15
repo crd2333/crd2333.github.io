@@ -53,8 +53,8 @@
   line-numbering: "1",
   booktabs: true,
   // stroke: none,
-  hooks: 0.5em,
-  indentation: 1em,
+  // hooks: 0.5em,
+  indentation: 1.5em,
   booktabs-stroke: 2pt + black,
 )
 #let pseudocode-list = pseudocode-list.with(..my-lovelace-defaults)
