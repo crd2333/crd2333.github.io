@@ -60,6 +60,7 @@
 #let ep1 = $epsilon_1$
 #let ep2 = $epsilon_2$
 #let ga = $gamma$
+#let Ga = $Gamma$
 #let g1 = $gamma_1$
 #let g2 = $gamma_2$
 #let la = $lambda$
@@ -77,7 +78,8 @@
 #let pn = $pi_n$
 #let pN = $pi_N$
 
-// bold, hat, tilde, arrow letters
+// bold, cal, hat, tilde, arrow letters
+// bold and cal letters
 #let bx = math.bold("x")
 #let by = math.bold("y")
 #let bz = math.bold("z")
@@ -97,6 +99,9 @@
 #let bi = math.bold("i")
 #let bj = math.bold("j")
 #let bk = math.bold("k")
+#let cN = math.cal("N")
+#let cL = math.cal("L")
+#let cD = math.cal("D")
 // letters with hat
 #let hx = $hat(x)$
 #let hy = $hat(y)$

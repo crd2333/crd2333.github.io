@@ -12,15 +12,11 @@
 #import "@preview/pinit:0.2.0": *
 #import "@preview/indenta:0.0.3": fix-indent
 #import "@preview/numbly:0.1.0": numbly
+#import "@preview/drafting:0.2.0": *
 #import "@preview/oxifmt:0.2.1": strfmt
 
 // 假段落
-#let fake_par = style(styles => {
-  let b = par[#box()]
-  let t = measure(b + b, styles)
-  b
-  v(-t.height * 0.9)
-})
+#let fake_par = context{let b=par(box());b;v(-measure(b+b).height)}
 
 // 中文缩进
 #let indent = h(2em)
@@ -30,6 +26,74 @@
 }
 #let tab = indent // alias
 #let notab = noindent // alias
+
+// list, enum 的修复，来自 @OrangeX4(https://github.com/OrangeX4) 的解决方案
+// 解决编号与基线不对齐的问题，同时也恢复了 block width 和 list, enum 的间隔问题
+// Align the list marker with the baseline of the first line of the list item.
+#let align-list-marker-with-baseline(body) = {
+  show list.item: it => {
+    let current-marker = {
+      set text(fill: text.fill)
+      if type(list.marker) == array {
+        list.marker.at(0)
+      } else {
+        list.marker
+      }
+    }
+    context {
+      let hanging-indent = measure(current-marker).width + .6em + .3pt
+      set terms(hanging-indent: hanging-indent)
+      if type(list.marker) == array {
+        terms.item(
+          current-marker,
+          {
+            // set the value of list.marker in a loop
+            set list(marker: list.marker.slice(1) + (list.marker.at(0),))
+            it.body
+          },
+        )
+      } else {
+        terms.item(current-marker, it.body)
+      }
+    }
+  }
+  body
+}
+// Align the enum marker with the baseline of the first line of the enum item. It will only work when the enum item has a number like `1.`.
+#let align-enum-marker-with-baseline(body) = {
+  show enum.item: it => {
+    if not it.has("number") or it.number == none or enum.full == true {
+      // If the enum item does not have a number, or the number is none, or the enum is full
+      return it
+    }
+    let weight-map = (
+      thin: 100,
+      extralight: 200,
+      light: 300,
+      regular: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+      extrabold: 800,
+      black: 900,
+    )
+    let current-marker = {
+      set text(
+        fill: text.fill,
+        weight: if type(text.weight) == int {
+          text.weight - 300
+        } else {
+          weight-map.at(text.weight) - 300
+        },
+      )
+      numbering(enum.numbering, it.number) + h(-.1em)
+    }
+    let hanging-indent = measure(current-marker).width + .6em + .3pt
+    set terms(hanging-indent: hanging-indent)
+    terms.item(current-marker, it.body)
+  }
+  body
+}
 
 // 封装 tree-list，使其无缩进、视为整体且支持根节点；选用这个字体使线段连续
 #let tree-list = (root: "", breakable: false, body) => {

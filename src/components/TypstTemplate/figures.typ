@@ -3,6 +3,7 @@
 #import "@preview/lovelace:0.3.0": pseudocode-list, pseudocode, line-label
 #import "@preview/truthfy:0.4.0": truth-table, truth-table-empty
 #import "@preview/codly:0.2.0": *
+#import "@preview/timeliney:0.1.0": timeline, headerline, group, taskgroup, task, milestone
 
 // 插入图片
 #let fig(alignment: center, ..args) = align(alignment, image(..args))
@@ -67,7 +68,7 @@
 }
 #let comment(body) = {
   h(1fr)
-  text(size: .85em, fill: gray, sym.triangle.stroked.r + sym.space + body)
+  text(size: .85em, fill: gray.darken(50%), sym.triangle.stroked.r + sym.space + body)
 }
 #let no-number = [- #hide([])] // empty line and no number
 

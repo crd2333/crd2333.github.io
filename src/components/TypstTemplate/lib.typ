@@ -32,8 +32,12 @@
   // 设置字体与语言
   set text(font: 字体.宋体, size: 字号.小五, lang: lang)
   set par(first-line-indent: 2em)
-  set list(marker: ([●], [○], [■], [□], [►])) // 设置 bullet list 的 marker，相比默认更像 markdown，另外刻意调大了一点（适合老年人
-  set enum(numbering: numbly("{1}.", "{2:a}.", "{3:i}."), full: true)
+  // 设置 bullet list 和 enum 的 marker，相比默认更像 markdown，另外刻意调大了一点（适合老年人
+  set list(marker: ([●], [○], [■], [□], [►]), tight: false, spacing: .8em)
+  set enum(numbering: numbly("{1}.", "{2:a}.", "{3:i}."), full: true, tight: false, spacing: .8em)
+  // show list.item: set block(width: 100%)
+  // show: align-list-marker-with-baseline
+  // show: align-enum-marker-with-baseline
 
   // 设置标题
   show heading.where(level: 1): it => {
