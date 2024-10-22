@@ -5,6 +5,10 @@
   lang: "zh",
 )
 
+#info()[
+  - 部分参考 #link("https://lhxcs.github.io/note/AI/cv/icv/")[lhxcs 的计算机视觉笔记]
+]
+
 = Introduction
 == What's Computer Vision
 - Computer vision tasks
@@ -236,5 +240,94 @@ $ Delta x = -(J_R^T J_R + lambda I)^(-1) J_R^T R(x_k) $
   - The most powerful method to handle outliers
   - 主要思想：首先我们知道拟合一条直线只需要两个点，因此首先随机找两个点拟合一条直线，然后检查有多少点符合该直线（点到直线的距离小于一定的阈值，就 count++），一直重复该过程，选择 count 最高的直线。
 
+=== Regularization
+- L1-norm, L2-norm
 
+= Image Matching and Motion Estimation
+== Image Matching
+- Main Components of Feature matching
+  - Detection: identify the interest points
+  - Description: extract vector feature descriptor surrounding each interest point
+  - Matching: determine correspondence between descriptors in two views
 
+=== Detection
+- 特征点需要满足独特性（至少要在局部唯一）
+  - 使用一个小的像素窗口去探测像素的变化（用梯度分布来衡量）
+  - 可以用 PCA 算梯度分布的主方向（特征值）
+    + flat: $l1, l2$ are small
+    + edge: $l1 >> l2$ or $l1 << l2$
+    + corner: $l1, l2$ are large, $l1 wave l2$
+  - 为了方便计算，引入 Harris operator
+- Harris operator
+  $ f = frac(l1 l2, l1 + l2) = "determinant"(H)/"tr"(H) $
+  - pipeline:
+    + Compute derivatives at each pixel
+    + Computer matrix $H$ in a Gaussian window around each pixel
+    + Compute corner response $f$
+    + Threshold $f$（阈值过滤）
+    + Find local maxima of response function
+  - 除了独特性之外，我们还希望特征点在图像变换（如光学变换和几何变换）中保持不变
+    - Corner response is invariant w.r.t image translation and rotation, but not scaling
+    #fig("/public/assets/Courses/CV/2024-10-17-10-56-43.png", width: 60%)
+    - 一个解决办法是使用不同尺度的 window，但一般我们固定住窗口大小，而去改变图像的大小，形成一个图像金字塔(image pyramid)，二者效果上是等价的（可以想象成是在三维的体素上去找极值）
+- Blob detector
+  - 除了角点很重要以外，我们也关注斑点
+  - 由于斑点的局部性质（在一个小区域内，且一般是闭合的），在像素上具有比较大的二阶导
+  - 所以我们的步骤是计算图像的拉普拉斯，然后找到局部最大与最小值
+  $ na^2 = frac(diff^2, diff x^2) + frac(diff^2, diff y^2) $
+  - 由于 Laplacian 对噪声比较敏感（实际上求导对噪声都很敏感，更何况二阶导），我们通常使用 Laplacian of Gaussian(LoG) filter 进行处理，即首先对图片作高斯模糊，再计算拉普拉斯算子。由卷积的交换律
+  $ na^2 (f * g) = f * na^2 g $
+  - 同样有 scale 的问题，由高斯分布的方差 $si$ 控制，同样可以用不同尺度来解决，不过这里我们放缩的是 LoG 的 $si$
+  - 但我们调 OpenCV 的时候会发现它用的一半是 DoG，它的思想是用两个相邻 $si$ 的 Guassian 近似 Laplacian（因为我们构建图像金字塔的时候本来就要去做前者）
+  $ na^2 G_si approx G_si_1 - G_si_2 $
+
+=== Description
+- 现在我们已经知道哪些点比较独特，接下来我们要描述这些点（才能匹配），如何做？
+  - 首先很容易想到的就是将特征点以及其周围区域像素值 concat 成一个特征向量，但这对位移、旋转非常敏感(i.e.,not invariant)
+  - 这里我们介绍 SIFT 描述子
+- SIFT(Scale Invariant Feature Transform)
+  - SIFT 使用 patch 的梯度方向分布作为描述子。方向位于 $[0, 2 pi]$ 之间，因此 SIFT 构建一个直方图，来统计在每个区间（例如十等分）有多少个像素。等分个数即为描述子的维度
+  #fig("/public/assets/Courses/CV/2024-10-17-11-35-18.png")
+  - SIFT 对于图像的平移显然不会有影响，而对于旋转，会导致直方图循环平移。但这个情况很好处理：选中最大的分量放在第一个进行平移对齐，称作直方图的归一化(朝向归一化)
+  - 对于 scaling，很显然地，SIFT 描述子本身是 not invariant to scaling 的，但其实 SIFT 不仅包括 Description，也包括 Detection，经过 DoG 处理后已经确定了 scale 的大小（最佳的 $si$），所以此时不用考虑 scale 的影响
+  - Properties of SIFT: Extraodinarily robust matching technique
+    + Can handle changes in viewpoint
+    + Can handle significant changes in illumination
+    + Fast and efficient-can run in real time
+  - SIFT algorithm
+    + Run DoG detector: find maxima in location/scale space
+    + Find dominate orientation
+    + For each $(x, y, "orientation")$, create descriptor
+
+=== Matching
+- 有了描述子之后，我们要做的就是将描述相似的特征点匹配起来
+  - 简单的思路就是计算两个描述子向量之间的距离，并与最小的匹配，但会造成有歧义的分配
+  #fig("/public/assets/Courses/CV/2024-10-17-11-49-36.png", width: 70%)
+  - 两种传统解决办法
+    + Ratio test: $norm(f1 - f2)/norm(f1-f2')$，容易得知，ambigous matches 会使得这个值比较大
+    + Mutual nearest neighbour: 如果 $f1$ 到 $f2$ 匹配正确的话，对 $f2$ 寻找最佳匹配也应该是 $f1$.
+- Deep learning for feature matching
+  - 表现比传统方法好得多
+  - Example: SuperPoint
+
+== Motion Estimation
+- Motion estimation problems
+  - Feature-tracking
+    - 给出两帧画面，估计特征点的运动方向
+  - Optical flow
+    - Recover image motion at each pixel
+    - Output: dense displacement field (optical flow)
+  - 二者的主要区别在于 feature tracking 仅限于某些特征点；而 optical flow 估计的是整张图片。但二者使用的方法是一样的：Lucas-Kanade method
+- LK 算法的三个主要假设和能推出的方程:
+  + brightness constancy: same point looks the same in every frame
+    $ I(x,y,t) = I(x+u,y+v,t+1) $
+  + small motion: points do not move very far
+    $ 0 approx I(x+u,y+v,t+1) - I(x,y,t) approx I_x u + I_y v + I_t, " i.e. " na I dot [u,v]^T = -I_t $
+  + spatial coherence: points move like their neighbours。如果使用 $5 times 5$ 的窗口，可以得到 $25$ 个方程
+    $ mat(I_x (p_1), I_y (p_1); dots.v, dots.v; I_x (p_25), I_y (p_25)) dot vec(u,v) = - vec(I_t (p_1), dots.v, I_t (p_25)) => A d = b $
+- 这时我们就可以使用最小二乘法来求解 $u,v$，它的解 given by $(A^T A) d = A^T b$，即
+  $ mat(Si I_x I_x, Si I_x I_y; I_x I_y, I_y I_y) vec(u,v) = - vec(Si I_x I_t, Si I_y I_t) $
+  - 当 $A^T A$ 可逆且两个特征值不能太小的时候，该方程有解，这个条件和之前介绍的 Harris corner detector 的条件是一样的
+  - 或者说，纹理很丰富，变化很大的角点才有解。反过来，Low Texture Region 和 Edge Region 时会出现问题
+- 另外，当不符合上述三个假设时，LK 算法也会出现问题
+  - 不满足 small motion 时

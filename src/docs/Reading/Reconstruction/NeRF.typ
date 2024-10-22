@@ -1,9 +1,23 @@
+---
+order: 3
+---
+
 #import "/src/components/TypstTemplate/lib.typ": *
 
 #show: project.with(
   title: "NeRF",
   lang: "zh",
 )
+
+#let bo = $bold(o)$
+#let bxi = $bold(xi)$
+#let bnu = $bold(nu)$
+#let bK = $bold(K)$
+#let bI = $bold(I)$
+#let bT = $bold(T)$
+#let bP = $bold(P)$
+#let batch_size = math.text("batch_size")
+#let br = math.bold("r")
 
 = NeRF
 - NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis
@@ -40,14 +54,12 @@
   - 然而，基于图像重投影的基于梯度的 mesh 优化通常很困难，可能是因为局部最小值或缺失的景观部分条件太差了。此外，该策略需要在优化之前提供模板网格作为初始化，这通常不适用于无约束的现实世界场景
 - 另一类方法使用 volumetric representations，能表示复杂的形状和材料，非常适合基于梯度的优化，并且比基于 mesh 的方法产生的视觉干扰更少
   - 早期的体素方法使用观测到的图像来直接给体素网格上色
-  - 近期，一些方法使用多个场景的大型数据集来训练深度网络，从一组输入图像中预测采样的体素表示，然后使用 alpha-compositing 或沿光线学习的合成 来在测试时渲染新的视图。其他工作针对每个特定场景优化 CNN 和采样体素网格的组合，使得 CNN 可以补偿来自低分辨率体积网格的离散化伪影，或者允许预测的体素网格根据输入时间而变化。虽然这些体积技术在新视图合成方面取得不错的结果，但它们扩展到更高分辨率图像的能力受到了限制，因为离散采样导致时间和空间复杂度高，而渲染更高分辨率的图像需要对 3D 空间进行更精细的采样
+  - 近期，一些方法使用多个场景的大型数据集来训练深度网络，从一组输入图像中预测采样的体素表示，然后使用 alpha-compositing 或沿光线学习的合成 来在测试时渲染新的视图。其他工作针对每个特定场景优化 CNN 和采样体素网格的组合，使得 CNN 可以补偿来自低分辨率体积网格的离散化 artifacts，或者允许预测的体素网格根据输入时间而变化。虽然这些体积技术在新视图合成方面取得不错的结果，但它们扩展到更高分辨率图像的能力受到了限制，因为离散采样导致时间和空间复杂度高，而渲染更高分辨率的图像需要对 3D 空间进行更精细的采样
   - 本文提出的方法通过在 MLP 的参数中编码连续 volume 来规避这个问题，这不仅产生比先前体积方法更高质量的渲染，而且只需要更小的存储成本
 - 注：某种程度上，NeRF 建模了视觉成像机理，更接近视觉世界本质
 #fig("/public/assets/Reading/Reconstruction/NeRF/2024-10-13-17-11-43.png", width: 70%)
 
 == Method
-#let batch_size = math.text("batch_size")
-#let br = math.bold("r")
 - 这里原文分了好多章 Neural Radiance Field Scene Representation, Volume Rendering with Radiance Fields, Optimizing a Neural Radiance Field(Positional encoding & Hierarchical volume sampling)，这里将其整合到一起进行理解
 - 整个任务的输入和输出
   - 输入：给定静止场景下的若干张图片
@@ -60,7 +72,7 @@
   - 模型是 8 层的 MLP，但有两个
 - 整个任务的输入输出和模型的输入输出并不一致，NeRF 的理解难点不在模型本身而在于前后处理，整个流程的 Pipeline 如下：
   - 前处理：
-    - 将图片中的每个像素，通过相机模型找到对应的射线
+    - 将图片中的每个像素，通过相机模型找到对应的射线，共 $#batch_size$ 条射线
     - 在每条射线上进行采样，得到 $64$(N_samples) 个粒子
     - 对 $#batch_size * 64$ 个粒子进行位置编码
     - 位置坐标为 63D 和方向向量为 27D
@@ -82,7 +94,7 @@
   - 输入图片如何得到这些粒子？
     - 训练时，一张图片（或者多个图片）采样 $#batch_size = 1024$ 个像素
     - 从图片和图片对应的相机位姿计算射线，$1024$ 个像素对应 $1024$ 条射线
-      - $bold(r)(t) = bold(o) + t bd$，从相机位姿得知 $bold(o)$ 和 $bd$
+      - $bold(r)(t) = bo + t bd$，从相机位姿得知 $bo$ 和 $bd$
     - 从射线上采样粒子
       - $t=2 wave 6$ 之间均匀采样（或者如果已知射线上的 CDF，就重要性采样），得到 $"N_samples" = 64$ 个粒子
     - 共 $1024*64$ 个粒子，以 batch 形式输入模型
@@ -165,26 +177,3 @@
   + 通过位置编码和 hierarchical volume sampling 提高了模型的性能
 + 下一步呢？有什么工作可以继续深入？
   - 速度优化，泛化性，动态场景，可解释性，视角需求数等
-
-== 进一步的论文（略读）
-- Faster Inference & training
-  + AutoInt: Automatic Integration for Fast Neural Volume Rendering(2021)
-  + KiloNeRF: Speeding up Neural Radiance Fields with Thousands of Tiny MLPs(2021)
-  + Direct Voxel Grid Optimization: Super-fast Convergence for Radiance Fields Reconstruction(2022)
-    - 通过体素网格低密度初始化、插值后激活等训练策略直接优化体素表达的NeRF密度场与颜色特征场，实现分钟级别的训练收敛。
-  + InstantNGP(2022.7)
-  + TensoRF: Tensorial Radiance Fields(2022)
-  + MobileNeRF(2023.6)
-  + Plenoxels(2022)
-- Compositionality & Multiscale
-  + NeRF++: Analyzing and Improving Neural Radiance Fields(2020)
-  + Mip-NeRF: A Multiscale Representation for Anti-Aliasing Neural Radiance Fields(2021)
-- Generalization
-  + GRAF: Generative Radiance Fields for 3D-Aware Image Synthesis(2020)
-  + GIRAFFE: Representing Scenes as Compositional Generative Neural Feature Fields(2021)
-
-
-=== GRAF
-- 参考
-  + #link("https://zhuanlan.zhihu.com/p/388136772")[NeRF 与 GAN 碰撞出的火花 —— 从 CVPR 2021 最佳论文：GIRAFFE 读起（一）]
-  + #link("https://zhuanlan.zhihu.com/p/384521486")[从NeRF -> GRAF -> GIRAFFE，2021 CVPR Best Paper 诞生记]
