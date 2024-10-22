@@ -10,8 +10,8 @@ order: 1
 )
 
 #info()[
-  1. Rearranged based on #link("https://github.com/Zhang-Each/CourseNoteOfZJUSE/tree/master/DBS%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F")[Zhang Each's GitHub repository]
-  2. 加入了#link("https://note.hobbitqia.cc/DB")[大 Q 老师笔记]的内容和自己上课的理解
+  1. 在 #link("https://github.com/Zhang-Each/CourseNoteOfZJUSE/tree/master/DBS%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F")[Zhang Each's GitHub repo] 前辈笔记的基础上重写
+  2. 加入了 #link("https://note.hobbitqia.cc/DB")[hobbitqia 的笔记] 的内容和自己上课的理解
 ]
 
 #let null = math.op("null")

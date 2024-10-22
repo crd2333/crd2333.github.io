@@ -71,11 +71,11 @@
     "for any axis: "~~~ upright(R) = E cos theta + (1 - cos theta) mat(k_(x) ; k_(y) ; k_(z)) (k_(x), k_(y), k_(z)) + sin theta mat(0, -k_(z), k_(y) ; k_(z), 0, -k_(x) ; -k_(y), k_(z), 0)
   $
 - 视图/相机变换(View)
-  - 也被叫做 ModelView transformation，因为对模型也要做（保持相对关系不变）
+  - 也被叫做 ModelView transformation，因为对模型也要做（保持相对关系不变），我们要把整个世界变换到相机坐标系(View Reference Coordinate System)下
   - 定义相机位姿（SLAM 中的外参）：position, lookat, up
-    - 看起来有 $9$ 个参数，实际上是 $6$ 个自由度，因为后两个方向可以用叉乘合并表示
+    - 看起来有 $9$ 个参数，实际上是 $6$ 个自由度(6-DOF)，因为后两个方向可以用叉乘合并表示
     - 一般把相机转到原点，看向(*gaze at*) $-z$，up direction(*top*) 为 $y$ 轴
-  - 先平移，再旋转($g$ to $-Z$, $t$ to $Y$, $(g times t)$ to $X$)
+  - 先平移对齐远点，再旋转对齐轴($g$ to $-Z$, $t$ to $Y$, $(g times t)$ to $X$)
   $
     T_"view" = mat(1,0,0,-x_e;0,1,0,-y_e;0,0,1,-z_e;0,0,0,1), ~~~~~~~ R_"view" = mat(x_gt, y_gt, z_gt, 0; x_t, y_t, z_t, 0; x_(-g), y_(-g), z_(-g), 0; 0, 0, 0, 1) =^("typically") mat(1,0,0,0;0,1,0,0;0,0,1,0;0,0,0,1) \
     M_"view" = R_"view" times T_"view"
@@ -93,6 +93,7 @@
       M_"ortho" = mat(2/(r-l), 0, 0, 0; 0, 2/(t-b), 0, 0; 0, 0, 2/(n-f), 0; 0, 0, 0, 1) mat(1, 0, 0, -(r+l)/2; 0, 1, 0, -(t+b)/2; 0, 0, 1, -(n+f)/2; 0, 0, 0, 1) = mat(2/(r-l), 0, 0, -(r+l)/(r-l); 0, 2/(t-b), 0, -(t+b)/(t-b); 0, 0, 2/(n-f), -(n+f)/(n-f); 0, 0, 0, 1)
     $
   - 透视投影（近大远小）
+    - PRP: Projection Reference Point = Eye position
     - 如何做？从理解的角度看，首先在远平面上挤(squish)一下，然后做正交投影，也就是分为两步
     - 这里的推导很妙，利用了两个性质：近平面的点不会发生变化；远平面的点 z 的值不会发生变化
     $
@@ -128,7 +129,9 @@
 #hline()
 
 - 屏幕空间
-  - *视口变换*：（暂时忽略 z 轴）将$[-1,1]^2$变换到屏幕空间的矩阵 $ M_"viewport"=mat(w/2,0,0,w/2; 0,h/2,0,h/2; 0,0,1,0; 0,0,0,1) $
+  - *视口变换*：（暂时忽略 z 轴）将$[-1,1]^2$变换到屏幕空间的矩阵
+    - 一是要考虑屏幕的宽高比，二是要考虑将坐标系原点移到左上角
+  $ M_"viewport"=mat(w/2,0,0,w/2; 0,h/2,0,h/2; 0,0,1,0; 0,0,0,1) $
 - 显示方式
   + Cathode Ray Tube (CRT)：电子束扫描，优化——隔行扫描
   + Frame Buffer：存储屏幕上每个像素的颜色值

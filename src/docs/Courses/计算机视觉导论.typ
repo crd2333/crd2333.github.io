@@ -18,7 +18,6 @@
   Image recognition 图像识别, object detection 物体识别, image segmentation 图像分割, action recognition 动作识别, deep learning 深度学习, ……
 - Image synthesis 图像合成
   Colorization 着色, super-resolution 超采样, debluring 去模糊, HDR 合成, panorama stitching 全景拼接, free-viewpoint rendering 自由视角渲染, GANs 生成对抗网络, ……
-
 - 我们人类看到的是图像，而计算机看到的是像素值
   - computers can be better at computing
   - humans are better at understanding
@@ -80,12 +79,12 @@ $
 
 == Geometric image formation
 - 透视投影
-#fig("/public/assets/Courses/CV/2024-09-20-17-00-54.png")
+#fig("/public/assets/Courses/CV/2024-09-20-17-00-54.png", width: 70%)
 - 引入齐次坐标，将投影表示为线性变换
 $
 mat(f,0,0,0;0,f,0,0;0,0,1,0) vec(x,y,z,1) = vec(f x,f y,z) #sym.tilde.equiv vec(f x/z, f y/z, 1)
 $
-#fig("/public/assets/Courses/CV/2024-09-19-11-41-05.png")
+#fig("/public/assets/Courses/CV/2024-09-19-11-41-05.png", width: 70%)
 - 在透视投影中，直线仍然是直的，但长度和角度丢失了。深度信息部分丢失，虽然近大远小，但同一个图像对应无穷多三维形状
 - Vanishing points & Vanishing lines
   - 铁路汇聚的尽头就是消失点；两个消失点的连线就是消失线
@@ -97,7 +96,7 @@ $
   - Solution: 取景器(view camera)，镜头相对胶片可以移动
   - The distortion is not due to lens flaws.
 - 径向失真 Radial distortion
-  #fig("/public/assets/Courses/CV/2024-09-20-19-40-21.png")
+  #fig("/public/assets/Courses/CV/2024-09-20-19-40-21.png", width: 60%)
   - 由现实镜头的非理想性引起，对于穿过透镜边缘的光线更为明显。
   - 分为桶形畸变(barrel distortion)和枕形畸变(pin cushion distortion)
 - Orthographic projection 正交投影
@@ -146,7 +145,7 @@ $
 === Fourier Transform
 - 傅里叶变换本质上是把函数与不同频率的三角函数做内积，得到它在不同频率下的分量
 - 即：用不同频率的正余弦函数加权表示原函数
-  #fig("/public/assets/Courses/CV/2024-09-26-11-49-09.png")
+  #fig("/public/assets/Courses/CV/2024-09-26-11-49-09.png", width: 70%)
 - PPT 里展示了一些常见的信号的傅里叶变换
 
 === Signal & Frequency
@@ -319,15 +318,134 @@ $ Delta x = -(J_R^T J_R + lambda I)^(-1) J_R^T R(x_k) $
     - Output: dense displacement field (optical flow)
   - 二者的主要区别在于 feature tracking 仅限于某些特征点；而 optical flow 估计的是整张图片。但二者使用的方法是一样的：Lucas-Kanade method
 - LK 算法的三个主要假设和能推出的方程:
-  + brightness constancy: same point looks the same in every frame
+  + *brightness constancy*: same point looks the same in every frame
     $ I(x,y,t) = I(x+u,y+v,t+1) $
-  + small motion: points do not move very far
+  + *small motion*: points do not move very far
     $ 0 approx I(x+u,y+v,t+1) - I(x,y,t) approx I_x u + I_y v + I_t, " i.e. " na I dot [u,v]^T = -I_t $
-  + spatial coherence: points move like their neighbours。如果使用 $5 times 5$ 的窗口，可以得到 $25$ 个方程
+  + *spatial coherence*: points move like their neighbours。如果使用 $5 times 5$ 的窗口，可以得到 $25$ 个方程
     $ mat(I_x (p_1), I_y (p_1); dots.v, dots.v; I_x (p_25), I_y (p_25)) dot vec(u,v) = - vec(I_t (p_1), dots.v, I_t (p_25)) => A d = b $
 - 这时我们就可以使用最小二乘法来求解 $u,v$，它的解 given by $(A^T A) d = A^T b$，即
   $ mat(Si I_x I_x, Si I_x I_y; I_x I_y, I_y I_y) vec(u,v) = - vec(Si I_x I_t, Si I_y I_t) $
   - 当 $A^T A$ 可逆且两个特征值不能太小的时候，该方程有解，这个条件和之前介绍的 Harris corner detector 的条件是一样的
   - 或者说，纹理很丰富，变化很大的角点才有解。反过来，Low Texture Region 和 Edge Region 时会出现问题
-- 另外，当不符合上述三个假设时，LK 算法也会出现问题
-  - 不满足 small motion 时
+- 再另外，当不符合上述三个假设时，LK 算法*也*会出现问题
+  - *Brightness constancy* is not satisfied
+  - The motion is *not small*
+  - A point does *not* move *like its neighbors*
+- 对于不满足 small motion 的情况（比如说特征点实际上移动了八个像素），我们有方法可以解决 —— *降采样*！
+  - 一个直观的想法就是将图片缩小到原来的八分之一，在缩小后的图片中就满足 small motion 了，处理之后再放大回去。缺点就是在缩小图片的过程中会丢失信息，这样图像移动距离的精度就无法保证
+  - 一个想法就是使用*像素金字塔*(*Coarse-to-fine*)。其中金字塔一是时间为 $t$ 时的图像,金字塔二是时间为 $t + 1$ 时的图像。在金字塔上逐层估计,并逐步细化。例如先估计运动距离小于一个像素的最上层图像，根据此估计在金字塔一中的第二层恢复出运动（做一个补偿），再与金字塔二进行比较，此时特征点移动的距离经过较为准确的估计后也小于一个像素，以此类推
+  #fig("/public/assets/Courses/CV/2024-10-24-10-11-11.png", width: 80%)
+
+#hline()
+Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 Deep learning for optical flow
+
+#info(caption: "Takeaways")[
+  - Feature matching
+    - Detector: Harris corner detector, LoG, DoG
+    - Descriptor: SIFT …
+    - Matching: ratio test
+    - Invariance
+  - Motion estimation
+    - Feature tracking
+    - Optical flow
+    - Lucas-Kanade
+      - Three assumptions
+  - Both feature matching and motion estimation are called correspondence problems
+]
+
+= Image stitching
+- 图像拼接，比如全景图、VR 等
+- 核心问题是，给定两张图片，怎么把它们做一定的几何变换(warping)，然后把它们拼接在一起(stitching)
+
+== Image warping
+- 与 lec3 介绍的 image filtering 相比较，filtering 改变的是图像的像素值(intensity)，而 warping 改变的是图像的形状(shape)
+
+== Parametric global warping
+- 参数化全局变形，即图像的每一个坐标都遵循同一个变换函数
+  $ p' = T(p) $
+  - 比如 translation, rotation, aspect
+  - 这个 $T$ 可以用 matrix 来描述
+  - 使用非齐次坐标系的矩阵，都可以叫做*线性变换*，但前面说了不能描述平移(translation)，为此引入其次坐标
+  - 仿射变换：Affine map = linear map + translation，并且矩阵最后一行是 $[0, 0, 1]$
+  - 如果不是，那就称为 perspective transformation 投影变换，或者叫单应变换(Homography)
+
+== Projective Transformation(Homography)
+- Homography \
+  $ vec(x'_i, y'_i, 1) approx mat(h_00, h_01, h_02; h_10, h_11, h_12; h_20, h_21, h_22) vec(x_i,yi,1) $
+  - $9$ 个系数但自由度为 $8$，因为在其次坐标系里，对整个矩阵乘以一个非零常数不会改变结果
+- 在什么情况下两张图片的 transformation 是 homography？
+  - Camera rotated with its center unmoved
+    #fig("/public/assets/Courses/CV/2024-10-24-10-46-00.png", width: 50%)
+  - Camera center moved and the scene is a plane
+    - 比如，投影仪的结果，在教室左边和右边的人看来还是一样的
+- Summary of 2D transformations
+  #fig("/public/assets/Courses/CV/2024-10-24-10-54-37.png", width: 70%)
+
+== Implementing image warping
+- 或许我们会想，实现 warping 不是很容易吗，只要把当前图片的坐标值根据变化函数映射到另一个坐标上就行了
+- 但是考虑一个问题：当前的像素坐标映射后不一定是整数（可以理解为像素值是存放在格点上的，映射后的像素位置不一定在格点上）
+- 所以这里我们采取逆变换，即对于每一个需要找的像素点，去找变换前的坐标，同样，大多数时候不会是整数，这时候可以用周围的像素进行插值得到结果
+
+== Image stitching
+=== compute transformation
+- 现在我们的问题就是给定两张图片, 如何计算出变换矩阵？可以采用如下的方法(DLT)
+- 这一块大多是矩阵和公式，懒得打了，看 PPT 吧
+- 核心思路就是利用两张图的特征点，列方程组，求解优化问题
+- 对于 outliers
+  - Recap the idea of RANSAC:
+    - All the inliers will agree with each other on the translation vector;
+    - The outliers will disagree with each other (RANSAC only ha guarantees if there are $< 50%$ outliers)
+  #q[All good matches are alike; every bad match is bad in its own way. ——Tolstoy via Alyosha Efros]
+
+#info(caption: "Summary for image stitching")[
+  - Input images
+  - Feature matching
+  - Compute transformation matrix with RANSAC
+  - Fix image 1 and warp image 2.
+]
+
+=== Panoramas
+- 对于全景，我们处理的是多张图片的拼接
+  - 最朴素的方法就是取最中间的图片作为参考，其它所有的图片与中间那张对齐
+  - 一个问题是，如果投影到屏幕上，会使得边缘图像的形变很明显 #h(1fr)
+  #fig("/public/assets/Courses/CV/2024-10-24-11-31-02.png", width: 70%)
+- Cylindrical panoramas
+  #fig("/public/assets/Courses/CV/2024-10-24-11-36-52.png", width: 80%)
+  - How to compute the transformation on cylinder?
+    - A rotation of the camera is a translation of the cylinder! 相机的旋转在柱面上是平移
+- Assembling the panorama
+  - 在柱形投影的基础上还是会出现问题，就是误差的积累，导致漂移
+  #fig("/public/assets/Courses/CV/2024-10-24-11-39-23.png", width: 70%)
+  - 我们希望整体误差的和为 $0$，一个解决办法就是将最后一张图和第一张图之间也进行个约束
+  #fig("/public/assets/Courses/CV/2024-10-24-11-44-52.png", width: 70%)
+- 不过，最终得到的全景图还是会有一些问题，比如直线变弧形、无法应对运动场景等
+
+= Structure from Motion
+- Recover *camera poses* and *3D structure* of a scene
+- SfM's extension: SLAM
+  - 二者的区别在于，SLAM 更注重实时性，而且可以有额外的传感器输入
+- 需要解决的几个关键问题
+  - 相机是如何将三维坐标点映射到图像平面上的？(camera model)
+  - 如何计算相机在世界坐标系下的位置和方向?(camera calibration and pose estimation)
+  - 如何从图像中重建出不知道的三维结构？(structure from motion)
+
+== Camera Model
+#fig("/public/assets/Courses/CV/2024-10-24-11-59-15.png")
+- 这整个过程可以总结为三个步骤：
+  + 坐标系变换:将世界坐标系的点变换到相机坐标系
+  + 透视投影：将相机坐标系的点投影到像平面上
+  + 成像平面转化为像素平面：完成透视投影后我们得到的坐标单位是长度单位（毫米、米等），但是计算机上表示坐标是以像素为基本单元的，这就需要我们进行一个转化
+  - 如果读者对 CG 有所了解的话，就对应于 MVP 里的视图变换 View 和投影变换 Projection，以及视口变换 Viewport
+- 而这一系列过程可以定义为两个矩阵（两次变换）:
+  + 外参矩阵(Extrinsic Matrix): 坐标系变换
+  + 内参矩阵(Intrinsic Matrix): 透视投影与转化为像素平面
+
+
+
+
+
+
+
+
+

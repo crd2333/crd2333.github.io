@@ -5,7 +5,11 @@
   lang: "zh",
 )
 
-- 感觉 #link("https://note.hobbitqia.cc/OS/")[大 Q 老师的笔记] 比较好，自己随便记记算了
+#info()[
+  - 感觉 #link("https://note.hobbitqia.cc/OS/")[hobbitqia 的笔记] 比较好，自己简单记记
+  - 还有 #link("https://note.isshikih.top/cour_note/D3QD_OperatingSystem/")[修佬的笔记]，虽然老师不一样
+]
+
 
 = Introduction
 - 复习计组的东西
@@ -41,7 +45,7 @@
   + I/O Management
   + Protection and Security
 
-= OS Structures
+= Structures
 - 操作系统的定义
   - 狭义上来说，只有与硬件资源直接沟通的内核才叫 OS
   - 但这样 Android（底层是 linux）、鸿蒙等就不算了，因此从广义上来说，一些运行在 user mode 上的 system services 也算 OS（比如，GUI、batch、command line）
@@ -232,7 +236,226 @@
     - `ret_from_fork` $->$ `ret_to_user` $->$ `kernel_exit` who restores the pt_regs
 - Code through，Linux 进程相关代码的发展史
 
-=== CPU Scheduling
+
+= Inter-Process Communications(IPCs)
+- 与之对应的 intra-process 表示进程内部
+- 前面我们把进程介绍为独立的单元，互相之间只有 switch，保护得太好了。但实际上进程之间因为 Information sharing, Computation speedup, Modularity, Convenience 等原因需要进行通信
+- Multiprocess Architecture example – Chrome Browser
+  - 谷歌浏览器实际上是 3 中多线程 —— Browser, Render, Plugin，分别负责用户交互、渲染、插件
+- Models of IPC
+  + *Shared memory*
+  + *Message passing*
+  + Signal
+  + Pipe
+  + Client-Server Communication: Socket, RPCs, Java RMI
+  #fig("/public/assets/Courses/OS/2024-10-16-16-38-32.png", width: 50%)
+- Message-passing
+  + 高开销，每次操作都要 syscall
+  + 有时对用户来说很麻烦，因为代码中到处都是send/recv操作
+  + 相对来说 OS 上容易实现
+- Shared memory
+  + 低开销，只需要初始化时少量的 syscall；对交换大量数据很有用
+  + 对用户来说更方便，因为我们习惯于简单地从RAM读/写
+  + 相对来说 OS 上更难实现
+- 进程需要建立共享内存区域
+  - 每个进程创建自己共享内存段，然后其它进程可以将其 attach 到自己的地址空间
+    - 注意，这与多线程的核心内存保护理念背道而驰
+  - 进程通过读/写共享内存区域进行通信，他们自己负责“不踩到对方的脚趾”，操作系统根本不参与
+  - e.g. POSIX Shared Memory
+  - 存在问题：不安全。任何人拿到 share_id 都可以把共享内存 attach 到自己进程上，可以观察到其他进程的数据、甚至做 DOS 攻击
+  - 而且很 cubersome，会发生各种 error 需要处理，现在使用不多
+
+== Message Passing
+- Two fundamental operations:
+  - send: to send a message (i.e., some bytes)
+  - recv: to receive a message
+- If processes P and Q wish to communicate they
+  - establish a communication “link” between them
+  - This “link” is an abstraction that can be implemented in many ways (even with shared memory!!)
+  - place calls to send() and recv()
+  - optionally shutdown the communication “link”
+- Implementation of communication link
+  - Physical:
+    + Shared memory
+    + Hardware bus
+    + Network
+  - Logical:
+    + Direct or indirect
+      - Direct: 一个链接与且只与一对通信进程相关联，一共需要 $C_n^2$
+      - Indirect: 有一个 mailbox，发信息相当于发给一个 mailbox。如果有多个进程，我们需要确定是由哪个进程接收信息
+    + Synchronous or asynchronous
+      - Synchronous: 发信息时，如果接收者没收到信息，就堵塞着不走；收信息时，如果发送者没有发送信息，就堵塞着不走
+      - Asynchronous: Non-blocking is considered asynchronous
+      - 异步效率更高，同步时效性更高。
+        - Automatic or explicit buffering
+    + Automatic or explicit buffering
+      - Zero capacity - no messages are queued on a link. Sender must wait for receiver
+      - Bounded capacity - finite length of n messages. Sender must wait if link full.X
+      - Unbounded capacity - infinite length. Sender never waits
+
+== Signals
+- 略
+
+== Pipes
+- 充当允许两个进程通信的管道
+- 问题：
+  - 沟通是单向的还是双向的？
+  - In the case of two-way communication, is it half or full-duplex?
+  - 通信过程之间必须存在关系（即父子关系）吗？
+  - 这些管道可以通过 network 使用吗？
+- Ordinary pipes —— 不能从创建它的进程外部访问。通常，父进程创建一个管道，并使用它与它创建的子进程进行通信
+  - 没有名字，只能通过 `fork()` 来传播
+  - Producer writes to one end (the *write-end* of the pipe)
+  - Consumer reads from the other end (the *read-end* of the pipe)
+  #fig("/public/assets/Courses/OS/2024-10-16-17-05-47.png", width: 50%)
+  - 注意 fd[0] 是 read-end，fd[1] 是 write-end（对于双方都是）
+  - Windows calls these anonymous pipes
+- Named pipes —— 可以在没有父子关系的情况下访问
+  - 可以把名字通过网络/文件传播，这样就能交互。（可以使用 mkfifo 创建 named pipes）
+- UNIX Pipes
+  - In UNIX, a pipe is mono-directional. 要实现两个方向一定需要两个 pipe
+  - e.g. `ls | grep foo`，创建了两个进程，一个 `ls` 一个 `grep`，`ls` writes on the write-end and `grep` reads on the read-end
+
+== Client-Server Communication
+- 广义上的 IPC，因为是跑在两个物理机器上的交互。
+  - Sockets
+  - RPCs: 所有的交互都是和 stub 通信，stub 会和远端的 server 通信。存在网络问题，如丢包
+  - Java RMI: RPC in Java
+- 略
+
+= Threads
+== Thread Concept
+- 回顾，process = code(text) section + data section + pc + registers + stack + heap
+- How can we make a process faster?
+  - Multiple execution units with a process
+  #fig("/public/assets/Courses/OS/2024-10-16-19-42-10.png", width: 80%)
+- Thread's definition: a basic unit of execution within a process
+  - 当我们提出 thread 概念后，不分线程的单个进程就视为 single threaded process
+  #fig("/public/assets/Courses/OS/2024-10-16-19-42-26.png", width: 60%)
+  - 每个 thread 有：
+    + thread ID
+    + program counter
+    + register set
+    + Stack
+  - 与同一个 process 的 threads 共享：
+    + code section
+    + data section
+    + the heap (dynamically allocated memory)
+    + open files and signals
+- Advantages of Threads
+  - Economy
+    - Creating a thread is cheap: 如果已经有了一个线程，创建新的线程只需要给它分配一个栈。code, data, heap 都已经在内存里分配好了
+    - Context switching between threads is cheap: no need to cache flush
+  - Resource sharing
+    - Threads naturally share memory
+    - Having concurrent activities in the same address space is very powerful
+  - Responsiveness
+    - 如在 web server 中，一个线程在等待 I/O，当有请求来时就再分配一个线程去处理。（进程也可以，但是代价更大）
+  - Scalability
+    - multi-core machine
+- Drawbacks of Threads
+  - Weak isolation between threads: 如果有一个线程挂了，那么整个进程都会出错
+  - Threads may be more memory-constrained than processes: threads 受限于 process 的空间，但在 64-bit 架构上不再是问题（？）
+- Typical challenges of multi-threaded programming
+  + Deal with data dependency and synchronization
+  + Dividing activities among threads
+  + Balancing load among threads
+  + Split data among threads
+  + Testing and debugging
+
+== User Threads vs. Kernel Threads
+- User Space 支持 threads 设计，Kernel Space 不一定，但大多数现代 OS 都支持
+- Many-to-One Mode
+  - 好处是在于易于实现，kernel 不用管你上层怎么干的
+  - 缺点：内核只有一个线程，无法发挥 multi-core 的优势；一旦一个线程被阻塞，其他线程也会被阻塞
+  #fig("/public/assets/Courses/OS/2024-10-22-13-35-06.png", width: 50%)
+- One-to-One Mode
+  - 优点是消除了 Many-to-One 的两个毛病，但缺点是创建开销大（但现代硬件相对不那么值钱了）
+  - 把线程的管理变得很简单，现在 Linux，Windows 都是这种模型
+  #fig("/public/assets/Courses/OS/2024-10-22-13-42-09.png", width: 50%)
+- Many-to-Many Model
+  - $m$ to $n$ 线程，折中上面两者的优缺点。但是实现复杂
+  #fig("/public/assets/Courses/OS/2024-10-22-13-42-25.png", width: 50%)
+- Two-Level Model
+  - 大多数时候 many to many，但对特别重要的那种用 one to one
+  #fig("/public/assets/Courses/OS/2024-10-22-13-42-34.png", width: 50%)
+
+== Thread Libraries
+- In C/C++: pthreads and Win32 threads
+  - POSIX standard (IEEE 1003.1c) API for thread creation and synchronization
+  - e.g. `pthread_create`, `pthread_join`, `pthread_exit`
+- In C/C++: OpenMP
+  - OpenMP is a set of compiler directives and an API for C, C++, and Fortran
+  - Provides support for parallel programming in shared-memory environment
+  - `#pragma omp parallel`，使用之后编译器会为我们切分出若干个并行块，创造出对应的线程，最后使用 join 把线程合并
+- In Java: Java Threads
+  - Old versions of the JVM used Green Threads, but now provides native thread，前者不再 available
+  - In modern JVMs, application threads are mapped to kernel thread
+  #fig("/public/assets/Courses/OS/2024-10-22-13-48-48.png")
+
+== Threading Issues
+- 线程的加入让进程的操作变得更复杂。
+  - Semantics of `fork()` and `exec()` system calls
+    - 如果一个 thread 调用了 `fork()`，可能发生两种情况
+      + 创建了一个 process，只包含一个 thread(which called `fork()`)
+      + 创建了一个 process，复制了所有 threads
+    - Some OSes provide both options, In Linux the first option above is used（因为大部分时候 `fork()` 之后会接 `exec()`，抹掉所有的数据，因此直接复制调用线程就可以了）
+    - If one calls `exec()` after `fork()`, all threads are "wiped out" anyway
+  - Signal handling
+    - 我们之前谈论过  signals for processes，但对于 multi-threaded programs 会发生什么？有多重可能(Synchronous and asynchronous)
+      + Deliver the signal to the thread to which the signal applies
+      + Deliver the signal to every thread in the process
+      + Deliver the signal to certain threads in the process
+      + Assign a specific thread to receive all signals
+    - Most UNIX versions: 一个 thread 可以指定它接受哪些 signal、拒绝哪些 signal
+    - 在 Linux，比较复杂，接口都开放给用户，摆烂，程序员自己去理解吧
+  - Thread cancellation of target thread
+    - 把一个线程的工作取消掉，如何保证取消后不影响系统的稳定性
+      - Asynchronous cancellation: 立即终止。
+      - Deferred cancellation: 线程会自己进行周期性检查，如果取消掉不会影响系统的稳定性，就把自己取消掉
+      - 前者 may lead to an inconsistent state or to a synchronization problem，后者不会但是它的 code 写得不好看（时不时要问 "should I die?"）
+  - Thread-local storage
+  - Thread Scheduling
+
+== windows thread & linux thread
+- windows，不是很重要
+- In Linux
+  - The `clone()` syscall is used to create a thread or a proces
+  - `clone` 有一个参数 `CLONE_VM`，如果不设置那么类似于 fork，每个线程都有自己的内存空间；如果设置了那么线程跑在同一地址空间上
+  - TCB 用来存储线程的信息，Linux 并不区分 PCB 和 TCB，都是用 task_struct 来表示
+  - A process is
+    - either a single thread + an address space, PID is thread ID
+    - or multiple threads + an address space, PID is the leading thread ID
+  #grid2(
+    fig("/public/assets/Courses/OS/2024-10-22-14-17-36.png"),
+    fig("/public/assets/Courses/OS/2024-10-22-14-29-29.png")
+  )
+  - PID 如果和 LWP 相同，说明是 single-threaded process。如果不相同，说明进程有多个线程，此时进程的 PID 是主线程的 LWP
+  - `task_struct` 内，`mm_struct`（与内存管理相关的信息，如页表）, `files` 指向同一个结构体，这样就实现了共享内存。而 `task_thread`, `pid`, `stack`, `comm` 等不共享
+  - 通过 `thread_group` 链表将这些线程串联起来
+- User thread to kernel thread mapping
+  #grid(
+    columns: (70%, 30%),
+    [
+      - One task in Linux
+        - Same task_struct(PCB) means same thread, also viewed as 1:1 mapping。每个 User thread 对应一个 Kernel thread（类似于它的小号）
+          - 另外，思考如果是 Many-to-one，怎么实现？答案是保证返回时 Kernel Space stack 干干净净给下一个用。这个设计其实延续到 1:1 mapping 了
+          - One user thread maps to one kernel thread. But actually, they are the same thread
+      - User Space 和 Kernel Space 执行的代码不同
+        - User code, user space stack; Kernel code, kernel space stack
+    ],
+    fig("/public/assets/Courses/OS/2024-10-22-14-45-05.png")
+  )
+
+#info(caption: [Takeaway])[
+  - Thread is the basic execution unit
+    - Has its own registers, pc, stack
+  - Thread vs Process
+    - What is shared and what is not
+  - Pros and cons of threa
+]
+
+= Scheduling
 - Definition
   - 决定 processes/threads 谁用？用多久？
   - CPU Scheduling 对系统 performance and productivity 有很大影响
@@ -264,7 +487,7 @@
   + minimize Waiting time, Response time
   - 一些目标相互冲突，e.g. 频繁的 context switches 有助于 Response time，但会降低 Throughput
 
-=== Scheduling Algorithms
+== Scheduling Algorithms
 + First-Come, First-Served Scheduling(FCFS)
 + Shortest-Job-First Scheduling(SJF)
 + Round-Robin Scheduling(RR)
@@ -276,7 +499,7 @@
 - SJF
   - 分两种，Preemptive 和 Non-preemptive
   - 基本上就是 ADS 里讲的那种，被证明是 optimal 的
-  - 但在执行进程前，无法得知 burst time（只能预测），所以只存在于理论与比较
+  - 但在执行进程前，无法得知 burst time（只能预测），所以该算法只存在于理论与比较
 - RR
   - 每个进程都有一个时间片(quantum)，时间片用完了就换下一个
   - 优点是简单，缺点是可能会有很多 context switch
@@ -286,15 +509,23 @@
   - 可以用 *priority aging* 来解决，把时间也算到优先级里
   - Priority 可以与 RR 结合
 - Multilevel Queue Scheduling
+  #fig("/public/assets/Courses/OS/2024-10-16-16-26-11.png", width: 60%)
 - Multilevel Feedback Queue Scheduling
-  - 根据反馈来调整队列，比如给一个 quantum，如果你用完了，把你往下降
-  #fig("/public/assets/Courses/OS/2024-10-15-14-55-52.png", width: 70%)
+  - 根据反馈来调整队列，比如给一个 quantum，如果你用完了，把你往下降（优先级降低），降到最后就完全不看 priority 而是 FCFS
+  #fig("/public/assets/Courses/OS/2024-10-15-14-55-52.png", width: 60%)
 - 怎么样算是 Good Scheduling Algorithm
   - Few *analytical/theoretical* results are available
   - *Simulation* is often used
   - *Implementation* is key
 
-=== Multiple-Processor Scheduling
+== Thread Scheduling
+- process-contention scope (PCS)
+  - 每个进程分到时间片一样，然后进程内部再对线程进行调度
+- system-contention scope (SCS)
+  - 所有线程进行调度。
+- 现在主流 CPU 都是以线程为粒度进行调度的
+
+== Multiple-Processor Scheduling
 - Multithreaded Multicore System
   #fig("/public/assets/Courses/OS/2024-10-15-15-15-14.png", width: 40%)
   - 现在大部分是 (b) 架构
@@ -313,17 +544,275 @@
 - Linux Scheduling
   - Nice command: 数越小，优先级越高
     - `ps -e -o uid,pid,ppid,pri,ni,cmd`
-  - linux 0.11 源码
+  + linux 0.11 源码
     - Implemented with an array (no queue yet)
     - Round-Robin + Priority，体现了 aging 思想
     - 思考各在何处体现
     - 不足之处：$O(N)$ 的效率，priority 修改的响应性不好
-  - linux-xxx，略
-  - linux 2.6
+  + linux 1.2，引入 circular queue
+  + linux 2.2，引入 Scheduling classes 和 Priorities within classes
+  + linux 2.4
+  + linux 2.6
     - 实现了 $O(1)$ 的调度
     - 不好的点在于 policy, mechanism 没有分开，且依赖于 `bsfl` 指令
-  - 后来引入了 Completely Fair Scheduler(CFS)，用 Red-Black Tree 来实现
+  - 后来引入了 Completely Fair Scheduler(CFS)，用 Red-Black Tree 来实现，也有争议
 
-= Inter-Process Communications(IPCs)
-- 与之对应的 intra-process 表示进程内部
-- 前面我们把进程介绍为独立的单元，互相之间只有 switch，但实际上进程之间因为 Information sharing, Computation speedup, Modularity, Convenience 等原因需要进行通信
+= Synchoronization
+- Processes/threads can execute concurrently
+- Concurrent access to shared data may result in data inconsistency
+
+== Race Condition
+- 多个进程并行地写数据，结果取决于写的先后顺序，这就是 Race Condition
+  - 比如课件中的 counter++ 例子
+  - 又比如，如果不加保护，两个进程同时 `fork()`，子进程可能拿到一样的 pid
+- critical section
+  - 修改共同变量的区域称为 critical section；共同区域之前叫 entry section，之后叫 exit section
+  ```
+  while (true) {
+      [entry section]
+        critical section
+      [exit section]
+        remainder section
+  }
+  ```
+- 怎么实现呢？
+  - Single-core system: preventing interrupts
+  - Multiple-processor: preventing interrupts are not feasible (depending on if kernel is preemptive or non-preemptive)
+    - Preemptive – allows preemption of process when running in kernel mode
+    - Non-preemptive – runs until exits kernel mode, blocks, or voluntarily yields CPU
+- Solution to Critical-Section: Three Requirements
+  - Mutual Exclusion（互斥访问）
+    -在同一时刻，最多只有一个线程可以执行临界区
+  - Progress（空闲让进）
+    - 当没有线程在执行临界区代码时，必须在申请进入临界区的线程中选择一个线程，允许其执行临界区代码，保证程序执行的进展
+  - Bounded waiting（有限等待）
+    - 当一个进程申请进入临界区后，必须在有限的时间内获得许可并进入临界区，不能无限等待（阻止 starvation）
+
+== Peterson’s Solution
+- Peterson’s solution solves two-processes/threads synchronization (Only works for two processes case)
+  - It assumes that LOAD and STORE are atomic
+    - atomic: execution cannot be interrupted
+  - Two processes share two variables
+    - boolean flag[2]: whether a process is ready to enter the critical section
+    - int turn: whose turn it is to enter the critical section
+#fig("/public/assets/Courses/OS/2024-10-22-16-22-15.png", width: 70%)
+- 验证三个条件
+  - Mutual exclusion
+    #grid(
+      columns: 2,
+      column-gutter: 3em,
+      [
+        - P0 enters CS (flag[1]=false or turn=0), there are 3 cases
+          + flag[1]=false #h(3em) $->$ P1 is out CS
+          + flag[1]=true, turn=1 $->$ P0 is looping, contradicts
+          + flag[1]=true, turn=0 $->$ P1 is looping
+      ],
+      [
+        - P1 enters CS (flag[0]=false or turn=1), there are 3 cases
+          + flag[0]=false #h(3em) $->$ P0 is out CS
+          + flag[0]=true, turn=0 $->$ P1 is looping, contradicts
+          + flag[0]=true, turn=1 $->$ P0 is looping
+      ]
+    )
+  - Process requirement
+  #fig("/public/assets/Courses/OS/2024-10-22-16-18-17.png", width: 60%)
+  - Bounded waiting
+    - Whether P0 enters CS depends on P1; Whether P1 enters CS depends on P0; P0 will enter CS after one limited entry P1
+- 但是 Peterson's Solution 在现代机器上完全不现实
+  + Only works for two processes case
+  + It assumes that LOAD and STORE are atomic
+  + Instruction reorder: 指令会乱序执行
+
+== Hardware Support for Synchronization
+- 既然软件上实现有困难，那就硬件上解决。Many systems provide hardware support for critical section code
+- Uniprocessors: disable interrupts，当前运行的代码将不会被抢占
+  - generally too inefficient on multiprocessor systems
+- Solutions:
+  - Memory barriers
+  - Hardware instructions
+    - test-and-set: either test memory word and set value
+    - compare-and-swap: compare and swap contents of two memory words
+  - Atomic variables
+
+=== \*Memory Barriers
+- 知道就可以了，不做要求
+
+=== Hardware Instructions
+- 特殊的硬件指令，允许我们测试和修改单词的内容，或者原子地交换两个单词的内容（不可中断）
+- Test-and-Set Instruction
+  - 定义如下，看起来是由多条指令实现的，但在硬件上保证 atomically
+  ```c
+  bool test_set(bool *target) {
+    bool rv = *target;
+    *target = TRUE;
+    return rv:
+  }
+  ```
+  - lock with Test-and-Set
+  ```c
+  bool lock = FALSE
+  do {
+      while (test_set(&lock)); // busy wait
+      /* critical section */
+      lock = FALSE;
+      /* remainder section */
+  } while (TRUE);
+  ```
+  - mutual exclusion & progress: 显然满足
+  - bounded-waiting : 不一定，改造一下使它满足
+  ```c
+  do {
+      waiting[i] = TRUE;
+      while (waiting[i] && test_and_set(&lock));
+      waiting[i] = FALSE;
+      /* critical section */
+      j = (i + 1) % n;
+      while ((j != i) && !waiting[j])
+          j = (j + 1) % n;
+      if (j == i)
+          lock = FALSE;
+      else
+          waiting[j] = FALSE;
+      /* remainder section */
+  } while (TRUE);
+  ```
+- Compare-and-Swap Instruction
+  - 定义如下，期望是 atomically，仅当 `*value==expected` 时，将变量值设置为传递的参数 `new_value` 的值，然后返回旧值
+  ```c
+  bool compare_and_swap(bool *value, bool expected, bool new_value) {
+    bool temp = *value;
+    if (*value == expected)
+        *value = new_value;
+    return temp;
+  }
+  ```
+  - Shared integer lock initialized to 0
+  ```c
+  while (true)
+  {
+      while (compare_and_swap(&lock, 0, 1) != 0); /* do nothing */
+      critical section
+      lock = 0;
+      remainder section
+  }
+  ```
+  - intel x86 中实现了 `cmpxchg`，就是这个指令；ARM64 使用下面这种方式实现
+  #tblm[
+    | thread 1 | thread 2 | thread 3 | local monitor状态 |
+    | --- | --- | --- | --- |
+    |  |  |  | Open Access |
+    | LDXR |  |  | Exclusive Access |
+    | 1 | LDXR |  | Exclusive Access |
+    |  | Modify |  | Exclusive Access |
+    |  | STXR |  | Open Access |
+    |  | ? | LDXR | Exclusive Access |
+    |  |  | Modify | Exclusive Access |
+    | Modify |  |  | Exclusive Access |
+    | STXR |  |  | Open Access (No Failure?) |
+    |  |  | STXR |  |
+  ]
+
+=== Atomic Variables
+- One tool is an atomic variable that provides atomic (uninterruptible) updates on basic data types such as integers and booleans.
+- The increment() function can be implemented as follows:
+  ```c
+  void increment(atomic_int *v) {
+      int temp;
+      do {
+          temp = *v;
+      } while (temp != (compare_and_swap(v,temp,temp+1)));
+  }
+  ```
+
+== Mutex Lock
+- Mutex Locks 支持 `acquire()`（获得这个锁）和 `release()`（释放这个锁）。它们是原子的
+- This solution requires busy waiting, This lock therefore called a spinlock
+  ```c
+  bool locked = false;
+  acquire() {
+      while (compare_and_swap(&locked, false, true)); // busy waiting
+  }
+  release() {
+      locked = false;
+  }
+  ```
+- 问题：如果一个进程拿到锁之后，时间片内没做完，切换到另一个进程，该进程有时间片但是拿不到锁，一直 spin，浪费 CPU 时间
+- 解决：利用 Semaphore，即线程拿不到锁的时候，就不要在 ready queue 了，yield $->$ moving from running to sleeping
+
+== Semaphore
+- Implementation with waiting queue
+  ```c
+  wait(semaphore *S) {
+      S->value--;
+      if (S->value < 0) {
+          add this process to S->list;
+          block(); // 把当前的进程 sleep，放到 waiting queue 里面
+      }
+  }
+  signal(semaphore *S) {
+      S->value++;
+      if (S->value <= 0) { // 队列里面有人在睡觉
+          remove a proc.P from S->list;
+          wakeup(P); // 从 waiting queue 里面拿出一个进程，放到 ready queue 里面
+      }
+  }
+  ```
+  - 利用 Semaphore
+    - 现在 critical section 不再是 busy waiting 了
+    - 但注意 wait, signal 是需要 atomic 的，所以我们需要用 mutex lock 来保护这两个操作，这里还是 busy waiting 的
+    ```c
+    Semaphore sem; // initialized to 1
+    do {
+        wait(sem);    // busy waiting
+        critical section // No busy waiting on critical section now
+        signal(sem);  // busy waiting
+        remainder section
+    } while (TRUE); // while loop but not busy waiting
+    ```
+- 比较 mutex or spinlock $<=>$ Semaphore
+  - Mutex or spinlock
+    - Pros: no blocking
+    - Cons: Waste CPU on looping
+    - Good for short critical section
+  - Semaphore
+    - Pros: no looping
+    - Cons: context switch is time-consuming(?)
+    - Good for long critical section
+  - Linux 里面往往前者用得多，因为一般只是拿来短暂地保护某个变量
+- Semaphore in practice (an example)
+  #fig("/public/assets/Courses/OS/2024-10-23-17-08-33.png")
+  - `m->flag` 指的就是前面的 `value`
+  - 一个常见的 bug 是，把 $21$ 和 $22$ 行的顺序搞反了，会导致持锁 sleep
+
+== Synchoronization Problems
+- Deadlock and Starvation
+  - Deadlock 发生意味着 Starvation 发生，但 Starvation 不一定因为 Deadlock
+- Priority Inversion: a higher priority process is indirectly preempted by a lower priority task
+  - 低优先级任务拿到了锁，但因为低优先级而一直得不到 CPU，因此永远无法完成而释放锁；高优先级一直等待锁
+  - Solution: priority inheritance
+    - 短暂地把正在等待的进程 $P_H$ 的高优先级赋给持有锁的进程 $P_L$
+
+== Linux Synchronization
+- 2.6 以前的版本的 kernel 中通过禁用中断来实现一些短的 critical section；2.6 及之后的版本的 kernel 是抢占式的
+- Linux 提供：
+  + Atomic integers
+  + Spinlocks
+  + Semaphores
+    - 在 `linux/include/linux/semaphore.h` 中，`down()` 是 `lock`（如果要进入 sleep，它会先释放锁再睡眠，唤醒之后会立刻重新获得锁），`up()` 是 `unlock`
+  + Reader-writer locks
+
+== POSIX Synchoronization
+- POSIX 是啥？Portable Operating System Interface，开放给 user space 的 synchronization
+- POSIX API provides
+  + mutex locks
+  + Semaphores
+  + condition variables
+    - 跟 semaphore 的本质区别在于它支持 `broadcast`，或者说 wakeup all
+
+
+
+
+
+
+
+
