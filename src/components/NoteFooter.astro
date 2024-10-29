@@ -1,0 +1,34 @@
+---
+const currentYear = new Date().getFullYear();
+---
+
+<footer>
+  <p style="display: flex;">
+    <span>Copyright &copy;</span>
+    <span id="year">{currentYear}</span>
+    <a href="https://github.com/crd2333" style="margin-left: 5px;">crd233</a>
+    <a href="https://github.com/crd2333" style="margin-left: 10px;">
+      <img src="/github-brands-solid.svg" style="height: 1.4em;"/>
+    </a>
+  </p>
+</footer>
+
+<style>
+  footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 10px;
+    font-size: 14px;
+    color: #808080;
+  }
+
+  footer p {
+    margin: 0;
+  }
+
+  footer a {
+    color: #808080;
+    text-decoration: none;
+  }
+</style>

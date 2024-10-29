@@ -1,0 +1,251 @@
+---
+import NoteLayout from "../layouts/NoteLayout.astro";
+import { Markdown } from '@astropub/md'
+import { Typst } from "astro-typst/src/components";
+import fs, { promises as fsp } from "fs";
+import { join } from "path";
+import yaml from "js-yaml";
+import { finished } from "stream/promises";
+
+interface Frontmatter {
+  order?: number;
+  draft?: boolean;
+}
+
+// get the frontmatter of a file
+export async function get_frontmatter(path: string) {
+  const readStream = fs.createReadStream(path, {start: 0, end: 100}); // read the first 100 bytes, maybe need more
+
+  let code = '';
+  for await (const chunk of readStream) {
+    code += chunk;
+  }
+
+  await finished(readStream);
+
+  const match = code.match(/^---\r?\n([\s\S]*?)[\r?\n]*---/);
+  const frontmatter = match === null ? null : yaml.load(match[1]) as Frontmatter;
+
+  return frontmatter;
+}
+
+// get all sections, sort them and exclude those without index.typ/md
+export async function get_sections_list(DocPath: string) {
+  let sections: string[] = await fsp.readdir(DocPath);
+  let section_orders: number[] = [];
+  let section_default_order: number = 0;
+  for (let section of sections) {
+    if (["note.typ", "note.md"].includes(section)) { // jump over the homepage
+      section_orders.push(-2); // home page must be the first
+      continue;
+    }
+    let topics: string[] = await fsp.readdir(join(DocPath, section));
+    if (!["index.typ", "index.md"].some(i => topics.includes(i))) { // jump over sections without index.typ/md
+      sections = sections.filter(it => it !== section);
+      continue;
+    }
+
+    const section_index_type = topics.includes("index.typ") ? "typ" : "md";
+    const frontmatter = await get_frontmatter(join(DocPath, section, `index.${section_index_type}`)) as Frontmatter;
+    const draft = frontmatter?.draft ?? false;
+    if (draft) { // jump over draft sections
+      sections = sections.filter(it => it !== section);
+      continue;
+    }
+    const order = frontmatter?.order ?? -1;
+    section_default_order = order > section_default_order ? order : section_default_order;
+    section_orders.push(order);
+  }
+  for (let order of section_orders) {
+    if (order === -1) {
+      section_orders[section_orders.indexOf(order)] = 1 + section_default_order++;
+    }
+  }
+  sections.sort((a, b) => section_orders[sections.indexOf(a)] - section_orders[sections.indexOf(b)]);
+
+  return sections;
+}
+
+// first we traverse all the topics and all the files to get the information shared (like orders)
+export async function get_topics_with_files(DocPath: string, topics: string[], section: string) {
+  let topics_with_files: {[key: string]: string[]} = {};
+
+  for (let topic of topics) {
+    const file_info = await fsp.stat(join(DocPath, section, topic));
+    if (file_info.isFile()) {
+      const frontmatter = await get_frontmatter(join(DocPath, section, topic)) as Frontmatter;
+      if (frontmatter?.draft ?? false) { continue; }
+      topics_with_files[topic.replace(/\.(typ|md)$/, '')] = ["index"]; // treat as a directory with only one file called `index`
+      continue;
+    }
+
+    let orders = [];
+    let file_paths = [];   // in one topic
+    let default_order = 0;
+
+    const files = await fsp.readdir(join(DocPath, section, topic));
+    if (files.length === 0) { // jump over empty topics
+      continue;
+    }
+
+    for (let file of files) {
+      const frontmatter = await get_frontmatter(join(DocPath, section, topic, file)) as Frontmatter;
+      if (frontmatter?.draft ?? false) { continue; }
+      const order = frontmatter?.order ?? -1;
+      orders.push(order);
+      default_order = order > default_order ? order : default_order;
+      file_paths.push(file.replace(/\.(typ|md)$/, ''));
+    }
+    for (let order of orders) {
+      if (order === -1) {
+        orders[orders.indexOf(order)] = 1 + default_order++;
+      }
+    }
+
+    // now sort the file_paths by orders, in ascend
+    file_paths.sort((a, b) => orders[file_paths.indexOf(a)] - orders[file_paths.indexOf(b)]);
+
+    topics_with_files[topic] = file_paths;
+  }
+
+  return topics_with_files;
+}
+
+export async function getStaticPaths() {
+  let paths = [];
+  const DocPath: string = join(process.cwd(), "src/docs");
+
+  const sections: string[] = await get_sections_list(DocPath);
+
+  for (let section of sections) {
+    if (["note.typ", "note.md"].includes(section)) { // add the homepage
+      const type = section.includes("note.typ") ? "typ" : "md";
+      const code = await fsp.readFile(join(DocPath, `note.${type}`), "utf-8");
+      const match = code.match(/^---\r?\n([\s\S]*?)[\r?\n]*---/);
+      const content = match === null ? code : code.slice(match[0].length);
+
+      paths.push({
+        params: {
+          docs: "note",
+        },
+        props: {
+          frontmatter: null,
+          content: content,
+          sections,
+          section: "Home",
+          topics_with_files: {" " : ""},
+          topic: "",
+          file: null,
+          type,
+        },
+      })
+
+      continue;
+    }
+    let topics = await fsp.readdir(join(DocPath, section));
+    // only accept *.typ or *.md files or directories(no dot in the name)
+    topics = topics.filter(it => it.endsWith(".typ") || it.endsWith(".md") || it.indexOf(".") === -1);
+
+    const section_index_type = topics.includes("index.typ") ? "typ" : "md";
+    topics = topics.filter(it => it !== `index.${section_index_type}`);
+
+    let topics_with_files = await get_topics_with_files(DocPath, topics, section);
+
+    // traverse secondly to generate dynamic paths
+    for (let topic of topics) {
+      const file_info = await fsp.stat(join(DocPath, section, topic));
+
+      if (file_info.isFile()) { // if it's a file
+        const type = topic.includes(".typ") ? "typ" : "md";
+        const code = await fsp.readFile(join(DocPath, section, topic), "utf-8");
+        const match = code.match(/^---\r?\n([\s\S]*?)[\r?\n]*---/);
+        const frontmatter = match === null ? null : yaml.load(match[1]) as Frontmatter;
+        if (frontmatter?.draft ?? false) { continue; }
+        const content = match === null ? code : code.slice(match[0].length);
+
+        paths.push({
+          params: {
+            docs: `note/${section}/${topic.replace(/\.(typ|md)$/, '')}/index`,
+          },
+          props: {
+            frontmatter,
+            content,
+            sections,
+            section,
+            topics_with_files,
+            topic: topic.replace(/\.(typ|md)$/, ''),
+            file: null,
+            type,
+          },
+        })
+
+        continue;
+      }
+
+      // else, it's a directory
+      const files = await fsp.readdir(join(DocPath, section, topic));
+      if (files.length === 0) {
+        continue;
+      }
+      for (let file of files) {
+        const type = file.includes(".typ") ? "typ" : "md";
+        const code = await fsp.readFile(join(DocPath, section, topic, file), "utf-8");
+        const match = code.match(/^---\r?\n([\s\S]*?)[\r?\n]*---/);
+        const frontmatter = match === null ? null : yaml.load(match[1]) as Frontmatter;
+        if (frontmatter?.draft ?? false) { continue; }
+        const content = match === null ? code : code.slice(match[0].length);
+
+        paths.push({
+          params: {
+            docs: `note/${section}/${topic}/${file.replace(/\.(typ|md)$/, '')}`,
+          },
+          props: {
+            frontmatter,
+            content,
+            sections,
+            section,
+            topics_with_files,
+            topic,
+            file: file.replace(/\.(typ|md)$/, ''),
+            type,
+          },
+        })
+      }
+    }
+
+    // and read index.typ/md, which is excluded above
+    const code = await fsp.readFile(join(DocPath, section, `index.${section_index_type}`), "utf-8");
+    const match = code.match(/^---\r?\n([\s\S]*?)[\r?\n]*---/);
+    const frontmatter = match === null ? null : yaml.load(match[1]) as Frontmatter;
+    if (frontmatter?.draft ?? false) { continue; }
+    const content = match === null ? code : code.slice(match[0].length);
+    paths.push({
+      params: {
+        docs: `note/${section}/index`,
+      },
+      props: {
+        frontmatter,
+        content,
+        sections,
+        section,
+        topics_with_files,
+        topic: null,
+        file: null,
+        type: section_index_type,
+      },
+    })
+  }
+
+  return paths;
+}
+
+// each page will have: its frontmatter, its content, all the sections, which section it belongs to
+// all the topics (with files in order) of the section, which topic it belongs to (if it's not an index.typ)
+const { frontmatter, content, sections, section, topics_with_files, topic, file, type } = Astro.props;
+---
+
+<NoteLayout sections={sections} section={section} topics_with_files={topics_with_files} topic={topic} file={file}>
+
+  {type === 'md' ? <Markdown of={content} /> : <Typst code={content} />}
+
+</NoteLayout>

@@ -1,0 +1,66 @@
+---
+const { sections, section } = Astro.props;
+const Urls: [string, string][] = sections.map((section: string) => [
+  ["note.typ", "note.md"].includes(section) ? "/note" : `/note/${section}/index`,
+  // section,
+  ["note.typ", "note.md"].includes(section) ? "Home" : section,
+]);
+---
+
+<header>
+  <div class="caption">
+    <a href="/note">
+      <img src="/avatar.jpg" style="height: 80%; border-radius: 50%; " />
+    </a>
+    <div style="width:1em"></div>
+    <h1 style="font-weight: bold;">Crd233's Notebook</h1>
+    <div style="width:5em"></div>
+    <nav>
+      {Urls.map(([url, sect]) => <a href={url}>
+        {sect === section ? <strong>{sect}</strong> : sect}
+      </a>)}
+    </nav>
+  </div>
+  <div style="display: flex;">
+    <a href="/" style="display: flex;">
+      <img src="/house.svg" style="height: 2em;"/>
+      <div style="margin-left: 8px; margin-top: 3px; font-size: large;"></div>
+    </a>
+    <a href="https://github.com/crd2333" style="display: flex; margin-left: 20px;">
+      <img src="/github-brands-white.svg" style="height: 2em;"/>
+      <div style="margin-left: 8px; margin-top: 3px; font-size: large;"></div>
+    </a>
+  </div>
+</header>
+
+<style>
+  header {
+    background-color: #6686a0;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  header .caption {
+    display: flex;
+    height: 40px;
+    align-items: center;
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  header nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    font-size: 16px;
+  }
+</style>

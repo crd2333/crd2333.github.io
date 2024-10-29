@@ -1,0 +1,123 @@
+---
+const { section, topics_with_files, topic, file } = Astro.props;
+// section: current section
+// topics_with_files: {topic: [file1, file2, ...], ...}
+// topic: current topic
+// file: current file
+const TopicUrls: [string, string, boolean][] = Object.keys(topics_with_files)?.map((to) => {
+  // click the topic and go to the first file
+  const first_file: string = topics_with_files[to][0] ? topics_with_files[to][0] : "";
+  return [
+      section ? `/note/${section}/${to}/${first_file}` : "/note",
+      to,
+      topics_with_files[to]?.length === 1 && first_file === "index" // if a topic has only one file called `index`, then no subfiles and no arrow
+    ]
+  }
+); // TopicUrls: [[url, topic, single], ...]
+---
+
+<aside class="sidebar">
+  <ul>
+    <li>
+      <div style="margin-bottom: 10px;"><a href=`/note${section !== "Home" ? "/"+section+"/index" : ""}` class="a1">{section}</a></div>
+    </li>
+    {TopicUrls.map(([url, to, single]) => (
+      <li>
+          {
+            to === " " ? null :
+            to === topic ?
+            <a href={url} class="a2_choose">
+              {to}
+              {single ? null : <svg class="arrow" xmlns="http://www.w3.org/2000/svg" id="arrow" x="0" y="0" version="1.1" viewBox="0 0 29 29" xml:space="preserve"><path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" d="m20.5 11.5-6 6-6-6"></path></svg>}
+            </a> :
+            <a href={url} class="a2_not_choose">
+              {to}
+              {single ? null : <svg class="arrow" xmlns="http://www.w3.org/2000/svg" id="arrow" x="0" y="0" version="1.1" viewBox="0 0 29 29" xml:space="preserve"><path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" d="M11.5 8.5l6 6-6 6"/></svg>}
+            </a>
+          }
+        {to === topic && !single && (
+          <ul>
+            {topics_with_files[topic].map((file_: string) => {
+              let fi = file_;
+              return file_ === file ? (
+                <li><a href=`/note/${section}/${topic}/${fi}` class="a3_choose">{fi}</a></li>
+              ) : (
+                <li><a href=`/note/${section}/${topic}/${fi}` class="a3_not_choose">{fi}</a></li>
+              );
+            })}
+          </ul>
+        )}
+      </li>
+    ))}
+  </ul>
+</aside>
+
+<style>
+  .sidebar {
+    width: 20%;
+    background-color: #ffffff;
+    margin-top: 5px;
+    /* box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); */
+  }
+
+  .sidebar ul {
+    list-style: none;
+    position: sticky;
+    margin-right: 20px;
+    top: 97px;
+  }
+
+  .sidebar ul li div {
+    justify-content: space-between;
+    display: flex;
+    margin-top: 7px;
+    margin-left: -5px;
+  }
+
+  .sidebar ul li ul li {
+    margin-left: -15px;
+    margin-bottom: 3px;
+  }
+
+  .sidebar .a1 {
+    text-decoration: none;
+    font-size: 15pt;
+    font-weight: bold;
+    color: #000000;
+  }
+
+  .sidebar .a2_choose {
+    justify-content: space-between;
+    display: flex;
+    text-decoration: none;
+    font-size: 13pt;
+    font-weight: bold;
+    color: rgb(82, 108, 254);
+  }
+
+  .sidebar .a2_not_choose {
+    justify-content: space-between;
+    display: flex;
+    text-decoration: none;
+    font-size: 13pt;
+    font-weight: bold;
+    color: #504f4f;
+  }
+
+  .sidebar .a3_choose {
+    text-decoration: none;
+    font-size: 12pt;
+    color: rgb(82, 108, 254);
+  }
+
+  .sidebar .a3_not_choose {
+    text-decoration: none;
+    font-size: 12pt;
+    color: #333;
+  }
+
+  .sidebar .arrow {
+    height: 20px;
+    margin-top: 3px;
+  }
+</style>
