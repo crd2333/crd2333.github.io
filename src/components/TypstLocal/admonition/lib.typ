@@ -244,7 +244,7 @@
   ..args
 )
 
-#let example(
+#let example1(
   caption: "Example",
   icon: "svg/example2.svg",
   titlecolor: rgb(242, 237, 255),

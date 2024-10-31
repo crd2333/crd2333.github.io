@@ -187,19 +187,19 @@ font: 字体.宋体,
 #let bluet(body) = text(fill: colors.blue, body) // blue-text
 
 // 快捷 grid
-#let grid2(body1, body2, ..args) = grid(
+#let grid2(alignment: center, body1, body2, ..args) = align(alignment, grid(
   columns: 2,
   grid.cell(align: center+horizon)[#body1],
   grid.cell(align: center+horizon)[#body2],
   ..args
-)
-#let grid3(body1, body2, body3, ..args) = grid(
+))
+#let grid3(alignment: center, body1, body2, body3, ..args) = align(alignment, grid(
   columns: 3,
   grid.cell(align: center+horizon)[#body1],
   grid.cell(align: center+horizon)[#body2],
   grid.cell(align: center+horizon)[#body3],
   ..args
-)
+))
 
 // pinit 的公式高亮指针
 #let pinit-highlight-equation-from(height: 2em, pos: bottom, fill: rgb(0, 180, 255), highlight-pins, point-pin, body) = {
