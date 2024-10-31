@@ -107,7 +107,7 @@ order: 2
   - 做了一系列实验证明它的 claim
     + Solving the Poisson Equation
     + Representing Shapes with Signed Distance Functions，在三维结构重建问题下对比了 ReLU 和 SIREN，可明显的看到 SIREN 相较于 ReLU 重构出更多的结构细节，对物体表面恢复更光滑（图 4）
-    + Solving the Helmholtz and Wave Equations，求解了以绿点为中心，均匀传播的亥姆霍兹方程（图 5），其中只有 SIREN 函数能够很好匹配原始结果，而其他激活函数(rbf, tanh, ReLU)均求解失败
+    + Solving the Helmholtz and Wave Equations，求解了以绿点为中心，均匀传播的亥姆霍兹方程（图 5），其中只有 SIREN 函数能够很好匹配原始结果，而其他激活函数(RBF, tanh, ReLU)均求解失败
     + Learning a Space of Implicit Functions
 + 用于定量评估的数据集是什么？代码有没有开源？
   - 数据集 CelebA；代码开源在 #link("https://github.com/vsitzmann/siren")[github.com/vsitzmann/siren], #link("https://github.com/lucidrains/siren-pytorch")[github.com/lucidrains/siren-pytorch]

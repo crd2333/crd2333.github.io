@@ -6,10 +6,44 @@
 )
 
 #info()[
-  - 感觉 #link("https://note.hobbitqia.cc/OS/")[hobbitqia 的笔记] 比较好，自己简单记记
+  - 感觉 #link("https://note.hobbitqia.cc/OS/")[hobbitqia 的笔记] 比较好
   - 还有 #link("https://note.isshikih.top/cour_note/D3QD_OperatingSystem/")[修佬的笔记]，虽然老师不一样
 ]
 
+#note(caption: "Mid-Term Review")[
+  - 梳理整个脉络和大致内容
+    + Computer architecture
+      - 计算机模型，内存布局与解释，CPU 是什么
+    + OS overview
+      - OS is resource *abstractor* and *allocator*, and is a *control* program
+      - OS Event: interrupt and exception，特别地讲了 system call
+    + OS structures
+      - Kernel, and System services
+      - Syscall 的具体实现、如何使用、种类
+      - Linkers and Loaders
+      - OS design
+    + Processes
+      - Process 是什么，包含了什么
+      - Process state
+        - create: fork, exec
+        - terminate: wait and signal, zombie and orphan
+        - ready, running, waiting: context switch，并引出 scheduling
+      - 进程作为隔离单元，如何交互，引出 IPC
+      - IPC 很笨重，引出更 natural 的 thread
+    + Scheduling
+      - 调度算法，甘特图与计算
+    + Thread
+      - 定义、内存布局、优劣
+      - user thread 和 kernel thread，以及涉及到它们的 context switch
+    + Synchronization
+      - Race Condition
+      - Synchronization tools: spinlock, semaphore
+      - Synchronization 解决具体问题
+      - Synchronization 设计得不好就会导致 deadlock
+    + DeadLock
+      - 死锁四个条件
+      - 死锁的四个解决方法：prevention, avoidance, detection, recovery
+]
 
 = Introduction
 - 复习计组的东西
@@ -71,22 +105,28 @@
   - Linker: 把多个 object files link 起来，生成一个可执行文件
   - Loader: 把可执行文件 load 到内存中，准备执行
   - Linker 和 Loader 之间的区别在于：Linker 是在 compile time，Loader 是在 run time
-- ELF binary basics
-  - ELF: Executable and Linkable Format
-  - `.text`: code, `.rodata`: initialized read-only data, `.data`: initialized data, `.bss`: block started by symbol
-- Linking
-  - Static linking
-    - 把所有需要的代码都 link 到一个 large binary 中，移植性好
-  - Dynamic linking
-    - 重用 libraries 来减少 binary 的大小
-    - 谁来解析？loader will resolve lib calls
+#grid(
+  columns: 2,
+  [
+    - ELF binary basics
+      - ELF: Executable and Linkable Format
+      - `.text`: code, `.rodata`: initialized read-only data, `.data`: initialized data, `.bss`: block started by symbol
+    - Linking
+      - Static linking
+        - 把所有需要的代码都 link 到一个 large binary 中，移植性好
+      - Dynamic linking
+        - 重用 libraries 来减少 binary 的大小
+        - 谁来解析？loader will resolve lib calls
+  ],
+  fig("/public/assets/Courses/OS/2024-10-30-17-13-17.png", width: 50%)
+)
 - running a binary
   #fig("/public/assets/Courses/OS/2024-09-24-16-07-49.png")
   - Who setups ELF file mapping? Kernel, or to be more specific --- exec syscall
   - Who setups stack and heap? Kernel, or to be more specific --- exec syscall
   - Who setups libraries? loader, ld-xxx
 - Running statically-linked ELF
-  - Where to start? `_start`, `_start` is executed after evecve system call，并且这是运行在 user mode 的
+  - Where to start? `_start`(entry point address, or elf_entry), `_start` is executed after evecve system call，并且这是运行在 user mode 的
   - `_start` 里面调用 `_libc_start_main`，这个函数会调用 `main` 函数并设置参数
   #fig("/public/assets/Courses/OS/2024-09-25-16-38-09.png", width:70%)
 - Running dynamically-linked ELF
@@ -221,23 +261,26 @@
   #fig("/public/assets/Courses/OS/2024-10-09-16-43-44.png", width: 80%)
   - queue 的数据结构跟 ADS 里面有所不同，ADS 里面往往做成 node，包含实际数据；而 OS 这边为了通用性往往就是一个包含 `prev, next` 俩指针的结构，搬到哪都能用
 - Context Switch
+  #fig("/public/assets/Courses/OS/2024-10-30-17-25-36.png", width: 60%)
   - 这里的 context 指的就是 registers，因为它们只有一份，所以需要保存
   - context switch 一定得是在 Kernel Mode，即 privileged，因为它涉及到系统资源、能改 pc
   + 如果 switch 发生在 kernel mode，就跟实验 2 里做的一样。在 `cpu_switch_to` 把 context 存到相应 PCB 里
-  + 如果 switch 发生在 user mode，还牵涉到 per-thread kernel stack，更确切地说是 pt_regs(user context been saved)。在 `kernel_entry` 时把 context 存到 pt_regs，切换到 kernel stack，然后在 `kernel_exit` 时恢复
-    #fig("/public/assets/Courses/OS/2024-10-09-17-44-58.png")
+  #fig("/public/assets/Courses/OS/2024-10-30-17-32-21.png", width: 80%)
+  + 如果 switch 发生在 user mode，还牵涉到 per-thread kernel stack，更确切地说是 pt_regs(user context been saved)。在 `kernel_entry` 时把 context 存到 `pt_regs`，切换到 kernel stack，然后在 `kernel_exit` 时恢复
+  #fig("/public/assets/Courses/OS/2024-10-09-17-44-58.png", width: 80%)
+  - 这里可以思考一下 user stack 和 kernel stack 有什么不同？1. user space 的栈空间无限，而 kernel space 有限；2. kernel space 在栈开始的地方多了个 `pt_regs`（kernel stack 里面有两个 pc，context 里面的是 kernel 的 pc，`pt_regs` 里面的是 user 的 pc）
+  #fig("/public/assets/Courses/OS/2024-10-30-17-37-34.png", width: 50%)
   - 思考 `fork()` 为什么能返回两个值(Return new_pid to parent and zero to child)？
-    - 其实是有“两套东西”
-    + 对 parent process，`fork()` 就是一个 syscall，返回值存在 pt_regs 里
-    + 对 child process，其实也是通过 pt_regs，手动把它设为 $0$
+    - 其实是有两套 user space context
+    + 对 parent process，`fork()` 就是一个 syscall，返回值存在 `pt_regs` 里
+    + 对 child process，其实也是通过 `pt_regs`，手动把它设为 $0$
   - When does child process start to run and from where?
     - When forked, child is READY $->$ context switch to RUN
     - After context switch, run from `ret_to_fork`
-    - `ret_from_fork` $->$ `ret_to_user` $->$ `kernel_exit` who restores the pt_regs
+    - `ret_from_fork` $->$ `ret_to_user` $->$ `kernel_exit` who restores the `pt_regs`
 - Code through，Linux 进程相关代码的发展史
 
-
-= Inter-Process Communications(IPCs)
+== Inter-Process Communications(IPCs)
 - 与之对应的 intra-process 表示进程内部
 - 前面我们把进程介绍为独立的单元，互相之间只有 switch，保护得太好了。但实际上进程之间因为 Information sharing, Computation speedup, Modularity, Convenience 等原因需要进行通信
 - Multiprocess Architecture example – Chrome Browser
@@ -265,7 +308,7 @@
   - 存在问题：不安全。任何人拿到 share_id 都可以把共享内存 attach 到自己进程上，可以观察到其他进程的数据、甚至做 DOS 攻击
   - 而且很 cubersome，会发生各种 error 需要处理，现在使用不多
 
-== Message Passing
+=== Message Passing
 - Two fundamental operations:
   - send: to send a message (i.e., some bytes)
   - recv: to receive a message
@@ -293,10 +336,10 @@
       - Bounded capacity - finite length of n messages. Sender must wait if link full.X
       - Unbounded capacity - infinite length. Sender never waits
 
-== Signals
+=== Signals
 - 略
 
-== Pipes
+=== Pipes
 - 充当允许两个进程通信的管道
 - 问题：
   - 沟通是单向的还是双向的？
@@ -316,7 +359,7 @@
   - In UNIX, a pipe is mono-directional. 要实现两个方向一定需要两个 pipe
   - e.g. `ls | grep foo`，创建了两个进程，一个 `ls` 一个 `grep`，`ls` writes on the write-end and `grep` reads on the read-end
 
-== Client-Server Communication
+=== Client-Server Communication
 - 广义上的 IPC，因为是跑在两个物理机器上的交互。
   - Sockets
   - RPCs: 所有的交互都是和 stub 通信，stub 会和远端的 server 通信。存在网络问题，如丢包
@@ -363,22 +406,26 @@
   + Split data among threads
   + Testing and debugging
 
+#example1[
+  - 在引入 thread 后，可以思考一下现在的 context switch 和 schedling 是怎么做的
+]
+
 == User Threads vs. Kernel Threads
 - User Space 支持 threads 设计，Kernel Space 不一定，但大多数现代 OS 都支持
 - Many-to-One Mode
   - 好处是在于易于实现，kernel 不用管你上层怎么干的
   - 缺点：内核只有一个线程，无法发挥 multi-core 的优势；一旦一个线程被阻塞，其他线程也会被阻塞
-  #fig("/public/assets/Courses/OS/2024-10-22-13-35-06.png", width: 50%)
+  #fig("/public/assets/Courses/OS/2024-10-22-13-35-06.png", width: 30%)
 - One-to-One Mode
   - 优点是消除了 Many-to-One 的两个毛病，但缺点是创建开销大（但现代硬件相对不那么值钱了）
   - 把线程的管理变得很简单，现在 Linux，Windows 都是这种模型
   #fig("/public/assets/Courses/OS/2024-10-22-13-42-09.png", width: 50%)
 - Many-to-Many Model
   - $m$ to $n$ 线程，折中上面两者的优缺点。但是实现复杂
-  #fig("/public/assets/Courses/OS/2024-10-22-13-42-25.png", width: 50%)
+  #fig("/public/assets/Courses/OS/2024-10-22-13-42-25.png", width: 30%)
 - Two-Level Model
-  - 大多数时候 many to many，但对特别重要的那种用 one to one
-  #fig("/public/assets/Courses/OS/2024-10-22-13-42-34.png", width: 50%)
+  - 大多数时候 many to many，但对特别重要的那种用 one to one #h(1fr)
+  #fig("/public/assets/Courses/OS/2024-10-22-13-42-34.png", width: 40%)
 
 == Thread Libraries
 - In C/C++: pthreads and Win32 threads
@@ -394,28 +441,28 @@
   #fig("/public/assets/Courses/OS/2024-10-22-13-48-48.png")
 
 == Threading Issues
-- 线程的加入让进程的操作变得更复杂。
-  - Semantics of `fork()` and `exec()` system calls
-    - 如果一个 thread 调用了 `fork()`，可能发生两种情况
-      + 创建了一个 process，只包含一个 thread(which called `fork()`)
-      + 创建了一个 process，复制了所有 threads
-    - Some OSes provide both options, In Linux the first option above is used（因为大部分时候 `fork()` 之后会接 `exec()`，抹掉所有的数据，因此直接复制调用线程就可以了）
-    - If one calls `exec()` after `fork()`, all threads are "wiped out" anyway
-  - Signal handling
-    - 我们之前谈论过  signals for processes，但对于 multi-threaded programs 会发生什么？有多重可能(Synchronous and asynchronous)
-      + Deliver the signal to the thread to which the signal applies
-      + Deliver the signal to every thread in the process
-      + Deliver the signal to certain threads in the process
-      + Assign a specific thread to receive all signals
-    - Most UNIX versions: 一个 thread 可以指定它接受哪些 signal、拒绝哪些 signal
-    - 在 Linux，比较复杂，接口都开放给用户，摆烂，程序员自己去理解吧
-  - Thread cancellation of target thread
-    - 把一个线程的工作取消掉，如何保证取消后不影响系统的稳定性
-      - Asynchronous cancellation: 立即终止。
-      - Deferred cancellation: 线程会自己进行周期性检查，如果取消掉不会影响系统的稳定性，就把自己取消掉
-      - 前者 may lead to an inconsistent state or to a synchronization problem，后者不会但是它的 code 写得不好看（时不时要问 "should I die?"）
-  - Thread-local storage
-  - Thread Scheduling
+- 线程的加入让进程的操作变得更复杂
+- Semantics of `fork()` and `exec()` system calls
+  - 如果一个 thread 调用了 `fork()`，可能发生两种情况
+    + 创建了一个 process，只包含一个 thread(which called `fork()`)
+    + 创建了一个 process，复制了所有 threads
+  - Some OSes provide both options, In Linux the first option above is used（因为大部分时候 `fork()` 之后会接 `exec()`，抹掉所有的数据，因此直接复制调用线程就可以了）
+  - If one calls `exec()` after `fork()`, all threads are "wiped out" anyway
+- Signal handling
+  - 我们之前谈论过  signals for processes，但对于 multi-threaded programs 会发生什么？有多重可能(Synchronous and asynchronous)
+    + Deliver the signal to the thread to which the signal applies
+    + Deliver the signal to every thread in the process
+    + Deliver the signal to certain threads in the process
+    + Assign a specific thread to receive all signals
+  - Most UNIX versions: 一个 thread 可以指定它接受哪些 signal、拒绝哪些 signal
+  - 在 Linux，比较复杂，接口都开放给用户，摆烂，程序员自己去理解吧
+- Thread cancellation of target thread
+  - 把一个线程的工作取消掉，如何保证取消后不影响系统的稳定性
+    - Asynchronous cancellation: 立即终止。
+    - Deferred cancellation: 线程会自己进行周期性检查，如果取消掉不会影响系统的稳定性，就把自己取消掉
+    - 前者 may lead to an inconsistent state or to a synchronization problem，后者不会但是它的 code 写得不好看（时不时要问 "should I die?"）
+- Thread-local storage
+- Thread Scheduling
 
 == windows thread & linux thread
 - windows，不是很重要
@@ -494,7 +541,7 @@
 + Priority Scheduling
 + Multilevel Queue Scheduling
 + Multilevel Feedback Queue Scheduling
-- 一般用 Waiting Time, Turnaround Time 来比较，要学会画 Gantt 图和计算（多个 examples）
+- 一般用 *Waiting Time*, *Turnaround Time* 来比较，要学会画 Gantt 图和计算（多个 examples）
 - FCFS: 字面意思理解
 - SJF
   - 分两种，Preemptive 和 Non-preemptive
@@ -522,8 +569,8 @@
 - process-contention scope (PCS)
   - 每个进程分到时间片一样，然后进程内部再对线程进行调度
 - system-contention scope (SCS)
-  - 所有线程进行调度。
-- 现在主流 CPU 都是以线程为粒度进行调度的
+  - 所有线程进行调度
+- 现在主流 CPU 都是以 *thread* 为粒度进行调度的
 
 == Multiple-Processor Scheduling
 - Multithreaded Multicore System
@@ -557,7 +604,7 @@
     - 不好的点在于 policy, mechanism 没有分开，且依赖于 `bsfl` 指令
   - 后来引入了 Completely Fair Scheduler(CFS)，用 Red-Black Tree 来实现，也有争议
 
-= Synchoronization
+= Synchronization
 - Processes/threads can execute concurrently
 - Concurrent access to shared data may result in data inconsistency
 
@@ -784,7 +831,7 @@
   - `m->flag` 指的就是前面的 `value`
   - 一个常见的 bug 是，把 $21$ 和 $22$ 行的顺序搞反了，会导致持锁 sleep
 
-== Synchoronization Problems
+== Synchronization Problems
 - Deadlock and Starvation
   - Deadlock 发生意味着 Starvation 发生，但 Starvation 不一定因为 Deadlock
 - Priority Inversion: a higher priority process is indirectly preempted by a lower priority task
@@ -801,13 +848,271 @@
     - 在 `linux/include/linux/semaphore.h` 中，`down()` 是 `lock`（如果要进入 sleep，它会先释放锁再睡眠，唤醒之后会立刻重新获得锁），`up()` 是 `unlock`
   + Reader-writer locks
 
-== POSIX Synchoronization
+== POSIX Synchronization
 - POSIX 是啥？Portable Operating System Interface，开放给 user space 的 synchronization
 - POSIX API provides
   + mutex locks
   + Semaphores
   + condition variables
     - 跟 semaphore 的本质区别在于它支持 `broadcast`，或者说 wakeup all
+
+== Synchronization Examples
+- 接下来我们来看如何用 semaphore 来解决一些经典问题
+
+=== Bounded-Buffer Problem
+- Two processes, the producer and the consumer share n buffers
+  - producer 生产数据并放到 buffer；当 buffer 满的时候，生产者不能再放数据，应该 sleep
+  - the consumer consumes data by removing it from the buffer. 当 buffer 空的时候，消费者不能再取数据，应该 sleep
+- Solution
+  - $n$ buffers, each can hold one item
+  - semaphore *mutex* initialized to the value $1$
+  - semaphore *full-slots* initialized to the value $0$
+  - semaphore *empty-slots* initialized to the value $N$
+- The producer precess
+  ```c
+  do {
+      // produce an item
+      wait(empty-slots); // empty-slots 减一，如果拿不到就 sleep 了
+      wait(mutex); // wait for the buffer to be available
+      // add the item to the buffer
+      signal(mutex); // signal that the buffer is available
+      signal(full-slots); // signal that the buffer is full
+  } while (TRUE);
+  ```
+  - `wait(empty-slots)` 和 `wait(mutex)` 不能调换，否则导致“带着锁睡觉”
+  - `wait(empty-slots)` 和 `signal(full-slots)` 也不能调换，否则。。。。
+- The Consumer process
+  ```c
+  ```
+- 注意 `full-slots`, `empty-slots` 是多值 semaphore，而 `mutex` 是 binary semaphore
+  - 既然 `mutex` 是二值的，那为什么不能用 spin lock 来设计它而要用 semaphore 呢？
+  - 这是因为我们不确定中间 "add the item to the buffer" 的长短，因此把这块 critical section 用 semaphore 来保护，减少 busy waiting
+  - 考试中也是这样，都默认用 semaphore 来解决，不用考虑 spin lock
+  - 这种设计可以出两个题，以后面的 Readers-writers problem 为例，思考：
+    + RA reading data 的时候，会进程切换到 WA 吗？
+    + WA 卡住了 RA, RB, RC（先后），会先切换到 RB, RC 而不是 RA 吗？
+    - 答案是都不会，因为它们此时在各自 semaphore 的 waiting queue 里面，并不在 ready queue 里面
+
+=== Readers-writers problem
+- A data set is shared among a number of concurrent processes
+  - readers: only read the data set; they do not perform any updates
+  - writers: can both read and write
+  - 多个 reader 可以共享，即同时读；但只能有一个 write 访问数据（写和读也不共享）
+- Solution
+  - semaphore *mutex* initialized to $1$
+  - semaphore *write* initialized to $1$
+  - integer *readcount* initialized to $0$
+- The writer process
+  ```c
+  do {
+    wait(write);
+    // write the shared data
+    signal(write);
+  }
+  ```
+- The readers process
+  ```c
+  do {
+      wait(mutex);
+      readcount++;
+      if (readcount == 1) // 如果是第一个 reader
+          wait(write);    // 就把 write 锁住
+      signal(mutex)
+      reading data // 这里 readers 之间不会卡住
+      wait(mutex);
+      readcount--;
+      if (readcount == 0) // 如果是 last reader
+          signal(write);  // 就把 write 释放掉
+      signal(mutex);
+  } while(TRUE);
+  ```
+  - mutex 用来保护 readcount，这里如果 count 是 1，就获得 write 的锁来保护这个 read
+  - 假设 writer 拿到了锁，来了 3 个 reader，那么第一个会 sleep 在 `write` 上，剩下 2 个 reader 会 sleep 在 `mutex` 上
+- Variations of readers-writers problem
+  - 现在这种写法是 Reader first：如果有 reader holds data，writer 永远拿不到锁，要等所有的 reader 结束。比如 RA, WA, RB，那么 WA 会一直等 RB 结束
+  - Writer first：如果 write ready 了，他就会尽可能早地进行写操作。如果有 reader hold data，那么需要等待 ready writer 结束后再读
+- 这种题型的几个难度级别
+  + 最难的是 definition 不告诉你
+  + 接着是告诉你 definition，只写代码
+  + 再接着是代码画行，减少可能性
+  + 再接着是行里面写部分（程序填空）
+  + 最简单的是所有都写了，只问问题让你解释
+
+=== Dining-philosophers problem
+- 哲学家就餐
+  - 五个哲学家，五根筷子，每个哲学家只会 thinking 和 eating，但是他们需要用筷子
+  - 每次只能拿一根筷子，但是要拿到两只筷子才能吃饭
+  - 能够检验一个 sync primitives 的 multi-resource synchronization
+- Naive solution
+  - semaphore *chopstick[5]* initialized to $1$
+  ```c
+  do {
+    wait(chopstick[i]);
+    wait(chopstick[(i+1)%5]);
+    eat
+    signal(chopstick[i]);
+    signal(chopstick[(i+1)%5]);
+    think
+  } while (TRUE);
+  ```
+  - 每个人都先拿自己左边的筷子，再准备拿右边的筷子，会导致卡死 (deadlock)
+- Solution (an asymmetrical solution)
+  - 奇数哲学家先拿左边，偶数哲学家先拿右边
+  ```c
+  do {
+    if (i % 2 == 0) { // even, right first
+        wait(chopstick[i]);
+        wait(chopstick[(i+1)%5]);
+    } else {          // odd, left first
+        wait(chopstick[(i+1)%5]);
+        wait(chopstick[i]);
+    }
+    eat
+    signal(chopstick[i]);
+    signal(chopstick[(i+1)%5]);
+    think
+  } while (TRUE);
+  ```
+
+= Deadlocks
+== System Model of deadlock
+- 前面 Synchronization 设计得不好就会导致 Deadlocks
+- Deadlock: a set of blocked processes each holding a resource and waiting to acquire a resource held by another process in the set
+  - 一个最简单的例子
+  #align(center, grid2(
+    grid2(
+      columns: 2,
+      column-gutter: 8pt,
+      row-gutter: 6pt,
+      [$P_1$],[$P_2$],
+      [wait(A)], [wait(B)],
+      [wait(B)], [wait(A)]
+    ),
+    fig("/public/assets/Courses/OS/2024-10-29-15-30-55.png", width: 50%)
+  ))
+  - Note: most OSes do not prevent or deal with deadlocks. 如果发生了死锁，就把它们 kill 掉
+
+#info[
+  - Deadlock problem
+  - System model
+  - Handling deadlocks
+    + deadlock prevention
+    + deadlock avoidance
+    + deadlock detection
+    + deadlock recovery
+]
+
+- *Deadlock 发生的四个条件*
+  - *Mutual exclusion*: 互斥，资源在一个时间只能被一个进程使用
+  - *Hold and wait*: 已经有了一些资源，同时想要更多资源
+  - *No preemption*: 已经获得的资源不能被抢占，只能由自己释放
+  - *Circular wait*
+
+== Resource-Allocation Graph
+- Two types of nodes
+  - Process node $P = {P_1, P_2, ..., P_n}$
+  - Resource node $R = {R_1, R_2, ..., R_m}$
+- Two types of edges
+  - Request edge: $P_i -> R_j$ 进程需要这个资源
+  - Assignment edge: $R_j -> P_i$ 资源已经分配给这个进程
+
+#note[
+  - If graph contains no cycles $=>$ no deadlock
+  - If graph contains a cycle
+    - if only one instance per resource type $=>$ deadlock
+    - if several instances per resource type $=>$ possibility of deadlock
+]
+
+== Handle Deadlocks
+- Ensure that the system will never enter a deadlock state
+  - *Prevention*
+  - *Avoidance*
+- Allow the system to enter a deadlock state and then recover - database
+  - *Deadlock detection* and *recovery*
+- Ignore the problem and pretend deadlocks never occur in the system - most OSes
+
+=== Deadlock Prevention
+- 打破死锁四个的任意一个条件
+- How to prevent mutual exclusion
+  - sharable 的可以，non-sharable 的没办法
+- How to prevent hold and wait
+  - 申请资源时不能有其他资源，要一次性申请所有需要的资源；只有所有资源都释放了才能再次申请
+  - 利用率低，而且可能有进程永远拿不到所有需要的资源，而无法开始
+- How to prevent no preemption
+  - 可以抢，但不实用
+- How to handle circular wait
+  - 给锁一个优先级排序，取锁的时候要求从高往低取锁。
+  - require that each process requests resources in an increasing order
+  - Many OS adopt this strategy，因为它很简单
+
+=== Deadlock Avoidance
+- 用一些算法，在分配资源之前，先判断是否会死锁，如果会死锁就不分配
+- Avoidance 基本都需要进程 request 多少资源的 extra information，这其实是 inpractical 的
+- Safe State
+  - 系统中所有进程的序列 $<P_1, P_2, ..., P_m>$
+  - 满足序列里的每一个进程都可以被满足（利用空闲的资源和之前的进程释放的资源）
+
+#note[
+  #grid(
+    columns: 2,
+    column-gutter: 12pt,
+    [
+      - If a system is in safe state $=>$ no deadlocks
+      - If a system is in unsafe state $=>$ possibility of deadlock
+      - Deadlock avoidance $=>$ ensure a system never enters an unsafe state
+    ],
+    image("/public/assets/Courses/OS/2024-10-30-16-19-23.png", width: 40%)
+  )
+]
+
+- Deadlock Avoidance Algorithms
+  - Single instance of each resource type $=>$ use resource-allocation graph
+    - 新增一种 edge: claim edge $P_i -> R_j$，表示进程想要这个资源，但还没 request
+    - [ ]
+  - Multiple instances of a resource type $=>$ use the banker’s algorithm
+    - 通过四个矩阵刻画一个时间内各个进程对各种资源的持有和需求情况
+      - available: 当前还没有被分配的空闲资源
+      - max: 进程所需要的总资源（计算中没啥用）
+      - allocation: 已经分配的资源
+      - need: 还需要分配多少资源
+    - 选取一个 need（的每一项都对应地）小于 available（的对应项）的进程，其运行完后会将 allocation 释放回 available，以此类推
+
+=== Deadlock Detection
+- 允许系统进入死锁，但是 Detect 并 Recover 它
+- Single Instance Resources
+  - 使用 wait-for graph，有环就有 deadlock
+  - 有一个 $n^2$ 的算法检测环
+- Multiple Instance Resources
+  - 类似银行家算法，使用 allocation, request, available 三个矩阵，对每种序列进行计算
+  - 如果找不到任何安全序列，则说明系统处于死锁状态
+
+=== Deadlock Recovery
+- 最暴力的方法，Terminate deadlocked processes
+- Options I: 把所有死锁着的进程杀掉，或者每次杀掉一个进程直到死锁环被破坏
+  - 选择哪个进程来 kill 是个问题
+    + priority of the process
+    + how long process has computed, and how much longer to completion
+    + resources the process has used
+    + resources process needs to complete
+    + how many processes will need to be terminated
+    + is process interactive or batch?
+- Options II: Resource preemption
+  - Select a victim
+  - Rollback
+  - Starvation
+    - How could you ensure that the resources do not preempt from the same process?
+
+#note(caption: "Takeaways")[
+  - Deadlock occurs in which condition?
+  - Four conditions for deadlock
+  - Deadlock can be modeled via resource-allocation graph
+  - Deadlock can be prevented by breaking one of the four conditions
+  - Deadlock can be avoided by using the banker’s algorithm
+  - A deadlock detection algorithm
+  - Deadlock recover
+]
+
+
 
 
 

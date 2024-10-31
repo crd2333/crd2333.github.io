@@ -108,6 +108,30 @@
 - 上节课操作后，所有物体都处在$[-1,1]^3$的立方体中，接下来把他画在屏幕上，这一步就叫做光栅化
   - 光栅化算法得名于光栅化显示器(CRT)，生成二维图像的过程是从上到下，从左到右一个像素一个像素来。
 - Raster == screen in German, rasterization == drawing onto the screen
+- 屏幕空间
+  - *视口变换*：（暂时忽略 z 轴）将$[-1,1]^2$变换到屏幕空间的矩阵
+    - 一是要考虑屏幕的宽高比，二是要考虑将坐标系原点移到左上角
+  $ M_"viewport"=mat(w/2,0,0,w/2; 0,h/2,0,h/2; 0,0,1,0; 0,0,0,1) $
+- 显示方式
+  + Cathode Ray Tube (CRT)：电子束扫描，优化——隔行扫描
+  + Frame Buffer：存储屏幕上每个像素的颜色值
+  + Flat Panel Display：LCD（液晶显示器）, OLED
+  + LED
+  + Electrophoretic Display：如 Kindle
+
+#note(caption: [ CG MVP 矩阵的联系和 CV 内外参矩阵 #h(2em) #text(fill: gray.darken(30%))[纯属个人理解]])[
+  - 如果读者对 CV 有所了解的话，MVP 变换跟 CV 里的内外参矩阵有很多相似之处
+  #fig("/public/assets/temp/2024-10-31-10-49-32.png", width: 50%)
+  - 我们可以把这个过程归纳一下，一共有 $4$ 个坐标系
+    + *{world}* 世界坐标系。可以任意指定 $x_w$ 轴 和 $y_w$ 轴，表示物体或者场景在真实世界中的位置
+    + *{camera}* 相机坐标系。相机在 {world} 坐标系里有 position, lookat, up，共 $6$ 个自由度。一般我们会把 {world} $->$ {camera} 的过程定义为：position 转到原点，$-z$ 轴作为 lookat，$y$ 轴作为 up
+    + *{image}* 图像坐标系，在图形学里我们也叫做 *NDC*(Normalized Device System) 坐标系，即归一化为一个 $[-1,1]^3$ 的正方体
+    + *{pixel}* 像素坐标系，也叫屏幕坐标系，图像的左上角为原点 $O_"pix"$, $u, v$ 轴和图像两边重合
+  - 从 CG 的视角：Model 矩阵是在 {world} 内的变换；View 矩阵是从 {world} 到 {camera}；Projection 矩阵是从 {camera} 到 {image}；最后 Viewport 矩阵是从 {image} 到 {pixel}
+  - 从 CV 的视角，外参矩阵是从 {world} 到 {camera}；内参矩阵是从 {camera} 直接到 {pixel}，但我们又把内外参矩阵的乘积也就是整个过程又称作*投影矩阵*
+  - 所谓*投影*，在 CG 中从 {camera} 到 NDC，已经非常接近 image 了（$z$ 只是用于可见性的深度），因此这一步叫做*投影*；而在 CV 中，*投影*取 {world} 直接投射到图像平面之意
+    - 命名上的差异，或许可一窥社区趣味与风向。CG 更关注渲染的真实性，在 NDC 坐标系内还要细化光照、着色、光栅化与光追之类，定义得更细节；CV 更关注计算机对视觉的理解，或者说从 3D 到 2D 的匹配与对应，投影概念定义得更宽泛
+]
 
 == 画线算法
 - DDA(Digital Differential Analyzer)：数字微分分析器，用来画直线，但受限于浮点数精度
@@ -126,45 +150,81 @@
     - 找到扫描线与多边形的*交点*，然后按照扫描线的方向*排序*，每两个交点之间*填充*
     - 也可以用 Breseham 的思想加速
 
-#hline()
+== Visible Algorithm
+- Hidden Surface Removal (Visible Algorithm)，总体而言有两种思路
+  - Object-space, Object Precision Algorithm
+    - 如 Back-face Culling, Painter's Algorithm
+    ```
+    for (each object in the world) {
+      determine the parts of the object whose view is
+      unobstructed by other parts or any other object;
+      draw those parts;
+    }
+    ```
+  - Image-space, Image Precision Algorithm
+    - 如 z-buffer
+    ```
+    for (each pixel in the image) {
+      determine the object closest to the viewer that is
+      intersected by the projector through the pixel;
+      draw the pixel;
+    }
+    ```
+- Back-face Culling
+  - 通过法向量判断三角形的正反面，只画正面
+  - 无法处理所有情况（如被遮挡的正面）
+- 画家算法(Painter's Algorithm)：油画家，先画远的，再画近的覆盖掉
+  - 物体作为一个整体有时候难以排序（一个三角形，每条边都一半架在另一条边上），一个简单的解决办法是把物体分成小块，引出 Warnock's Area Subdivision
+  #algo[
+    - Start with whole image
+    - If one of the easy cases is satisfied,draw what's in front
+      - front polygon covers the whole window or
+      - there is at most one polygon in the window
+    - Otherwise, subdivide region into 4 windows and repeat
+    - If region is single pixel,choose surface with smallest depth
+  ]
+  - Advantages:
+    + No over-rendering
+    + 可以实现 Anti-aliases. Go deeper to get sub-pixel information
+  - Disadvantages:
+    + Tests are quite complex and slow
+    + 对硬件极不友好
+- Z-buffering（深度缓冲）
+  - 怎么算深度？前面深度都是基于 vertex，现在要得到三角形内任意点的深度。可以用双线性插值（回忆之前的画线算法，用扫描线先得到两个扫描交点的插值，然后做扫描线上的插值）或者重心坐标得到。这个计算还是比较耗时的，所以在渲染时存一张深度图
+  - 暂不考虑相同深度，处理不了透明物体，另外 z-buffering 可能会与 MSAA 结合
 
-- 屏幕空间
-  - *视口变换*：（暂时忽略 z 轴）将$[-1,1]^2$变换到屏幕空间的矩阵
-    - 一是要考虑屏幕的宽高比，二是要考虑将坐标系原点移到左上角
-  $ M_"viewport"=mat(w/2,0,0,w/2; 0,h/2,0,h/2; 0,0,1,0; 0,0,0,1) $
-- 显示方式
-  + Cathode Ray Tube (CRT)：电子束扫描，优化——隔行扫描
-  + Frame Buffer：存储屏幕上每个像素的颜色值
-  + Flat Panel Display：LCD（液晶显示器）, OLED
-  + LED
-  + Electrophoretic Display：如 Kindle
+#note()[
+  - 这里我们可以介绍一个历史，z-buffer 很早就被提出来了，但这种粗暴的方式当时不被人所接受
+  - 人们 prefer 一种 closed-form 的形式，比如 Binary Space Partition Tree(BSP Tree)，早年间 2.5D 游戏一般就是这么做的（场景基本都不动）
+  - 或者用 K-d Tree
+]
+
+== Anti-Aliasing
 - 三角形：光栅化的基本单位
   - 原因：三角形是最基本（最少边）的多边形；其他多边形都可以拆分为三角形（建模常用四边形，但到了引擎里拆成三角形）；三角形必定在一个平面内；容易定义三角形的里外；三角形内任意一点可以通过三个定点的线性插值计算得到
 - 把三角形转化为像素：简单近似采样
   - 使用内积计算内点外点
   - 使用*包围盒*(Bounding Box)减小计算量，或者 incremental triangle traversal 等
-  - 问题：Jaggies（锯齿）/ Aliasing（走样）
+  - 问题：Jaggies（锯齿）/ Aliasing（走样，混叠）
 - 需要抗锯齿、抗走样的方法，为此先介绍采样理论：把到达光学元件上的光，产生的信息，离散成了像素，对这些像素采样，形成了照片
 - 采样产生的问题(artifacts)：走样、摩尔纹、车轮效应，本质都是信号变化频率高于采样频率
-- 反走样方法：Blurring(Pre-Filtering) Before Sampling
-  - 不能 Sample then filter, or called blurred aliasing
-- 为什么不行？为此介绍*频域、时域*的知识
-  - 傅里叶、滤波、卷积
-  - 卷积定理：时域的卷积 = 频域的乘积，反过来也成立
-  - 采样不同的间隔，会引起频谱不同间隔进行复制，所相交的部分就是走样
-  - 所谓反走样就是把高频信息砍掉，砍掉虚线方块以外，再以原始采样频率进行采样，这样就不易交叉了
-- MSAA(Multi-Sample Anti-Aliasing)：多重采样抗锯齿
-  - 把一个像素划分为几个小点，用小点的覆盖率来模拟大点的颜色
+  - 香农采样定理：采样频率 $>=$ 原始频率的两倍，才能很好地恢复
+  - 总体而言主要有两种方式 —— Super Sampling（提高采样率）, Area Sampling（干掉高频信号）
+- Super Sampling —— MSAA(Multi-Sample Anti-Aliasing)，多重采样抗锯齿
+  - 分辨率定死，但增大采样率。把一个像素划分为几个小点，用小点的覆盖率来模拟大点的颜色
   - 增大计算负担，但也有一些优化，比如只在边缘处采样、复用采样点等
   - 另外的一些里程碑式的抗锯齿方案：FXAA, TAA
+- Area Sampling —— Blurring(Pre-Filtering) Before Sampling
+  - 不能 Sample then filter, or called blurred aliasing
+  - 为什么不行？为此介绍*频域、时域*的知识
+    - 傅里叶、滤波、卷积
+    - 卷积定理：时域的卷积 = 频域的乘积，反过来也成立
+    - 采样不同的间隔，会引起频谱不同间隔进行复制，所相交的部分就是走样
+    - 所谓反走样就是把高频信息砍掉，砍掉虚线方块以外，再以原始采样频率进行采样，这样就不易交叉了
 - Super resolution
   - 把图片从低分辨率放大到高分辨率
   - 本质跟抗锯齿类似，都是采样频率不够的问题
   - 使用 DLSS(Deep Learning Super Sampling) 技术
-- 考虑远近物体一起被画在屏幕上的问题
-  - 画家算法(Painter's Algorithm)：油画家，先画远的，再画近的覆盖掉
-  - 但并不总是有效，为此引入 Z-buffering（深度缓冲）：既然没办法判断三角形整体的深度，那么就判断每个像素的深度，在渲染时存一张深度图
-  - 暂不考虑相同深度，处理不了透明物体，另外 z-buffering 可能会与 MSAA 结合
 
 == \*OpenGL
 - OpenGL 是一个跨平台的图形 API，用于渲染 2D 和 3D 图形

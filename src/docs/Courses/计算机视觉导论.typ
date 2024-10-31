@@ -431,23 +431,134 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
   - 相机是如何将三维坐标点映射到图像平面上的？(camera model)
   - 如何计算相机在世界坐标系下的位置和方向?(camera calibration and pose estimation)
   - 如何从图像中重建出不知道的三维结构？(structure from motion)
+#q[这一章节可以部分参考我的 #link("https://crd2333.github.io/note/AI/SLAM/index/")[SLAM 笔记]，以及 SLAM 视觉十四讲]
 
 == Camera Model
-#fig("/public/assets/Courses/CV/2024-10-24-11-59-15.png")
+#fig("/public/assets/Courses/CV/2024-10-24-11-59-15.png", width: 70%)
 - 这整个过程可以总结为三个步骤：
   + 坐标系变换:将世界坐标系的点变换到相机坐标系
   + 透视投影：将相机坐标系的点投影到像平面上
   + 成像平面转化为像素平面：完成透视投影后我们得到的坐标单位是长度单位（毫米、米等），但是计算机上表示坐标是以像素为基本单元的，这就需要我们进行一个转化
-  - 如果读者对 CG 有所了解的话，就对应于 MVP 里的视图变换 View 和投影变换 Projection，以及视口变换 Viewport
 - 而这一系列过程可以定义为两个矩阵（两次变换）:
   + 外参矩阵(Extrinsic Matrix): 坐标系变换
   + 内参矩阵(Intrinsic Matrix): 透视投影与转化为像素平面
+- 内参外参与总的投影矩阵
+  #fig("/public/assets/Courses/CV/2024-10-31-10-20-39.png", width: 70%)
 
+#note(caption: [CV 内外参矩阵和 CG MVP 矩阵的联系 #h(2em) #text(fill: gray.darken(30%))[纯属个人理解]])[
+  - 如果读者对 CG 有所了解的话，就对应于 MVP 里的视图变换 View 和投影变换 Projection，以及视口变换 Viewport
+  #fig("/public/assets/Courses/CV/2024-10-31-10-49-32.png", width: 50%)
+  - 我们可以把这个过程归纳一下，一共有 $4$ 个坐标系
+    + *{world}* 世界坐标系。可以任意指定 $x_w$ 轴 和 $y_w$ 轴，表示物体或者场景在真实世界中的位置
+    + *{camera}* 相机坐标系。相机在 {world} 坐标系里有 position, lookat, up，共 $6$ 个自由度。一般我们会把 {world} $->$ {camera} 的过程定义为：position 转到原点，$-z$ 轴作为 lookat，$y$ 轴作为 up
+    + *{image}* 图像坐标系，在图形学里我们也叫做 *NDC*(Normalized Device System) 坐标系，即归一化为一个 $[-1,1]^3$ 的正方体
+    + *{pixel}* 像素坐标系，也叫屏幕坐标系，图像的左上角为原点 $O_"pix"$, $u, v$ 轴和图像两边重合
+  - 从 CG 的视角：Model 矩阵是在 {world} 内的变换；View 矩阵是从 {world} 到 {camera}；Projection 矩阵是从 {camera} 到 {image}；最后 Viewport 矩阵是从 {image} 到 {pixel}
+  - 从 CV 的视角，外参矩阵是从 {world} 到 {camera}；内参矩阵是从 {camera} 直接到 {pixel}，但我们又把内外参矩阵的乘积也就是整个过程又称作*投影矩阵*
+  - 所谓*投影*，在 CG 中从 {camera} 到 NDC，已经非常接近 image 了（$z$ 只是用于可见性的深度），因此这一步叫做*投影*；而在 CV 中，*投影*取 {world} 直接投射到图像平面之意
+    - 命名上的差异，或许可一窥社区趣味与风向。CG 更关注渲染的真实性，在 NDC 坐标系内还要细化光照、着色、光栅化与光追之类，定义得更细节；CV 更关注计算机对视觉的理解，或者说从 3D 到 2D 的匹配与对应，投影概念定义得更宽泛
+]
 
+#let b0 = math.bold("0")
+#let bp = math.bold("p")
+== Camera Calibration
+- 有了内外参矩阵的定义后，我们自然想通过像素坐标和实际空间坐标来得到这两个矩阵
+  - 个人理解，所谓*标定*更倾向于准确求得内参，毕竟外参也就是位姿时刻会变化，而内参是相机出厂时就固定、且一般商家会明确给出的
+- 我们需要同时知道若干像素点的 2D 位置和 3D 世界坐标，所以我们希望有一个东西（标定板）能够使我们方便测量这两种坐标，比如黑白棋盘，它的坐标位置是很方便计算的，可以人为定义世界坐标系（尽可能方便计算）。具体步骤如下：
++ Capture an image of an object with known geometry (e.g. a calibration board)
++ 寻找 3D 场景点和图像特征点的对应关系
++ 每个配对 $i$ 可以得到方程 $[u^((i)),v^((i)),1]^T equiv P [x_w^((i)),y_w^((i)),z_w^((i)),1]^T$，每个都包含两个线性方程
++ Solve $P$
+  - 利用之前求解单应矩阵的方法，把 $N$ 个方程转化成 $A bp = b0$ 的形式(Rearranging the terms)，随后
+    $ min_bp norm(A bp) ~~~~~ "such that" norm(bp) = 1 $
+  - 也就是求解最小二乘法，具体过程不需要掌握，但要知道解就是 $A^T A$ 的*最小特征值*对应的*特征向量*，即可以对 $A$ 应用奇异值分解
++ 最后，把它重组回 $P$，然后分解成内参 $K$ 和外参矩阵，我们把它记为
+  $ P_(3*4) = K_(3*3) mat(R_(3*3),bt_(3*1); b0,1) $
+  - 通常来说，将一个矩阵分解为两个特定矩阵是做不到的，但是我们的 $K$ 是一个*上三角矩阵*，且外参矩阵中的 $3 times 3$ 旋转子矩阵 $R$ 是*正交*的，因此我们可以通过 QR 分解实现对 $K$ 和 $R$ 的求解，而剩下的 $bt$ 就很好求了
 
+== Visual Localization Problem
+- 下面我们来看视觉定位。视觉定位的任务：内参已知，场景已知，通过照片计算出相机位姿（外参）
+- 视觉定位总体有两个步骤
+  + 第一步(Find 3D-2D correspondences)，找到 3D 场景下的特征点与 2D 图像中的特征点与它们的匹配。本质上是图像的特征匹配，不再赘述
+  + 第二步(Solve camera pose)，利用 3D-2D 求解相机位姿（外参）
+    - This is called Perspective-n-Point (PnP) problem 多点透视成像问题
+- 对于 PnP 问题，有 $6$ 个未知的参数，$3$ 个旋转（$3 times 3$ 但只有 $3$ 个自由度），$3$ 个平移，因此也叫做 6DoF pose estimation 问题
+  - 由于一个点对对应两个方程，因此我们至少需要 $3$ 个点对来求解 PnP 问题
+- Direct Linear Transform (DLT) solution
+  - 最简单的方法，应用之前原始相机标定问题的方法，直接求解投影矩阵，然后再分解为 $K_(3*3) mat(R_(3*3),bt_(3*1); b0,1)$
+  - 但这是不合算的，因为我们现在相机内参是已知的，一方面这样求解忽略了已知信息而不高效，另一方面分解出来会有误差
+- P3P
+  - P3P 就是使用几何上的方法，用最少的点对来求解相机位姿
+  - P3P 问题解到最后会有 $4$ 个可能解，因此往往会用 $4$ 个点来保证答案的唯一性（其实也可以把 $4$ 个）
+- PnP
+  - 其实 3D-2D correspondences 远不止 $3$ 个 $4$ 个，我们可以直接转化为一个优化问题，即最小化*重投影误差(reprojection error)*
+  - 给定相机的外参，把三维点投影到图像上，如果外参是对的，则投影点和特征点的距离（误差）应该最小
+  $ min_(R,t) sum_i norm(p_i - K(R P_i + t)) $
+  - 使用 P3P 问题的解来初始化，并用高斯牛顿法进行优化
+    - 当然，这里涉及到选哪三个点，因为 3D-2D 匹配有可能是有问题的，需要找到合理的三个点。怎么做？RANSAC
+    - 具体而言，对每组三个点计算 P3P 问题，不优化直接做重投影误差，使用 RANSAC 找出最好的一组，拿来做优化问题的初始值
 
+== Structrue from motion
+- 下面再回到 SfM。回顾一下 SfM 的任务：内参已知，场景未知，从多视角图片恢复相机位姿（外参），并重建场景（三维点坐标）
+- 一般通过如下步骤
+  + Find a few reliable corresponding points
+  + Find relative camera position $t$ and orientation $R$
+    - 我们可以假定第一张图的相机为相机坐标系的原点，后续计算每一帧相对于上一帧的位姿
+  + Find 3D position of scene points
 
+=== Epipolar Geometry 对极几何
+- 描述同一个 3D 点，在不同视角的两张图片特征点之间的对应集合关系(2D-2D)
+#fig("/public/assets/Courses/CV/2024-10-31-11-09-07.png", width: 70%)
+- 在正式开始之前先描述一些术语
+  - 基线：两个相机中心的连线，$O_l O_r$
+  - 对极点 Epipole：两个相机中心连线与像平面的交点，如图中的 $e_l, e_r$。可以理解为在一个相机视角下另一个相机在该相机平面的投影点
+  - 对极平面 Epipolar Plane: 由实际点 $P$ 和两个相机中心形成的平面。对于某个场景中的点，其对极面是唯一的
+  - 对极线：对极面与成像平面的交线。
+- 对极几何的公式特别多，这里不仔细讲，总体而言的推导思路是
+  + 把极平面法向量表示为 $n = t times x_l$，有 $x_l dot n = x_l dot t times x_l = 0$，又有 $x_l = R x_r+t$
+  + 转化为 $[x_l, y_l, z_l] E [x_r,y_r,z_r]^T$，当我们算出本质矩阵(Essential Matrix) $E$ 后可以分解 $E=T_times R$ 得到 $R, t$
+  + 但我们并不知道场景点相对相机坐标系的三维坐标，只知道像素平面上的二维坐标，要把 $bx_l, bx_r$ 通过内参矩阵转化为像素坐标 $[u_l,v_l,1] (K_l^(-1))^T E K_r^(-1) [u_r,v_r,1]^T = [u_l,v_l,1] F [u_r,v_r,1]^T$，表示成基础矩阵(Fundamental Matrix) $F$ 的形式。由于基础矩阵也是homogenous的，因此在求解时可以加上约束 $norm(f)=1$
+  + 也就是求解基本矩阵 $F$，通过已知的相机内参求解出 $E$，再使用 SVD 就得到 $R, t$
+- 总体 Pipeline
+  + For each correspondence $i$, write out epipolar constraint
+  + Rearrange terms to form a linear system
+  + Find least squares solution for fundamental matrix $F$
+  + Compute essential matrix $E$ from known left and right intrinsic camera matrices and fundamental matrix $F$
+  + Extract $R$ and $bt$ from $E$
 
+=== Triangulation 三角测量
+- 有了对应的二维特征点，相机参数以及两个相机坐标系的相对位置关系，下一步就是计算出场景点的实际三维坐标
+- 左右两个相机的投影矩阵分别可以得到一个 3D-2D 的对应关系
+  $
+  bu_l = K_l mat(R, bt; b0, 1) bx_r, ~~~~~~ bu_r = K_r bx_r
+  $
+  - 假如数据都是准确的，那么 $O_l X_l, O_r X_r$ 应该相交于场景点 $X$，但是多数情况下会有误差，不过我们有四个方程三个未知数，可以通过最小二乘得到最优解。用之前同样的方法，rearrange the terms，得到
+  $
+  A_(4 times 3) bx_r = b_(4 times 1)
+  $
+  - the least squares solution:
+  $ bx_r = (A^T A)^(-1) A^T b $
+- 另一种选择是，通过优化重投影误差进行求解
+  $ "cost"(P) = norm(bu_l-hat(bu_l))^2 + norm(bu_r-hat(bu_r))^2 $
+  - 没有展开
+
+=== Multi-frame Structure from Motion
+- 之前我们一直在讲两个图像（两个相机）之间的匹配和测量，现在我们考虑多帧情况下怎么做
+- Sequential SFM（或者说增量式的 SfM）步骤：
+  + 从其中两张开始，使用前述方法重建
+  + 不断取出新的图像，根据已知条件计算相机位姿，新的相机可能看到更多的三维点，并优化现有的点
+  + 使用 Bundle Adjustment 进行优化（消除累积误差）
+- Bundle Adjustment
+  - 在所有相机坐标系下优化所有点的重投影误差 #h(1fr)
+  #fig("/public/assets/Courses/CV/2024-10-31-12-03-48.png", width: 70%)
+- 其实也有 Global SfM，这里没讲
+
+#v(1em)
+
+- 最后还讲了一个三维重建工具 COLMAP
+  - contains SfM, MVS pipeline, with a graphical and command line interface
+
+= Depth estimation and 3D reconstruction
 
 
 
