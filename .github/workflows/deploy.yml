@@ -20,7 +20,12 @@ jobs:
     steps:
       - name: Checkout your repository using git
         uses: actions/checkout@v4
-
+        with:
+          lfs: true
+      # - name: Setup LFS and Download LFS objects
+      #   run:
+      #     git lfs pull
+      #     git lfs install
       # - name: Cache Fonts
       #   id: cache-fonts
       #   uses: actions/cache@v2
