@@ -157,7 +157,7 @@ order: 4
 - CPU 的工作流改变有两种
   + 可预见的(bne/beq, jal , etc)
   + 不可预见的(Exception and Interruption)
-  - Exception: Arises within the CPU (e.g., overflow, undefined opcode, syscall)
+  - Exception: Arises within the CPU (e.g. overflow, undefined opcode, syscall)
   - Interrupt: From an external I/O controller
   - 有的时候会把二者混起来
   - 异常不一定是不好的，它是 CPU 指令的异步补充

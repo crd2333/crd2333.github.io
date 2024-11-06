@@ -364,7 +364,7 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
 - 与 lec3 介绍的 image filtering 相比较，filtering 改变的是图像的像素值(intensity)，而 warping 改变的是图像的形状(shape)
 
 == Parametric global warping
-- 参数化全局变形，即图像的每一个坐标都遵循同一个变换函数
+- 参数化全局变形，即图像的每一个坐标都遵循同一个变换函数 #h(1fr)
   $ p' = T(p) $
   - 比如 translation, rotation, aspect
   - 这个 $T$ 可以用 matrix 来描述
@@ -373,11 +373,11 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
   - 如果不是，那就称为 perspective transformation 投影变换，或者叫单应变换(Homography)
 
 == Projective Transformation(Homography)
-- Homography \
+- Homography #h(1fr)
   $ vec(x'_i, y'_i, 1) approx mat(h_00, h_01, h_02; h_10, h_11, h_12; h_20, h_21, h_22) vec(x_i,yi,1) $
   - $9$ 个系数但自由度为 $8$，因为在其次坐标系里，对整个矩阵乘以一个非零常数不会改变结果
 - 在什么情况下两张图片的 transformation 是 homography？
-  - Camera rotated with its center unmoved
+  - Camera rotated with its center unmoved  #h(1fr)
     #fig("/public/assets/Courses/CV/2024-10-24-10-46-00.png", width: 50%)
   - Camera center moved and the scene is a plane
     - 比如，投影仪的结果，在教室左边和右边的人看来还是一样的
@@ -444,6 +444,7 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
   + 内参矩阵(Intrinsic Matrix): 透视投影与转化为像素平面
 - 内参外参与总的投影矩阵
   #fig("/public/assets/Courses/CV/2024-10-31-10-20-39.png", width: 70%)
+  - 投影矩阵里还分为透视矩阵、仿射矩阵、弱透视矩阵等，可以参考 #link("https://blog.csdn.net/LoseInVain/article/details/102883243")[这篇文章]，讲得很清晰
 
 #note(caption: [CV 内外参矩阵和 CG MVP 矩阵的联系 #h(2em) #text(fill: gray.darken(30%))[纯属个人理解]])[
   - 如果读者对 CG 有所了解的话，就对应于 MVP 里的视图变换 View 和投影变换 Projection，以及视口变换 Viewport

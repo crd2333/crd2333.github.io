@@ -187,7 +187,7 @@ order: 5
 - 通过地址转换实现
   #fig("/public/assets/Courses/计组/img-2024-05-20-08-55-56.png")
 - Page faults
-  - huge miss penalty, thus pages should be fairly *large* (e.g., 4KB)
+  - huge miss penalty, thus pages should be fairly *large* (e.g. 4KB)
   - reducing page faults is important (*LRU* is worth the price)
   - can handle the faults *in software* instead of hardware
   - using write-through is too expensive so we use *write back*

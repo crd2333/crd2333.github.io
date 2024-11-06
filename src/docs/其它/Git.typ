@@ -31,7 +31,7 @@
   - 通过 `rebase` 还可以达成许许多多奇怪的效果，但是慎用
   - e.g.
     - 我想要调转 $A -> B -> C -> D("HEAD")$ 中 $B$ 和 $C$ 的顺序，可以 `git rebase -i HEAD~3`，然后把在弹出的交互界面 (vim or nano, or GitLens Interactive Rebase for me) $B$ 和 $C$ 的顺序调换
-    - 我想要把现在暂存区里的内容提交到上上次 commit 里，可以先 `git commit -m "to be merged"`，然后 `git rebase -i HEAD~2`，把新的 commit 往下拖一格，把 `pick` 改成 `squash`（合并到 `HEAD~2` 去），然后保存退出，再次弹出的界面里可以编辑 commit message，保存退出即可
+    - 我想要把现在暂存区里的内容提交到上上次 commit 里，可以先 `git commit -m "to be merged"`，然后 `git rebase -i HEAD~3`，把新的 commit 往下拖一格，把 `pick` 改成 `squash`（合并到 `HEAD~3` 去），然后保存退出，再次弹出的界面里可以编辑 commit message，保存退出即可
 - *删除某个提交*
   - `git reset HEAD^`，删除最近的一个提交
   - 有 $3$ 个选项

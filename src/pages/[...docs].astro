@@ -5,7 +5,7 @@ import { Typst } from "astro-typst/src/components";
 import fs, { promises as fsp } from "fs";
 import { join } from "path";
 import yaml from "js-yaml";
-import { finished } from "stream/promises";
+import { pipeline } from "stream/promises";
 
 interface Frontmatter {
   order?: number;
@@ -17,11 +17,14 @@ export async function get_frontmatter(path: string) {
   const readStream = fs.createReadStream(path, {start: 0, end: 100}); // read the first 100 bytes, maybe need more
 
   let code = '';
-  for await (const chunk of readStream) {
-    code += chunk;
-  }
-
-  await finished(readStream);
+  await pipeline(
+    readStream,
+    async function* (source) {
+      for await (const chunk of source) {
+        code += chunk;
+      }
+    }
+  );
 
   const match = code.match(/^---\r?\n([\s\S]*?)[\r?\n]*---/);
   const frontmatter = match === null ? null : yaml.load(match[1]) as Frontmatter;

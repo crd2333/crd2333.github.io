@@ -84,8 +84,8 @@ order: 6
   #fig("/public/assets/Courses/计组/img-2024-05-27-09-25-51.png")
 - Types of buses:
   - processor-memory (short, high speed, custom design)
-  - backplane (high speed, often standardized, e.g., PCI)
-  - I/O (lengthy, different devices, standardized, e.g., SCSI)
+  - backplane (high speed, often standardized, e.g. PCI)
+  - I/O (lengthy, different devices, standardized, e.g. SCSI)
   - 在最开始，Backplane bus 不仅控制 Processor 和 Memory，还要支持不同的 I/O 设备
     #fig("/public/assets/Courses/计组/img-2024-05-27-09-29-53.png")
   - ...
@@ -112,9 +112,9 @@ order: 6
   - 常见四种仲裁机制，主要考量两点：bus priority、fairness
   + daisy chain arbitration: 菊花链，阻塞式级联（不是很公平）
     - 有一种*计数器*的改进，起始查询的位置不固定
-  + centralized, parallel arbitration (requires an arbiter), e.g., PCI
-  + self selection, e.g., NuBus used in Macintosh（不需要 master，每个设备根据自己的优先级自行选择）
-  + collision detection, e.g., Ethernet（如果碰撞了就都收回，过段时间再尝试）
+  + centralized, parallel arbitration (requires an arbiter), e.g. PCI
+  + self selection, e.g. NuBus used in Macintosh（不需要 master，每个设备根据自己的优先级自行选择）
+  + collision detection, e.g. Ethernet（如果碰撞了就都收回，过段时间再尝试）
 - Bus Standards
   - SCSI, PCI, IPI, USB, HDMI
 

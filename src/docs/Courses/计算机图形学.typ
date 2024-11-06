@@ -121,7 +121,7 @@
 
 #note(caption: [ CG MVP 矩阵的联系和 CV 内外参矩阵 #h(2em) #text(fill: gray.darken(30%))[纯属个人理解]])[
   - 如果读者对 CV 有所了解的话，MVP 变换跟 CV 里的内外参矩阵有很多相似之处
-  #fig("/public/assets/temp/2024-10-31-10-49-32.png", width: 50%)
+  #fig("/public/assets/Courses/CV/2024-10-31-10-49-32.png", width: 50%)
   - 我们可以把这个过程归纳一下，一共有 $4$ 个坐标系
     + *{world}* 世界坐标系。可以任意指定 $x_w$ 轴 和 $y_w$ 轴，表示物体或者场景在真实世界中的位置
     + *{camera}* 相机坐标系。相机在 {world} 坐标系里有 position, lookat, up，共 $6$ 个自由度。一般我们会把 {world} $->$ {camera} 的过程定义为：position 转到原点，$-z$ 轴作为 lookat，$y$ 轴作为 up
@@ -268,18 +268,30 @@
   + 着色频率、图形管线、纹理映射
   + 插值、高级纹理映射
 ]
-- 计算机图形学领域定义为：为物体赋予*材质*的过程（把材质和着色合在一起），但不涉及 shadow(shading is local!)
+- 什么是 *color*？brains's reaction to a specific visual stimulus. 是观察者体验到的主观感觉。没有观察者，就没有所谓的颜色
+  - Depend on
+    + Physics of light
+    + Interaction of light with physical materials
+    + Interpretation of the resulting phenomenon by the human visual system and the human brain
+  - 我们将会在 @color 处更详细讨论
+- 计算机图形学领域把 shading 定义为：为物体赋予*材质*的过程（把材质和着色合在一起），但不涉及 shadow(shading is local!)
 - 输入：Viewer direction $v$, Surface normal $n$, Light direction $I$(for each of many lights, Surface parameters(color,shininess)
 - 一些物理的光学知识
-- Lambertian(Diffuse) Term（漫反射）
+  - 主要分为几何光学 Particle Model 和波动光学 Wave Model，我们主要研究前者
+  - 性质
+    + 特定频率沿直线传播
+    + 光子携带能量 $e=h f$，有波长，行为具有周期性
+    + 颜色取决于波长，亮度取决于光子数量
+    + 光的波谱
+- Lambertian(Diffuse) Term 漫反射
   - 在某一 shading point，有 $L_d = k_d I_d \/ r^2 max(0, n dot l)$
   - $k_d$ 是漫反射系数，$I_d$ 是光源强度，$n$ 是法向量，$l$ 是光线方向，$r$ 是光源到点的距离
   - 也可以用半球积分来推导
-- Specular Term（高光）
+- Specular Term 高光
   - 亮度也取决于观察角度，用一个 trick 转化计算：半程向量(half vector) $h = (v + l) \/ ||v + l||$
   - $L_s = k_s I_s \/ r^2 max(0, n dot h)^p$
   - 注意简化掉了光通量项，以及 $p$ 是高光系数，$v$ 是观察方向
-- Ambient Term（环境）
+- Ambient Term 环境
   - 过于复杂，一般用一个常数来代替
   - $L_a = k_a I_a$
 - 综合得到 Blinn-Phong 模型
@@ -288,20 +300,27 @@
   - Flat Shading, Gouraud Shading, Phong Shading，平面、顶点、像素，依次增加计算量
   - 平面着色的法向量很好理解，但顶点和像素就绕一些，需要插值方法得到平滑效果
 - Graphics(Real-time Rendering) Pipeline
-  - 顶点处理(Vertex Processing) $->$ 三角形处理(Triangle Processing) $->$ 光栅化(Rasterization) $->$ 片元处理(Fragment Processing) $->$ 帧缓冲处理(Framebuffer Processing)
+  - *命令*(Command) $->$ *顶点处理*(Vertex Processing) $->$ *三角形处理*(Triangle Processing) 或者更宽泛地 *图元装配*(Primitives Assembly) $->$ *光栅化*(Rasterization) $->$ *片元处理*(Fragment Processing) $->$ *帧缓冲处理*(Framebuffer Processing) $-$ *显示*(Display)
+  #fig("/public/assets/Courses/CG/2024-11-06-09-33-43.png", width: 50%)
   - 需要理解之前讲解的各个操作归属于哪个阶段
-    + 顶点处理：作用是对所有顶点数据进行MVP变换，最终得到投影到二维平面的坐标信息（同时为Zbuffer保留深度z值）。超出观察空间的会被剪裁掉
-    + 三角形处理：容易理解，就是将所有的顶点按照原几何信息变成三角面，每个面由3个顶点组成
-    + 光栅化：得到了许许多多个三角形之后，接下来的操作自然就是三角形光栅化了，涉及到抗锯齿、采样方法等
-    + 片元处理：在进行完三角形的光栅化之后，知道了哪些在三角形内的点可以被显示，通过片元处理阶段的着色问题确定每个像素点或者说片元(Fragement)的颜色[注：片元可能比像素更小，如 MSAA 抗拒齿操作的进一步细分得到的采样点]。该阶段部分工作可能在顶点处理阶段完成，因为我们需要顶点信息对三角形内的点进行属性插值（e.g. 在顶点处理阶段就算出每个顶点的颜色值，如 Gouraud Shading），当然这一阶段也少不了Z-Buffer来帮助确定深度。另外，片元处理涉及纹理映射的步骤
+    + *顶点处理*：作用是对所有顶点数据进行 MVP 变换，最终得到投影到二维平面的坐标信息（同时为 Zbuffer 保留深度 $z$ 值）。超出观察空间的会被剪裁掉。另外，顶点处理涉及*纹理映射*的步骤。具体而言做了：Vertex transformation, Normal transformation, Texture coordinate generation, Texture coordinate transformation, Lighting(light sources and surface reflection)
+    + *三角形处理*或者说*图元装配*
+      - 如果是三角形，容易理解，就是将所有的顶点按照原几何信息变成三角面，每个面由 $3$ 个顶点组成；类似地， $1$ vert $->$ point, $2$ verts $->$ line
+      - 还做了 Clipping, Perspective projection, Transform to window coordinates (viewport), Determine orientation(CW/CCW), Back-face cull
+    + *光栅化*：得到了许许多多个三角形之后，接下来的操作自然就是三角形光栅化了，涉及到抗锯齿、采样方法等。具体而言：Setup(per-triangle), Sampling(triangle =(fragments)), Interpolation(interpolate colors and coordinates)
+    + *片元处理*：在进行完三角形的光栅化之后，知道了哪些在三角形内的点可以被显示，通过片元处理阶段的着色问题确定每个像素点或者说片元(Fragement)的颜色[注：片元可能比像素更小，如 MSAA 抗拒齿操作的进一步细分得到的采样点]。该阶段部分工作可能在顶点处理阶段完成，因为我们需要顶点信息对三角形内的点进行属性插值（e.g. 在顶点处理阶段就算出每个顶点的颜色值，如 Gouraud Shading），当然这一阶段也少不了 Z-Buffer 来帮助确定深度。另外，片元处理也涉及*纹理映射*的步骤。具体而言：Combine texture sampler outputs, Per-fragment shading
+    + *帧缓冲处理*：Owner, scissor, depth, alpha and stencil tests; Blending or compositing
+    + *显示*：Gamma correction 伽玛校正，Analog to digital conversion 模数转换
+  - 其中 Vertex Processing, Primitives Assembly, Fragement Processing 是 programmable 的，分别对应 vertex shader, geometry shader, fragment shader
 - Shaders
   - 着色器，运行于 GPU 上
-  - GLSL 语言
+  - GLSL 语言实现 Programmable Graphics Pipeline
   - 每个顶点执行一次 $->$ 顶点着色器 vertex shader
   - 每个像素执行一次 $->$ 片元着色器 fragment shader，或者像素着色器 pixel shader
+  - Geometry shader 一般是不怎么改的
 - 纹理映射
-  - 3D世界的物体的表面是2D的，将其展开就是一张图，纹理映射就是将这张图映射到物体上
-  - 如何知道2D的纹理在3D的物体上的位置？通过纹理坐标。有手动（美工）和自动（参数化）的方法，这里我们就认为已经知道3D物体的每一个三角形顶点对应的纹理 $u v(in [0,1])$ 坐标
+  - 3D 世界的物体的表面是 2D 的，将其展开就是一张图，纹理映射就是将这张图映射到物体上
+  - 如何知道 2D 的纹理在3D的物体上的位置？通过纹理坐标。有手动（美工）和自动（参数化）的方法，这里我们就认为已经知道 3D 物体的每一个三角形顶点对应的纹理 $u v(in [0,1])$ 坐标
   - 四方连续纹理：tiled texture，保证纹理拼接时的连续性
 - 三角形内插值: 重心坐标(Barycentric Coordinates)
   - 重心坐标：$(x,y)=al A + beta B + ga C ~~~ (al+beta+ga=1)$，通过 $al, beta, ga >= 0$ 可以任意表示三角形内的点，且与三个顶点所在坐标系无关。这个重心坐标跟三角形重心不是一回事，三角形重心的重心坐标为 $(1/3, 1/3, 1/3)$
@@ -335,12 +354,15 @@
 - 阴影纹理
   - 阴影可以预先计算好，直接写在 texture 里，然后把着色结果乘以阴影纹理的值
 - 3D Texture 和体渲染
+- 图形渲染管线
 - （讲完 Geometry 后回来），阴影映射(Shadow Mapping)
   - 图像空间中计算，生成阴影时不需要场景的几何信息；但会产生走样现象
   - Key idea：不在阴影里则能被光源和摄像机同时看道；在阴影里则能被相机看到，但不能被光源看到
   - Step1：在光源处做光栅化，得到深度图（shadow map，二维数组，每个像素存放深度）；Step2：从摄像机做光栅化，得到光栅图像；Step3：把摄像机得到图像中的每个像素所对应的世界空间中物体的点投影回光源处，得到该点的深度值，将此数值跟该 点到光源的距离做比较（注意用的是世界空间中的坐标，即透视投影之前的）
   - 浮点数精度问题，shadow map 和光栅化的分辨率问题（采样频率）
   - 硬阴影、软阴影（后者的必要条件是光源有一定大小）
+
+
 
 = Geometry 几何
 #info()[
@@ -464,7 +486,7 @@
   - 注意，入射光不止来自光源，也可能是其他物体反射的光。递归思想，反射出去的光 $L_r$ 也可被当做其他物体的入射光 $E_i$
 - 推广为渲染方程（绘制方程）：$ L_o (p, omega_o)=L_e (p, omega_o) + int_(Omega^+) f_r (p, omega_i, omega_o) L_i (p, omega_i) (n dot omega_i) dif omega_i $
 - 把式子通过“算子”概念简写为 $L=E+K L$，然后移项泰勒展开得到 $L=E+K E+K^2 E+...$，如下图，光栅化一般只考虑前两项，这也是为什么我们需要光线追踪
-  #fig("/public/assets/Courses/CG/img-2024-07-31-23-36-46.png")
+  #fig("/public/assets/Courses/CG/img-2024-07-31-23-36-46.png", width: 70%)
   - 全局光照 = 直接光照(Direct Light) + 间接光照(Indirect Light)
 
 == 蒙特卡洛路径追踪(Path Tracing)
@@ -711,7 +733,7 @@
   - 在 focal point 附近的一段范围内的 CoC 并不大（比一个像素小或者差不多大），如果从场景中来的光经过理想透镜后落在这一段内，可以认为场景中的这段深度的成像是清晰、锐利的
     #fig("/public/assets/Courses/CG/img-2024-08-05-14-27-55.png")
 
-= Color and Perception 光场、颜色与感知
+= Color and Perception 光场、颜色与感知 <color>
 - 光场(Light Field / Lumigraph)
 - 一个案例：人坐在屋子里，用一张画布将人眼看到的东西全部画下来。然后在人的前面摆上这个画布，以此 2D 图像替代 3D 场景以假乱真（这其实就是VR的原理）
 
@@ -727,7 +749,7 @@
   - 用一个包围盒套住物体。从任何位置、任何方向看向物体，与包围盒有一个交点；由于光路可逆，也可以描述为：从包围盒上这个交点，向任意方向发射光线。如果我们知道包围盒(2D)上任意一点向任意方向(2D)发射光线的信息(radiance)，这就是光场（个人理解：有点往 Path Tracing 里面引入纹理映射的感觉）
   - 再升级一步，由于两点确定一条直线：2D 位置 + 2D 方向 $->$ 2D 位置 + 2D 位置。于是，我们可以用两个平面（两个嵌套的盒子）来描述光场
   - 双平面参数化后的两种视角，物体在 st 面的右侧。图 a 从 uv 面看 st，描述了从不同位置能看到什么样的物体；图 b 从 st 面看 uv，描述了对物体上的同一个点，从不同方向看到的样子（神经辐射场理解方式：每个像素存的是 irradiance ，遍历 uv 面所有点就是把 irradiance 展开成 radiance）
-    #fig("/public/assets/Courses/CG/img-2024-08-05-15-37-39.png")
+    #fig("/public/assets/Courses/CG/img-2024-08-05-15-37-39.png", width: 80%)
   - 双平面参数化后在实现上也变得更好理解，直接用一排摄像机组成一个平面就好
 
 == 光场照相机
@@ -735,12 +757,12 @@
 - 原理（事实上，昆虫的复眼大概就是这个原理）：
   - 一般的摄像机传感器的位置在下图那一排透镜所在的平面上，每个透镜就是一个像素，记录场景的 irradiance。现在，光场摄像机将传感器后移一段距离，原本位置一个像素用透镜替换，然后光穿过透镜后落在新的传感器上，击中一堆像素，这一堆像素记录不同方向的 radiance
   - 从透镜所在平面往左看，不同的透镜对应不同的拍摄位置，每个透镜又记录了来自不同方向的 radiance。总而言之，原本一个像素记录的 irradiance，通过替换为透镜的方法，拆开成不同方向的 radiance 用多个“像素”存储
-    #fig("/public/assets/Courses/CG/img-2024-08-05-17-51-25.png")
+    #fig("/public/assets/Courses/CG/img-2024-08-05-17-51-25.png", width: 80%)
 - 变焦：对于如何实现后期变焦比较复杂，但思想很简单，首先我已经得到了整个光场，只需算出应该对每个像素查询哪条“像素”对应光线，也可能对不同像素查询不同光线
 - 不足之处：分辨率不足，原本 $1$ 个像素记录的信息，需要可能 $100$ 个像素来存储；高成本，为了达到普通相机的分辨率，需要更大的胶片，并且仪器造价高，设计复杂
 
 == 颜色的物理、生物基础
-- 光谱：光的颜色 $approx$ 波长，不同波长的光分布为光谱，图形学主要关注可见光光谱
+- 光谱：光的颜色 $approx$ 波长，强度 $approx$ 光子数量，不同波长的光分布为光谱，图形学主要关注可见光光谱
 - 光谱功率分布(Spectral Power Distribution, SPD)
   - 自然界中不同的光对应不同的 SPD
   - SPD 有线性性质
@@ -750,7 +772,9 @@
   - Rods 用来感知光的强度，可以得到灰度图
   - Cones 相对少很多，用来感知颜色，它又被分为 $3$ 类(S-Cone, M-Cone, L-Cone)，SML 三类细胞对光的波长敏感度（回应度）不同
     - 事实上，不同的人这三种细胞的比例和数量呈现很大的差异（也就是颜色在不同人眼中是不一样的，只是定义统一成一样）
-- 人看到的不是光谱，而是两种曲线积分后得到 SML 再叠加的结果。那么一定存在一种现象：两种光，对应的光谱不同，但是积分出来的结果是一样的，即同色异谱(Metamerism)；事实上，还有同谱异色
+- 人看到的不是光谱，而是两种曲线积分后得到 SML 再叠加的结果
+  - [ ] 图
+  - 那么一定存在一种现象：两种光，对应的光谱不同，但是积分出来的结果是一样的，即同色异谱(Metamerism)；事实上，还有同谱异色
 
 == 色彩复制 / 匹配
 - 计算机中的成色系统成为 Additive Color（加色系统）
@@ -759,11 +783,11 @@
 - CIE sRGB 颜色匹配
   - 利用 RGB 三原色匹配单波长光，SPD 表现为集中在一个波长上（如前所述，有其它 SPD 也能体现出同样的颜色，但选择最简单的）
   - 然后，给定任意波长的*单波长光*（目标测试光），我们可以测出它需要上述 RGB 的匹配（可能为负，意思是加色系统匹配不出来，但可以把目标也加个色），得到*匹配曲线*
-    #fig("/public/assets/Courses/CG/img-2024-08-05-18-32-22.png")
+    #fig("/public/assets/Courses/CG/img-2024-08-05-18-32-22.png", width: 80%)
   - 然后对于自然界中并非单波长光的任意 SPD，我们可以把它分解成一系列单波长光，然后分别匹配并加权求和，也就是做积分
 
 == 颜色空间
-- Standardized RGB(sRGB)：多用于各种成像设备，上面介绍的就是 sRGB。色域有限（大概为 CIE XYZ 的一半）。
+- Standardized RGB(sRGB)：多用于各种成像设备，上面介绍的就是 sRGB。色域有限（大概为 CIE XYZ 的一半）
 - CIE XYZ
   - 这种颜色空间的匹配函数，对比之前的sRBG，没有负数段
   - 匹配函数不是实验测出，而是人为定义的

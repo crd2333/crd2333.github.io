@@ -9,25 +9,25 @@ order: 1
 ## Lecture 2
 * 表达式的计算
 * `**` means `power`
-* 函数可以被嵌套定义,也可以被作为参数传递(我觉得这是目前看下来和c语言 最大的区别)
+* 函数可以被嵌套定义，也可以被作为参数传递 (我觉得这是目前看下来和 c 语言 最大的区别)
 
 ***
 ## Lecture 3
 * 闭包，感觉就是作用域、本地变量、全局变量一样的概念
-* `ture_part if condition else false_part` if的新格式
-  * c中的`else if`记作`elif`
+* `ture_part if condition else false_part` if 的新格式
+  * c 中的`else if`记作`elif`
 * `python`的`与或非`，直接就是`and` `or` `not`
-* 按位`与或非`同c,`&` `|` `~` `^`
+* 按位`与或非`同 c,`&` `|` `~` `^`
 * `and`和`or`返回的不是真值而是表达式
-* python通过缩进体现代码块的包含范围
-* 注意print('')和return ''的区别
-* 负数也是True,只有0为False
-* and与or,输出决定结果的那个值
-  * 如`1 and 2`为2,`1 or 2`为1;`1 and 0`为0,`0 or True`为True
-* true必须写成True,false必须写成False
-* True和False可以参与数值计算，分别为1和0
+* python 通过缩进体现代码块的包含范围
+* 注意 print('') 和 return ''的区别
+* 负数也是 True，只有 0 为 False
+* and 与 or，输出决定结果的那个值
+  * 如`1 and 2`为 2,`1 or 2`为 1;`1 and 0`为 0,`0 or True`为 True
+* true 必须写成 True,false 必须写成 False
+* True 和 False 可以参与数值计算，分别为 1 和 0
 * Python assert（断言）用于判断一个表达式，在表达式条件为 false 的时候触发异常
-  * 好处在于，人为地设置了错误的原因，范围更narrow。另外，它使得出现异常但没有停止的代码也显示出了错误，"crash is better than incorrect"
+  * 好处在于，人为地设置了错误的原因，范围更 narrow。另外，它使得出现异常但没有停止的代码也显示出了错误，"crash is better than incorrect"
 * `**`幂，`//`整除（往-$\infty$方向）
 * 简易的函数定义方式（匿名函数）：
     ```python
@@ -47,7 +47,7 @@ order: 1
 * `python`中函数的传递参数与默认参数：如果传入了一个参数，则优先使用传入的，否则，使用默认参数
 * `python`中函数的关键字参数：不一定按照创建函数时的顺序，可以按照参数名相匹配
 * `python`中函数的可变对象与不可变对象
-* `python`的函数传递使用比我想象的普遍得多orz
+* `python`的函数传递使用比我想象的普遍得多 orz
 * `python`的函数可以同时返回多个值
 * `print`函数，使用时的逗号是分隔变量的，它不会真的被打印出来！
 
@@ -63,7 +63,7 @@ order: 1
     print(curry2(add)(30))   # Prints a function value
     ```
 ### Currying & Self Reference
-- **Currying**, One important application of HOFs（高阶函数） is converting a function that takes multiple arguments into a chain of functions that each take a single argument.
+- **Currying**, One important application of HOFs（高阶函数）is converting a function that takes multiple arguments into a chain of functions that each take a single argument.
 - **Self Reference**,高阶函数的一种特殊形式，where a function eventually returns itself.
 - 例如：（分别为一阶二阶）
     ```py
@@ -214,7 +214,7 @@ def print_n(n):
 ## Lecture 10: container
 - 从 container 的概念引入，试图自己实现数对以存储多个值。然后讲到 python 中原有的 sequence：tuple、list、string、list
   - tuple 中的元素不可变，list 中的元素可变
-- 在Python中，局部变量是在函数被调用时创建的。当函数被调用时，Python会为该函数创建一个新的“命名空间”。这个命名空间包含函数的参数和在函数内定义的局部变量。当程序执行到赋值语句时，相应的变量会被创建并赋予特定的值。但需要注意的是，变量在赋值语句之前访问是不允许的，因为它们在那个时候还未被绑定到相应的值上。
+- 在 Python 中，局部变量是在函数被调用时创建的。当函数被调用时，Python 会为该函数创建一个新的“命名空间”。这个命名空间包含函数的参数和在函数内定义的局部变量。当程序执行到赋值语句时，相应的变量会被创建并赋予特定的值。但需要注意的是，变量在赋值语句之前访问是不允许的，因为它们在那个时候还未被绑定到相应的值上。
   - 例如在下面这个例子中，你可能以为报错的那条语句既然局部的 var 还未被创建，那他应该到 parent frame 去找 var 并打印 1 才对，但事实上，已经在本地找到了 var 这个变量了，只是还未绑定到相应的值上
     ```py
     def my_function1(var):
@@ -271,11 +271,11 @@ def count_k(n, k):
     """
     对递归情况的说明
     从数学的角度我是能理解了，但是组合的角度我还是理解不了，算了，已经花太久了
-    一只青蛙一次可以跳上1级台阶，也可以跳上2级……它也可以跳上n级。求该青蛙跳上一个n级的台阶总共有多少种跳法。
+    一只青蛙一次可以跳上 1 级台阶，也可以跳上 2 级……它也可以跳上 n 级。求该青蛙跳上一个 n 级的台阶总共有多少种跳法。
         f(n) = f(n-1) + f(n-2) + f(n-3) + ... + f(n-(n-1)) + f(n-n)= f(0) + f(1) + f(2) + f(3) + ... + f(n-2) + f(n-1)
         f(n-1) = f((n-1)-1) + f((n-1)-2) + … + f((n-1)-(n-2)) + f((n-1)-(n-1)) = f(0) + f(1) + f(2) + f(3) + ... + f(n-2)
         so  f(n) = 2*f(n-1)
-    一只青蛙一次可以跳上1级台阶，也可以跳上2级……它也可以跳上m级。求该青蛙跳上一个n级的台阶总共有多少种跳法。
+    一只青蛙一次可以跳上 1 级台阶，也可以跳上 2 级……它也可以跳上 m 级。求该青蛙跳上一个 n 级的台阶总共有多少种跳法。
         先列多项式：
         f(n) =  f(n-1) + f(n-2) + f(n-3) + ... + f(n-m)
         f(n-1) =   f(n-2) + f(n-3) + ... + f(n-m) + f(n-m-1)
@@ -330,8 +330,8 @@ def count_k(n, k):
     ```
 - 注意，`len()` of list 返回的是一阶长度，也就是说矩阵返回的是行数
 - list comprehension: 生成列表的方法
-  - 语法: `[<expression> for <iter_val> in <iterable> if <cond_expr>]`，其中 if 可选（无 else）
-  - 带 if-else 的语法: `[<expression_1> if <cond_expr> else <expresion_2> for <iter_val> in <iterable>]`
+  - 语法：`[<expression> for <iter_val> in <iterable> if <cond_expr>]`，其中 if 可选（无 else）
+  - 带 if-else 的语法：`[<expression_1> if <cond_expr> else <expresion_2> for <iter_val> in <iterable>]`
   - 注意二者的顺序
 - ADT: abstract data type
 
@@ -382,7 +382,7 @@ def count_k(n, k):
     a = a + b   # [1, 2, 3, 4, 5]
     a.append(b)   # [1, 2, 3, 4, 5, [4, 5]],equal to a.extend(b)
     ```
-  - `.pop()` 弹出（删除并返回） list 中的最后一个值，如果给它参数，则改为弹出指定索引位
+  - `.pop()` 弹出（删除并返回）list 中的最后一个值，如果给它参数，则改为弹出指定索引位
   - `.remove(x)` 删除最先找到的匹配的值，否则返回 error
 - Identity vs. Equality
   - 即 `a is b` 和 `a == b` 的区别。前者反映指向的内存，即是不是一个东西；后者反映指向的值，即是否相等
@@ -505,7 +505,7 @@ def find_path(tree, x):
   - yield 会暂停并输出，在 `next()` 之后继续
   - 好处在于它只在需要时算下一项，适用于一些不需要把完整地东西算出来的情况
   - 对 for 循环的语法糖 `yield from`
-  - 之前的很多 def 函数都可以改成 generator，比如:
+  - 之前的很多 def 函数都可以改成 generator，比如：
     ```py
     def leaves(t):
         yield label(t)
@@ -649,9 +649,9 @@ Important: We suggest that you approach this problem by first filling out the Em
     ```
 
 - interators & generators
-  - 一个比较清晰的解释：[python中yield的用法详解——最简单，最清晰的解释_python yield_冯爽朗的博客-CSDN博客](https://blog.csdn.net/mieleizhi0522/article/details/82142856)
-  - 比较深入但是不清晰的 yield from：[深入理解Python 中的 yield from语法 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/267966140)
-  - [一文彻底搞懂Python可迭代(Iterable)、迭代器(Iterator)和生成器(Generator)的概念 - 掘金 (juejin.cn)](https://juejin.cn/post/6844903834381189127)
+  - 一个比较清晰的解释：[python 中 yield 的用法详解——最简单，最清晰的解释_python yield_冯爽朗的博客-CSDN 博客](https://blog.csdn.net/mieleizhi0522/article/details/82142856)
+  - 比较深入但是不清晰的 yield from：[深入理解 Python 中的 yield from 语法 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/267966140)
+  - [一文彻底搞懂 Python 可迭代 (Iterable)、迭代器 (Iterator) 和生成器 (Generator) 的概念 - 掘金 (juejin.cn)](https://juejin.cn/post/6844903834381189127)
   - **iterable** 是一种 one by one 的数据类型，**iterator** 是真正接受存储在 iterable 中的值的对象。对 `iterable` 调用函数 `iter` 来生成 `iterator`，它将记录它在 `iterable` 中的位置
   - **generator** 是一种特殊的函数，它们用 **yield** 代替了 return，然后 one by one 地执行返回（返回后暂停并停在原地）。**yield from** 是一种将 generator 和 iterator 结合起来的语法，它用在 iterator 上，然后 yield 其中的每个值
 
@@ -857,7 +857,7 @@ For instance, for the following tree tree_ex, find_paths should behave as specif
                 f(x, y, z)
                 z += 1
     ```
-  - 答案分别是 $\theta(N)$ 和 $\theta(N^2)$，注意这里 z 没有被清空(a little tricky)
+  - 答案分别是 $\theta(N)$ 和 $\theta(N^2)$，注意这里 z 没有被清空 (a little tricky)
 - count_coins 问题的解法，跟我以前想的不一样，现在我应该得要掌握两种方法了，一种累加，一种减少
     ```py
     def count_change(amount, coins = (50,25,10,5,1)):
@@ -894,7 +894,7 @@ For instance, for the following tree tree_ex, find_paths should behave as specif
   - 使用字典的查询速度并不快，而且每次都要查询是否在字典中，优化如下
     ```py
     def count_change(amount, coins = (50, 25, 10, 5, 1)):
-        # 0~50 (len(coins)+1)种硬币，0~amount (amount+1)种数量
+        # 0~50 (len(coins)+1) 种硬币，0~amount (amount+1) 种数量
         memo_table = [ [-1] * (len(coins)+1) for i in range(amount+1) ]
         def count_change(amount, coins):
             if memo_table[amount][len(coins)] == -1:
@@ -989,7 +989,7 @@ In order to accomplish this, you might first want to write a function insert_int
     ```
   - 解释（但还是很难懂）
     - 基本思想：用一个 help 函数记录先前的值，如果当前的是 s[0] 比他小这个是 s[0] 就不加入排列中，然后如果大的话就两种情况，一种是加入一种是不加入。
-    - subseq_helper 函数有两个参数：列表s和上一个元素的值 prev。如果列表 s 为空，则返回一个包含空列表的列表 `[[]]` 作为基本情况。否则，函数会根据当前元素和 prev 的值进行判断：
+    - subseq_helper 函数有两个参数：列表 s 和上一个元素的值 prev。如果列表 s 为空，则返回一个包含空列表的列表 `[[]]` 作为基本情况。否则，函数会根据当前元素和 prev 的值进行判断：
     - 如果当前元素小于 prev，则调用 subseq_helper 函数并跳过当前元素，继续递归处理剩余部分的序列。
     - 如果当前元素大于等于 prev，则分别调用 subseq_helper 函数来处理同时跳过和保留当前元素的两个情况，并将两个递归结果合并起来。
     - 合并的方法是调用 insert_into_all 函数，将当前元素插入到递归结果的每个子序列的开头。
@@ -1000,7 +1000,7 @@ For those interested in combinatorics, this problem does have a closed form solu
 
     ```py
     def num_trees(n):
-        """Returns the number of unique full binary trees with exactly n leaves. E.g.,
+        """Returns the number of unique full binary trees with exactly n leaves. e.g.
         1   2        3       3    ...
         *   *        *       *
         / \      / \     / \
@@ -1051,7 +1051,7 @@ Implement long_paths, which returns a list of all paths in a tree with length at
     ![Alt text](./pictures/4.png)
 - 这节课围绕 iter 等相关概念讲了很多杂七杂八的内容，算是复习课
 
-###　mid_term 2:
+### mid_term 2:
 - Q8: Implement word_finder, a generator function that yields each word that can be formed by following a path in a tree from the root to a leaf, where the words are specified in a list. When given the tree shown in the diagram below and a word list that includes ‘SO’ and ‘SAW’, the functionshould first yield ‘SO’ and then yield ‘SAW’.
 Please read through the function header and doctests below. We have provided quite a few doctests to test different situations and demonstrate how the function should work. You can always call draw(t) on a particular tree object on code.cs61a.org to help you visualize its structure and understand the results of a doctest. 很难想
 
@@ -1117,7 +1117,7 @@ Please read through the function header and doctests below. We have provided qui
 ## Lecture 24:Scheme
 - 一个对我来说全新的语言，它是 Lisp 的一种方言，而 Lisp 是至今第二老的语言，怎么感觉有点过时了（
 - 学它的意义应该是掌握一种完全不同的思维方法，称为 functional programming language。Scheme features first-class functions and optimized tail-recursion
-- Scheme 把数据分成了 atoms 和 pairs 两种，这叫做 symbolic data，然后复杂一点的数据用 lists 表示(pairs & lists)
+- Scheme 把数据分成了 atoms 和 pairs 两种，这叫做 symbolic data，然后复杂一点的数据用 lists 表示 (pairs & lists)
 - （OP E1 ... En）采用前缀表达式，本来就是树的形式
 - `quote` does not simply evaluate operands，如 `scm> (quote (+ 1 2))`，可以简写为 `scm> '(+ 1 2)`
 - 类似的 OP 还有 `if`、`and`、`or`、`not`、`lambda`、`define`、`cond`、`quotient` 等
@@ -1127,7 +1127,7 @@ Please read through the function header and doctests below. We have provided qui
 - Scheme 中的 iter 可以写成 recursion 的形式，而且它的 tail recursion 是不会创建堆栈的，可以称为 tail recursion removal
 - 如果有不清晰的地方可以看 lab10 任务前的 toturial：https://inst.eecs.berkeley.edu/~cs61a/sp21/lab/lab10/
 
-### lab 10 & hw 06：
+### lab 10 & hw 06:
 - 关于 scheme 中的 list
   - 我很疑惑 `(1 2 3)` 和 `(1 2 (3))` 有什么不同，以及 `scm> (list 1 (list 2 3) 4)     (1 (2 3) 4)` 这种结构是怎么实现的
   - 对此问了 GPT，纯一派胡言
@@ -1215,7 +1215,7 @@ Notice that simply calling (cons a b) would not work because it will create a de
 
 ***
 ## Lecture 30: Declarative Programming（声明式编程）
-- 过去我们做的都是命令式(imperative)编程
+- 过去我们做的都是命令式 (imperative) 编程
 - relations,not functions
 - 好骚的编程方式
 
@@ -1343,7 +1343,7 @@ scm> (switch (+ 1 1) ((1 (print 'a))
 )
 
 ```
-- 很 jb 难，完全想不到，首先 cases 是一个列表，我们可以用 map 对其中的每一项(设作 case)做操作，这个操作用匿名函数来完成，对每个 case 比较后组成新的列表给 cond 用，相当于又做了一个 cases，只不过这个 cases 中的 case 的 car 重新设定成了我们需要的表达式
+- 很 jb 难，完全想不到，首先 cases 是一个列表，我们可以用 map 对其中的每一项 (设作 case) 做操作，这个操作用匿名函数来完成，对每个 case 比较后组成新的列表给 cond 用，相当于又做了一个 cases，只不过这个 cases 中的 case 的 car 重新设定成了我们需要的表达式
 
 ***
 ## Lec 33: Review: Regular Expressions + BNF

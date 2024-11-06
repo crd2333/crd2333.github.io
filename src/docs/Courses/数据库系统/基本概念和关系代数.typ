@@ -72,7 +72,7 @@ order: 1
 - Database Access from Application Program
   - SQL 和用户实际使用之间还隔了一层交互，这些交互是用 *host language*（宿主语言）写的
   - 通常我们用两种方式
-    1. API(Application program interface) (e.g., ODBC/JDBC)
+    1. API(Application program interface) (e.g. ODBC/JDBC)
     2. 支持 embedded SQL 的语言插件
 - 数据库设计
   - 实体联系模型

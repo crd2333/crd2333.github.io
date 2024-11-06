@@ -1,6 +1,6 @@
 # VSCode 的使用技巧
 ## 常用快捷键
-- 光标操作(重点记忆)
+- 光标操作 (重点记忆)
   - 光标换行：`ctrl+enter`
   - 光标跳跃单词：`ctrl+左右`
   - 复制光标：`ctrl+alt+上下`
@@ -56,7 +56,7 @@
   - [一个案例学会 VSCode Snippets，极大提高开发效率 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/457062272)
   - [VSCode Snippets：提升开发幸福感的小技巧 - 掘金 (juejin.cn)](https://juejin.cn/post/7076609496046370847)
   - 对 LaTeX 而言
-    - [latex---vscode编辑器配置及快捷键（snnipets）设置 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/350249305)
+    - [latex---vscode 编辑器配置及快捷键（snnipets）设置 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/350249305)
 
 
 ## VSCode 键绑定
@@ -75,8 +75,8 @@
     ```
 
 ## VSCode 如何调试
-- [VScode tasks.json和launch.json的设置 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/92175757)
-- ~~还是不会~~ 以现在(23.11.28)的视角看，似乎这些调试相关文章有不少都过时了，我现在只需要对 `C`, `Cpp` 分别搞一个 `tasks.json`，然后保证处在两个工作区就好了
+- [VScode tasks.json 和 launch.json 的设置 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/92175757)
+- ~~还是不会~~ 以现在 (23.11.28) 的视角看，似乎这些调试相关文章有不少都过时了，我现在只需要对 `C`, `Cpp` 分别搞一个 `tasks.json`，然后保证处在两个工作区就好了
 
 !!! warning
     - 编译的时候看的是**当前工作区一级文件夹**下的 `.vscode` 文件夹中的内容，而不是当前编译文件所在的文件夹下的 `.vscode`
