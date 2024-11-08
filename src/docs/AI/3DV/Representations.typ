@@ -1,3 +1,7 @@
+---
+order: 1
+---
+
 #import "/src/components/TypstTemplate/lib.typ": *
 
 #show: project.with(
@@ -24,10 +28,10 @@
 - 有效的三维表示是实现三维重建、三维目标检测、场景语义分割等任务的基础
 - 在 CV, CG 社区的长期探索下，基于许多不同的考量（直观性、准确性、分辨率、计算效率、易用性、空间存储等），三维表示逐渐变得五花八门，大体可以分为显式和隐式
 
-=== 显式
+=== 显式(explicit)
 - 所有点（或者更宽泛一点，场景表示）被直接给出，或者可以通过映射关系直接得到
 - 比较常用的显式表示比如体素 Voxel、点云 Point Cloud、三角面片 Mesh、深度图 depth map 等
-#fig("/public/assets/AI/Reconstruction/2024-10-10-16-02-46.png", width: 60%)
+#fig("/public/assets/AI/Representations/2024-10-10-16-02-46.png", width: 60%)
 - *体素*
   - 体素是 2D 像素表示的直接推广，有时也叫体素网格 (grid)，体素表示的一个很直观的例子是 —— Minecraft
   - 在体素中可以存储*几何占有率*、*体积*、*密度*和*符号距离*等信息以方便渲染
@@ -48,7 +52,7 @@
 - *3D Gaussion*
   - 见后
 
-=== 隐式
+=== 隐式(implicit)
 - 不直接说明点（或者更宽泛一点，场景表示）在哪，而描述其满足的关系
 - 比较常用的隐式表示有：代数曲面、分形几何 Fractals、Constructive Solid Geometry(CSG)、Signed Distance Funciton(SDF)、Occupancy Field、Neural Radiance Field(NeRF) 等
 - *基于代数几何*的隐式表示：其中*代数曲面*是指用解析的方式来描述曲面；*分形几何*是指自相似（自递归）的形体（如雪花）；*CSG* 是基于集合的描述，利用集合的交、并、差等运算来描述物体。这些方法通常需要人工设计特征，难以泛化，因此我们往往重点关注下面这一类
@@ -56,14 +60,14 @@
 - 隐式表示相对显式表示的
   - 优点
     + *表示不再与空间分辨率相耦合*：这直接得益于隐式表示的连续性。一个直接推论是，隐式表示具有“无限分辨率”，使超分辨率成为可能
-    + *表征能力（有时）更强*：在神经网络的加持下，隐式表示可以拟合更复杂的特征和场景，通常比显式表示更加强大。但这也不绝对 (e.g., 3DGS)
+    + *表征能力（有时）更强*：在神经网络的加持下，隐式表示可以拟合更复杂的特征和场景，通常比显式表示更加强大。但这也不绝对 (e.g. 3DGS)
     + *可泛化性*：跨神经隐式表示的泛化等同于学习函数空间上的先验，通过神经网络权重的预训练实现 —— 这通常被称为元学习
     + *相对易于学习*：与显式表示相比，隐式表示将场景抽象成函数、场，这天然更适合神经网络去拟合，易于与各种网络结构结合。神经隐式表征可以灵活地融合到可微分的基于学习的管线中
-    + *空间需求一般相对较小*：只需存储神经网络参数
+    + *空间需求一般相对较小*：只需存储神经网络参数（某种程度上可以看作是把显式方法所想要表示的内容*压缩*到了网络参数中）
   - 缺点
     + *需要后处理*：图形渲染管线是基于显式 triangle mesh 的，除此之外的其它显式方法或隐式方法要么用自己的一套渲染方案（比如 3DGS 的 splatting，NeRF 的体渲染），要么就探索如何转化为 triangle mesh
     + *过度平滑和伪影*：过度平滑，即图像放大后难以保持锐利和纹理，导致高频信息丢失和视觉上变得平滑；伪影，即 Artifacts，包括模糊、马赛克效应或者不自然纹理等现象
-    + *计算量大*：隐式神经表示需要对整个三维几何物体每个点进行神经网络前向推理，计算量大，十分耗时，难以实时
+    + *计算量大*：隐式神经表示需要对整个三维几何物体每个点进行神经网络前向推理，计算量大，十分耗时，难以实时（对*压缩*后的数据进行*提取*需要时间）
     + *难以解释和编辑*：神经网络的一贯缺点，内部是个黑盒。当然在 3D Representations 这个语境下可以把网络固化到显式表示来可视化，但编辑依旧困难
 - 另外翻译一个来自 awesome-implicit-representations 的观点
   #q[
@@ -93,9 +97,9 @@
 - 过度拘泥于显式与隐式没有任何意义，重要的是理解并融汇它们的优点
   - 可能 *Hybrid* implicit / explicit (condition implicit on local features) 才会是一个比较好的方向
   - 大方向是往深度学习那边走（不管是隐式神经表示那样直接用神经网络，还是像 3DGS 那样借用参数优化的思想）。事实上，就像 3DGS，只要满足*参数是可学习的*，*计算/查询是可微分的*，那么这种表示方法就可能是有效的
-- 另外，如果不从显隐式的角度分类，3D 模型还可以分成 *shape* 和 *appearance* 两个部分
+- 另外，如果不从显隐式的角度分类，3D 模型还可以分成 *shape(Geometry)* 和 *appearance(texture, color)* 两个部分
   - *shape(Geometry)* 这边，主要有 Mesh, Point Cloud, Voxel, Depth Map, Implicit Surface, SDF, Occupancy 等，还可再细分为 hard 和 soft 两类
-  - *appearance* 这边，最常见的还是 *材质纹理贴图* + *环境光照*，易于编辑修改；NeRF 则使用了*辐射场*（Radiance Field，或者说表面光场 Surface light filed）的概念 —— 描述每个点对不同方向的光照，这可以用 RGB 来直接表达，也可以用球谐函数 SH 来间接表达
+  - *appearance(texture, color)* 这边，最常见的还是 *材质纹理贴图* + *环境光照*，易于编辑修改；NeRF 则使用了*辐射场*（Radiance Field，或者说表面光场 Surface light filed）的概念 —— 描述每个点对不同方向的光照，这可以用 RGB 来直接表达，也可以用球谐函数 SH 来间接表达
 
 == Literature Tree of 3D Representations & Reconstruction
 - 上个部分从分类的角度对 3D Representations 做了一定的介绍
@@ -116,13 +120,13 @@
 - 因此现在我们往往转向*深度学习*方法，以往传统方法一般是只拿某个组件来用了。然而深度学习方法之间亦有差距，我个人将其粗略划分为三个时代：前 NeRF 时代、NeRF 时代、3DGS 时代
 
 === 前 NeRF 时代
-- #link("http://crd2333.github.io/note/Reading/Reconstruction/SIREN")[SIREN（笔记链接）]
+- #link("http://crd2333.github.io/note/Reading/Representations/SIREN")[SIREN（笔记链接）]
   - 相比起其它探索三维表示的工作，SIREN 关注的是用于三维隐式表示的媒介，即用于拟合的那个神经网络。SIREN 证明了使用正弦函数作为激活函数的 MLP 在捕捉高频信息、周期信息方面比 ReLU-based MLP 更具有优势
-- #link("http://crd2333.github.io/note/Reading/Reconstruction/DeepSDF")[DeepSDF]
+- #link("http://crd2333.github.io/note/Reading/Representations/DeepSDF")[DeepSDF]
   - DeepSDF 用神经网络做回归任务去拟合离散的 SDF；并且引入了 latent code $bz$ 来得到一定程度的泛化性，使用 decoder-only 的架构预训练出 decoder。推理时利用场景部分输入来优化 $bz$，从而得到可以用 $(x,y,z)$ query 的整个场景的 SDF 表示
 
 === NeRF
-- 然后再看相对近代和比较重要的 #link("http://crd2333.github.io/note/Reading/Reconstruction/NeRF")[NeRF]
+- 然后再看相对近代和比较重要的 #link("http://crd2333.github.io/note/Reading/Representations/NeRF")[NeRF]
   - NeRF 本质上是用 MLP 拟合一个隐式表示场（场景中任意点和方向可以查询颜色和密度），结合了 Ray-Marching 和体渲染的方法实现新视角图片的合成
   - NeRF 究竟好在哪里呢？我个人参考一些资料提出以下几点
     + 相比传统方法，NeRF 是端到端的，也就是说前面步骤出错，可以基于后续反馈来反传去修正，而以前的方法只是一系列 hand crafted 步骤
@@ -130,7 +134,7 @@
     + 从优化的角度它有很多好处，无论是 geometry, color，甚至 illumination，虽然不是基于物理的，但是它可以把这些变化用一个 code 去表示，作为网络的输入。其次很重要的一点就是 volume rendering 的过程比较简单（一个线性的方程），导致 loss function 本身就会相对好优化
     + NeRF 这个框架相对好改造，能塞进很多东西，比如那个 PE，比如各种先验知识，以及后续的一些融合几何 + 语义表示的工作。换句话说，神经网络这种东西比较好魔改，能融进深度学习发展至今的很多 technique
   - NeRF 的待改进点在于：速度优化，泛化性，动态场景与大场景，可解释性，视角需求数，物理模拟等
-- #link("http://crd2333.github.io/note/Reading/Reconstruction/NeRF%20改进工作")[NeRF 的改进工作]（可能看得还不够多）
+- #link("http://crd2333.github.io/note/Reading/Representations/NeRF%20改进工作")[NeRF 的改进工作]（可能看得还不够多）
   - 关于 NeRF 的*速度*：NeRF 的核心制约因素在于速度，它慢就慢在两点
     + Ray-Marching 逐像素射线并采样点，点的分布不高效
       - NSVF 从采样的角度出发试图解决问题，为后续很多工作所借鉴；
@@ -143,7 +147,7 @@
   - 关于 NeRF 的*大场景无界渲染*问题，NeRF++, Mip-NeRF, Mip-NeRF 360 的思路基本上是要么用非线性变换控制场景的采样频率，要么是把光线渲染变成光锥渲染（本质上也是控制了采样频率）
 
 === 3DGS
-- #link("http://crd2333.github.io/note/Reading/Reconstruction/3DGS")[3DGS] 一经提出，就以它的即时速度引起巨大关注，基本薄纱 NeRF 了
+- #link("http://crd2333.github.io/note/Reading/Representations/3DGS")[3DGS] 一经提出，就以它的即时速度引起巨大关注，基本薄纱 NeRF 了
   - 3DGS 本质上是又回到了显式表示 —— 3D 高斯球（Gaussion 本身作为一种概率描述，其在 3D 场景中的分布可以被看作是一个椭球），使用 splatting 代替 volume rendering 方法（某种程度上可以看作是一种逆变换），实现高速渲染
   - 事实上从 NeRF 逐渐转回到显式表示的方法如 PlenOctrees, Plenoxels, InstantNGP 早有预兆，这也反映出一种趋势：对实时性的追求
   - 另外 3DGS 虽然是显式表示，但吸收了*神经网络参数优化*的思想（和*现代算力*的加持），可以看作是把*整个场景都视为一个神经网络*，从而把参数调到最优
@@ -158,8 +162,8 @@
 - 最后，引用两张图来比较各种三维表示的优劣
 #grid(
   columns: (61%, 39%),
-  fig("/public/assets/AI/Reconstruction/2024-10-26-11-19-54.png"),
-  fig("/public/assets/AI/Reconstruction/2024-10-26-11-29-04.png")
+  fig("/public/assets/AI/Representations/2024-10-26-11-19-54.png"),
+  fig("/public/assets/AI/Representations/2024-10-26-11-29-04.png")
 )
 - 然后用一张 NeRF 阵营图做结，不得不说总结得确实很有意思也挺有道理
-  #fig("/public/assets/AI/Reconstruction/2024-10-24-15-21-18.png")
+  #fig("/public/assets/AI/Representations/2024-10-24-15-21-18.png")

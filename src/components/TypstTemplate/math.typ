@@ -18,6 +18,28 @@
 
 #let cnum(num) = str.from-unicode(9311 + num)  // 带圈数字
 
+// 计算机专业常用单位（这样它们就可以直接囊括入 $$）
+#let bit = math.text("bit")
+#let bits = math.text("bits")
+#let byte = math.text("byte")
+#let bytes = math.text("bytes")
+#let kb = math.text("KB")
+#let KB = math.text("KB")
+#let mb = math.text("MB")
+#let MB = math.text("MB")
+#let gb = math.text("GB")
+#let GB = math.text("GB")
+#let tb = math.text("TB")
+#let TB = math.text("TB")
+#let pb = math.text("PB")
+#let PB = math.text("PB")
+#let eb = math.text("EB")
+#let EB = math.text("EB")
+#let FPS = math.text("FPS")
+
+// 防铸币操作
+#let dx = $dif x$
+
 // 以类似格式添加文本缩写
 #let le = $<=$
 #let ge = $>=$
@@ -102,6 +124,7 @@
 #let cN = math.cal("N")
 #let cL = math.cal("L")
 #let cD = math.cal("D")
+#let cX = math.cal("X")
 // letters with hat
 #let hx = $hat(x)$
 #let hy = $hat(y)$
@@ -222,7 +245,7 @@
 #let ci = $c_i$
 #let cj = $c_j$
 #let cn = $c_n$
-#let cN = $c_N$
+// #let cN = $c_N$ // 'N' used for cal
 // #let d1 = $d_1$
 // #let d2 = $d_2$
 // #let dn = $d_n$

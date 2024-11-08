@@ -17,7 +17,7 @@
 == 标题 & 摘要 & 引言
 - 标题：用了 Shifted Windows 的 Hierarchical 的 ViT
   - 就是想让 ViT 像 CNN 一样，也能够分成几个 block，做层级式的特征提取，从而让提出来的特征有多尺度的概念
-- 论文提出 Swin Transformer 可以作为 CV 领域通用的骨干网络。之所以这么说，是因为 ViT 只做了分类任务，把下游任务（e.g., 检测、分割）留给后人探索。Swin Transformer 证明使用 Transformer 没毛病，绝对能在方方面面上取代 CNN
+- 论文提出 Swin Transformer 可以作为 CV 领域通用的骨干网络。之所以这么说，是因为 ViT 只做了分类任务，把下游任务（e.g. 检测、分割）留给后人探索。Swin Transformer 证明使用 Transformer 没毛病，绝对能在方方面面上取代 CNN
 - 直接把 Transformer 从 NLP 应用到 Vision 的挑战：
   - *尺度*：同一个语义的物体在图片中具有不同的尺度，这是 NLP 中没有的情况
   - *Resolution*：如果以图片像素作为基本单位，序列的长度会剧烈膨胀，以往工作往往将处理后的特征图来当做 Transformer 的输入，或者把图片打成 patch
@@ -26,7 +26,7 @@
   - 层级式结构非常灵活，可以提供各个尺度的特征信息；同时 shifting 操作让相邻两个窗口之间有了交互，上下层之间就可以有 cross-window connection，变相地达到了全局建模的能力
 - 引言里的 fig 1 对 Swin Transformer 和 ViT 做了对比
   - ViT 使用 $16 * 16$ 的 patch size，始终是 $16 times$ 的下采样率。它可以通过全局的自注意力操作达到全局建模能力，但是它对多尺寸特征的把握就会弱一些
-  - 插播：我们知道，对于视觉任务，尤其是下游任务（e.g., 检测和分割）来说，多尺寸特征至关重要的
+  - 插播：我们知道，对于视觉任务，尤其是下游任务（e.g. 检测和分割）来说，多尺寸特征至关重要的
     - 对目标检测而言，运用最广的一个方法就是 FPN(feature pyramid network)：使用分层式的 CNN，每一个卷积层的感受野(receptive field)不同，能抓住物体不同尺寸的特征；
     - 对物体分割而言，最常见的一个网络是 U-Net，U-Net 使用 encoder-bottleneck-decoder 的架构，为了处理多尺度物体的问题，使用 skip connection 的方法，让高频率的图像细节能恢复出来。分割里常用的网络结构还有 PspNet、DeepLab，这些工作里也有相应的处理多尺寸的方法，比如说使用空洞卷积、psp 和 aspp 层等
     - 但是在 ViT 里，处理的特征自始至终都是单一尺寸（$16$ 倍下采样后的特征），而且是 low resolution，就不适合处理这种密集预测型的任务。另外一点是它的自注意力在最大的窗口上进行，计算复杂度随图像尺寸平方增长

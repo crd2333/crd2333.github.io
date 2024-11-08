@@ -78,3 +78,39 @@
 
 == 关于中断
 - 参考 #link("https://blog.csdn.net/zzy980511/article/details/130642258")[RISC-V架构中的异常与中断详解]
+
+
+= lab3
+== 页表寻址 —— sv39
+#let LEVELS = math.text("LEVELS")
+#let pte = math.text("pte")
+#let satp = math.text("satp")
+#let ppn = math.text("ppn")
+#let VA = math.text("VA")
+#let PA = math.text("PA")
+#let vpn = math.text("vpn")
+#let offset = math.text("offset")
+#note(caption: "Virtual Address Translation Process(sv39)")[
+  - 首先翻译一遍（部分异常处理简化）
+    + 让 $a$ 代表 $satp\.ppn$ $times 2^12$(PA)，让 $i=2$
+    + 让 $pte$ 代表 PTE 在 $a+VA\.vpn[i]times 8$（PA 加上 PT 中偏移量）地址的值
+    + 如果 $pte\.v=0$，或者 $pte\.r=0$ 且 $pte\.w=1$，或者 reserved bits 被设置，抛出 page-fault 异常
+    + 否则，这个 PTE 是 valid 的。如果 $pte\.r=1$ 或 $pte\.x=1$，跳到第 $5$ 步；否则，这个 PTE 指向下一级页表，令 $i=i-1$。如果 $i < 0$，抛出 page-fault 异常；否则，令 $a=pte\.ppn times 2^12$，跳到第 $2$ 步
+    + 此时说明 PTE 是 leaf 节点。检查权限是否要抛出 page-fault 异常
+    + 如果 $i>0$ 并且 $pte\.ppn[i-1:0]!=0$，这是一个 misaligned superpage，抛出 page-fault 异常
+    + （可以先不管这一步）如果 $pte\.a=0$，或者如果是存储操作并且 $pte\.d=0$（可以先不管这一步）
+      - Svade extension 和一些检查，略
+      - 自动执行以下步骤
+        + 把 $pte$ 跟 PTE 在 $a+VA\.vpn[i] times 8$（PA 加上 PT 中偏移量）地址的值比较
+        + 如果值相等，设置 $pte\.a=1$，并且如果是存储操作，设置 $pte\.d=1$
+        + 如果值不等，回到第 $2$ 步
+    + translation success，物理地址如下
+      - $PA\.offset = VA\.offset$
+      - 如果 $i>0$，触发 super page 机制，$PA\.ppn[i-1:0] = VA\.vpn[i-1:0]$
+      - $PA\.ppn[2:i] = pte\.ppn[2:i]$
+  - 现在完整走一遍成功的三级页表的过程
+    + $a=satp\.ppn$ $times 2^12, i=2$，在第一级页表中找 $a+VA\.vpn[i]times 8$ 的值，取出记为 $pte$
+    + $a=pte\.ppn times 2^12, i=1$，在第二级页表中找 $a+VA\.vpn[i]times 8$ 的值，取出记为 $pte$
+    + $a=pte\.ppn times 2^12, i=0$，在第三级页表中找 $a+VA\.vpn[i]times 8$ 的值，取出记为 $pte$
+    + $PA = {pte\.ppn,VA\.offset}$
+]

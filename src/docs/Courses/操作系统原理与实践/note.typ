@@ -1132,7 +1132,7 @@
     + 不能挪，否则需要更新大量的指针
     + 内存空隙，运行到后期巨量碎片无法使用
   - 从而提出（初版的）Logical Memory，由我们自己定义的地址形式。具体翻译为物理地址由硬件实现
-- Logical Memory
+- Logical Memory v1
   - *offset within a partition*
   - Base and Limit registers
     - *Base* added to all addresses
@@ -1172,15 +1172,17 @@
 == Segmentation
 - 从这里开始，section, or partition, or segmentation 都是一个概念
 - 一个程序分成 text、data、stack 等多个区域，每个区域就用一个 partition 来代表它
-- 我们把 Logical address 升级一下
-  - 用一个 Segment table 来表示，通过 limit 实现 variable partitions
-    #tbl(columns:3,[base],[limit],[权限],[base],[limit],[权限],[...],[...],[...])
-  - Logical address 现在变成 *`<segment-number, offset>`* segment-number 表示属于第几组，offset 表示 segment 内的偏移量
+- Logical Address v2
+  - *`<segment-number, offset>`* segment-number 表示属于第几组，offset 表示 segment 内的偏移量
   #fig("/public/assets/Courses/OS/2024-11-05-15-13-12.png", width: 70%)
+  - 每个进程有自己的 *Segment register table（段表）*，通过 limit 实现 variable partitions
+    #tbl(columns:3,[base],[limit],[权限],[base],[limit],[权限],[...],[...],[...])
+    - 可以看到它额外实现了权限控制（但是跟之后的 paging 机制比，这个权限控制很不细粒度）
 - 然而 Segmentation 并没有完全解决外部碎片的问题
   - 我们之后将会利用 fixed partitions 的办法来解决 —— Paging
 
-== Address Binding
+== Address Binding & Memory-Management Unit
+- 到这里我们先做个总结
 - 在程序的不同阶段，地址有不同的表现方式：
   - source code addresses are usually symbolic. (e.g., variable name)
   - compiler binds symbols to relocatable addresses. (e.g., “14 bytes from beginning of this module”)
@@ -1191,13 +1193,12 @@
   - Physical address – address seen by the memory unit.
     - 内存单元只能理解物理地址，它是无法改变的。
   - 物理地址对应物理地址空间(Physical Address Space)，逻辑地址对应“逻辑地址空间”(Logical Address Space)，实际上并不存在，而是由一个映射所定义
-
-== Memory-Management Unit
-- 我们之前说要把逻辑地址到物理地址的转换放到硬件上实现，从而不影响速度，这就是 MMU(Memory-Management Unit)
-#grid2(
-  fig("/public/assets/Courses/OS/2024-11-05-15-29-00.png"),
-  fig("/public/assets/Courses/OS/2024-11-05-15-29-05.png")
-)
+- MMU
+  - 我们之前说要把逻辑地址到物理地址的转换放到硬件上实现，从而不影响速度，这就是 MMU(Memory-Management Unit)
+  #grid2(
+    fig("/public/assets/Courses/OS/2024-11-05-15-29-00.png"),
+    fig("/public/assets/Courses/OS/2024-11-05-15-29-05.png")
+  )
 
 #note(caption: [takeaway])[
   - Partition evolution
@@ -1213,11 +1214,11 @@
 - Fixed 和 Variable 划分都是物理连续的分配，Paging 是把所有内存都变成不连续的，这样空闲的内存不管在哪，都可以分配给进程，避免了外部碎片
 - Basic methods
   - Divide *physical* address into fixed-sized blocks called *frames*（物理帧号）
-    - Size is power of 2, usually 4KB.
+    - Keep track of all free frames.
   - Divide *logical* address into blocks of same size called *pages*（虚拟页号）
-  - Keep track of all free frames.
-  - To run a program of size N pages, need to find N free frames and load program. 把 N 个帧映射到 N 个页。（页和帧是一样大的）
-  - Set up a mapping to translate logical to physical addresses. 这个存储帧到页的映射的数据结构叫页表
+  - 页和帧是一样大的，Size is power of 2, usually 4KB
+  - 为了跑一个 $N$ pages 的程序，需要找到 $N$ 个 free 的 frames 把程序加载上去
+  - 把 $N$ 个帧映射到 $N$ 个页，这个存储帧到页的映射的数据结构叫*页表 page table*
 - Paging has no *external fragmentation*, but *internal fragmentation*
   - 那为什么我们要从 variable partition 又回到 fixed partition 呢？因为此时内部碎片问题不严重
   - 一个进程被拆成多个 page，只有最后的页才会有碎片，worst case: 1 frame - 1 byte; average internal fragmentation: 1 / 2 frame size
@@ -1231,7 +1232,7 @@
 - Frame table: 一个 Bitmap，标记哪些 frame 是空闲的
 - 页表不存页号（页号用作索引），只存物理帧号
 #fig("/public/assets/Courses/OS/2024-11-05-15-41-57.png", width: 60%)
-- 现在再来升级 Logical Address #h(1fr)
+- Logical Address v3 #h(1fr)
   #fig("/public/assets/Courses/OS/2024-11-05-15-44-39.png", width: 40%)
   - 和之前 Segmentation 机制的 Logical Address 很像，区别在于 fixed partition 和 variable partition
   - *page number (p)*
@@ -1245,6 +1246,102 @@
   #fig("/public/assets/Courses/OS/2024-11-05-15-48-45.png", width: 60%)
 
 === Paging Hardware
+- 现在我们思考怎么实现页表
+- Simple Idea
+  - 早期想法：a set of dedicated registers
+  - 优势是非常快，但是缺点是寄存器数量有限，无法存储多的页表（如 $32$ bit 地址，$20$ 位作为物理页号，需要 $2^20$ 个页）
+- Alternative Way
+  - 存储在 main memory 里
+  - *page-table base register (PTBR)* 指向页表的起始地址
+    - RISC-V 上叫 SATP
+    - ARM 上叫 TTBR
+    - x86 上叫 CR3
+  - *page-table length register (PTLR)* indicates the size of the page table
+- 这样每次数据/指令访问需要两次内存访问，第一次把页表读出来，第二次再根据页表去读数据，显然变慢了，如何解决？遇事不决加 cache！如果 hit 了就只用一次内存访问
+- TLB (translation look-aside buffer) caches the address translation
+  - TLB hit: if page number is in the TLB, no need to access the page table.
+  - TLB miss: if page number is not in the TLB, need to replace one TLB entry
+    - 在 MIPS 上 TLB miss 是由 OS 处理的，但是在 RISC-V 上是由硬件处理的
+  - TLB usually use a fast-lookup hardware cache called associative memory
+    - Associative memory: memory that supports parallel search
+    - Associative memory is not addressed by “addresses”, but contents
+      - If `page#` is in associative memory’s key, return `frame#` (value) directly
+  - 与页表不同的是，TLB 里存储的既有 page number 又有 frame number，通过比较 page number 来找到对应的 frame number（相当于全相联的 cache）
+  - TLB is usually small, 64 to 1024 entries. TLB 数量有限，为了覆盖更大的区域，我们也想要把页变得更大。
+- 每个进程有自己的页表，所以我们 context switch 时也要切换页表，要把 TLB 清空(TLB must be consistent with page table)
+  - Option I: Flush TLB at every context switch, or,
+  - Option II: Tag TLB entries with address-space identifier (ASID) that uniquely identifies a process. 通用的全局 entries 不刷掉，把进程独有的 entries 刷掉
+- More on TLB Entries
+  - Instruction micro TLB
+  - Data micro TLB
+  - Main TLB
+    - A 4-way, set-associative, 1024 entry cache which stores VA to PA mappings for 4KB, 16KB, and 64KB page sizes.
+    - A 2-way, set-associative, 128 entry cache which stores VA to PA mappings for 1MB, 2MB, 16MB, 32MB, 512MB, and 1GB block sizes.
+- More on TLB Match Process
+  - 不要求掌握
+- 现在 MMU 的变化
+  #fig("/public/assets/Courses/OS/2024-11-06-16-36-25.png",width: 60%)
+- Effective Access Time（要会算）
+  #fig("/public/assets/Courses/OS/2024-11-06-16-39-17.png",width: 70%)
+- 题外话：Segmatation 和 Paging 两个机制其实是差不多时间发明的，后者更优越但硬件上实现更难，所以更晚被广泛使用
+
+=== Memory Protection
+- 到目前为止，页表里放了物理帧号。我们可以以页为粒度放上保护的一些权限（如可读、写、执行），这样就可以实现内存保护
+  - Each page table entry has a present (aka. valid) bit
+    - present: the page has a valid physical frame, thus can be accessed
+  - Each page table entry contains some protection bits.
+    - 任何违反内存保护的行为导致 kernel 陷入 trap
+- XN: protecting code
+  - 把内存分为 code 和 data 区，只有 code 区可以执行。e.g. Intel: XD(execute disable), AMD: EVP (enhanced virus protection), ARM: XN (execute never)
+- PXN: Privileged Execute Never
+  - A Permission fault is generated if the processor is executing at EL1(kernel) and attempts to execute an instruction fetched from the corresponding memory region when this PXN bit is 1 (usually user space memory). e.g. Intel: SMEP
+#fig("/public/assets/Courses/OS/2024-11-06-16-45-02.png", width: 60%)
+
+=== Page Sharing
+- Paging allows to share memory between processes
+  - shared memory can be used for inter-process communication
+  - shared libraries
+- 同一程序的多个进程可以使用同一份代码，只要这份代码是 reentrant code（or non-self-modifying code:never changes between execution）
+#fig("/public/assets/Courses/OS/2024-11-06-16-56-43.png",width: 60%)
+
+=== Structure of Page Table
+- Page Table 需要物理地址连续(*physically contiguous*)，因为它是由 MMU 去管的，MMU 不知道 logical address 这件事
+- 如果只有一级的页表，那么页表所占用的内存将大到不可接受
+  - e.g. 32-bit logical address space and 4KB page size. page table would have 1 million entries $(2^32/2^12)$. If each entry is 4 bytes -> 4 MB of memory for page table alone
+  - 我们需要有方法压缩页表
+    - 考虑到 Logical addresses have holes
+    - Break up the logical address space into multiple-level(Hierarchical) of page tables. e.g. two-level page table
+    - First-level page table contains the `frame#` for second-level page tables.
+  #fig("/public/assets/Courses/OS/2024-11-06-17-12-01.png", width: 60%)
+- 最极端的例子($32$ bit, $4$ bytes for each entry)
+  #fig("/public/assets/Courses/OS/2024-11-06-17-19-59.png", width: 60%)
+  - 页表为什么可以省内存？如果次级页表对应的页都没有被使用，就不需要分配这个页表
+  - 最坏情况下，如果只访问第一个页和最后一页，那么只用一级页表需要 $1K$ 个页用来放页表（这个页表有 $2^20$ 个条目），但是对于二级页表就只需要 $3$ 个页表（$1$ 个一级和 $2$ 个二级页表），即 $3$ 个页来放页表。内存占用 $4M -> 12K$
+- Logical Address v4
+  - `<PGD, PTE, offset>`
+    - 多级页表每一级的命名规则是，固定最小的是 PTE，最大的是 PGD；如果是更多级页表，PTE 之上是 PMD，再之上是 PUD，再上已经没有名字了所以取了个 P4D
+  - a page directory number (1st level page table), a page table number (2nd level page table), and a page offset
+  #fig("/public/assets/Courses/OS/2024-11-06-17-22-03.png", width: 60%)
+  - 一个比较生草的问题是页表里以及 PTBR 存的是 logical address 还是 physical address，答案肯定是后者，因为我们本来就是在做 LA $->$ PA 的转译，要还是 LA 就“鸡生蛋蛋生鸡”了
+  - 另外这里经常出 *page size* 和 *entry size* 变化后的分区大小问题
+    - 如果 page size 变大，offset 需要变大，Page Table 能容纳的 entries 也变多；如果 entry size 变大……
+- 例如，$64$ bit 下，每个页表 entry size 变为 $8B$，一个页可以放 $2^9=512$ entries
+  - $64$ bit 能 index 的地址太大了，一般都用不完
+    - AMD-64 supports $48$ bits; ARM64 supports $39$ bits, $48$ bits
+    - 对 $39=9+9+9+12$ bits，有 $3$ 级页表，能 index $1$ GB
+    - 对 $48=9+9+9+9+12$ bits，有 $4$ 级页表，能 index $512$ GB
+    - 对 $57=9+9+9+9+9+12$ bits，有 $5$ 级页表，已经能 index $128$ PB 了
+  #tbl(
+    columns: 7,
+    [#h(8pt)],[9],[9],[9],[9],[9],[12],
+  )
+
+=== Other Page Tables
+- 下面我们介绍其它 Page Table
+- Hashed Page Tables
+  - 在地址空间足够大且分布足够稀疏的时候有奇效（因为如果地址空间太大，用 $5$ 级页表最坏情况下要做足足 $5$ 次访存）
+  - In hashed page table, virtual `page#` is hashed into a `frame#`
+- Inverted Page Tables
 
 
 

@@ -136,7 +136,7 @@
     + Feature-3DGS 将 3DGS 与从 2D 基础模型(e.g. SAM, CLIP-LSeg)蒸馏来的特征场相结合。通过学习低维特征场并应用轻量的卷积解码器进行上采样，Feature-3DGS 在实现高质量特征场蒸馏的同时实现了更快的训练和渲染速度，支持视图语义分割和语言引导编辑等应用
   + *时空建模*，例如
     + #link("https://arxiv.org/abs/2310.10642")[Yang] 等人将时空概念化为一个统一的实体（即利用 4DGS 作为动态场景的整体表示，而不是对每个单独的帧应用 3DGS），并使用 4D 高斯的集合来近似动态场景的时空体积。所提出的 4D 高斯表示和相应的渲染管线能对空间和时间的任意旋转进行建模，并允许端到端训练
-- *3DGS with Structured Information*，除了使用额外属性来增强 3D 高斯，适应下游任务的另一个 promising 的途径是引入为特定应用定制的结构化信息(e.g., spatial MLPs and grid)。一些特定结构化信息加持下 3DGS 的用途例如
+- *3DGS with Structured Information*，除了使用额外属性来增强 3D 高斯，适应下游任务的另一个 promising 的途径是引入为特定应用定制的结构化信息(e.g. spatial MLPs and grid)。一些特定结构化信息加持下 3DGS 的用途例如
   + *面部表情建模*。考虑到在稀疏视图条件下创建高保真 3D 头部化身的挑战，Gaussian Head Avatar 引入了 controllable 3D Gaussians 和 MLP-based deformation field。具体来说，它通过基于隐式 SDF 和 Deep Marching Tetrahedra 的几何引导初始化策略，然后用 dynamic generator $Phi$ 将 neutral Gaussians 形变，生成目标表情
   + *时空建模*。Deformable-3DGS 提出用 deformable 3D 高斯重建动态场景，在规范空间中学习，辅以对时空动态进行建模的变形场(i.e., spatial-MLP)。该方法还加入了退火平滑训练机制，不增加计算成本的同时增强时序上的平滑
   + *风格迁移*。为了跨视图保持 cohesive stylized appearance 的同时不损害渲染速度，GS-in-style 使用预训练的 3D 高斯和 multi-resolution hash grid 和 small MLP 来实时地生成风格化视图
@@ -170,15 +170,15 @@
   - 尽管现在已经有一些基于 GS 的世界模型(#link("https://arxiv.org/abs/2406.10788v1")[Physically Embodied Gaussian Splatting], #link("https://arxiv.org/abs/2403.08321v2")[ManiGaussian])以及基于 GS 的强化学习(#link("https://arxiv.org/abs/2406.02370v2")[query-based Semantic Gaussian Field ...], #link("https://arxiv.org/abs/2404.07950v3")[RL with Generalizable GS])，但它们仅仅只是证明了可能性，该领域的进一步研究将增强机器人执行那些需要理解物理空间和其中时间变化的任务的能力
 - *Modeling Internal Structures of Objects with 3DGS*
   - 尽管 3DGS 能够渲染出逼真的 2D 图像，但也正因为 splatting 的渲染方法主要着眼于这一点，导致对象的内部结构是不那么关注的；另外一点是，由于密度控制过程，3D 高斯倾向于集中在表面，而不是内部
-  - 因此，对对象的内部结构进行建模，将物体描绘成体积的任务(e.g., CT: computed tomography) 仍然是一个挑战。然而，3DGS 的无序性使得体积建模特别困难
+  - 因此，对对象的内部结构进行建模，将物体描绘成体积的任务(e.g. CT: computed tomography) 仍然是一个挑战。然而，3DGS 的无序性使得体积建模特别困难
   - #link("https://arxiv.org/abs/2312.15676")[Li] 等人使用具有密度控制的 3D 高斯分布作为体积表示的基础，不涉及 splatting 过程。X-Gaussian 涉及用于快速训练和推理的 splatting 过程，但不能生成体积表示。使用 3DGS 来模拟物体的内部结构仍然没有标准答案，值得进一步探索
 - *3DGS for Simulation in Autonomous Driving*
   - 为自动驾驶收集真实世界数据集非常昂贵又困难，但对训练有效的图像感知系统至关重要，模拟成为一种经济高效、环境多样的替代方案
   - 然而，开发一个能够生成逼真和多样化合成数据的模拟器并不容易，这包括实现高水平的真实感、适应各种控制方法以及精确模拟一系列照明条件
   - 尽管早期使用 3DGS 重建城市/街道场景的努力令人鼓舞，但它们只是冰山一角。仍有许多关键方面有待探索，例如
     + 集成 user-defined object models
-    + 建模物理感知的场景变化（e.g., 车轮的旋转）
-    + 增强可控性和真实性（e.g., 不同的照明条件）
+    + 建模物理感知的场景变化（e.g. 车轮的旋转）
+    + 增强可控性和真实性（e.g. 不同的照明条件）
 - *Empowering 3DGS with More Possibilities*，尽管 3DGS 具有巨大的潜力，但在很大程度上仍未得到开发
   - 一个有前景的探索途径是用额外的属性（例如前面提到的语言和时空属性）增强 3D 高斯分布，或者引入针对特定应用定制的结构化信息（例如前面提及的 spatial MLPs and grid）
   - 此外，最近的研究已经开始揭示 3DGS 在几个领域的能力，例如点云对齐(point cloud registration)、图像表示和压缩、流体合成。这些发现为跨学科学者进一步探索 3DGS 提供了重要机会

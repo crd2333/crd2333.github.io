@@ -560,6 +560,159 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
   - contains SfM, MVS pipeline, with a graphical and command line interface
 
 = Depth estimation and 3D reconstruction
+- 上一节我们讨论的 SfM 重建的是稀疏的点云，这节我们讨论稠密重建（对每个像素点进行重建），而需要的一个重要概念就是深度的估计
 
+== Depth estimation
+- 深度估计即对于给定的图像，估计每一个像素在实际场景中的深度
+- 这里的深度有时候指空间点到相机中心或者像平面的距离，也有时候表示沿光线的距离。而深度图就是将深度信息可视化
+- Depth sensing 一般有两种方式
+  - Active depth sensing
+    - LiDAR(e.g. Velodyne) —— 昂贵、相对视觉方案更高的精度和分辨率、360°可见性
+    - Structured light (e.g. Kinect 1)
+    - Active stereo (e.g. Intel RealSense)
+  - Passive depth sensing
+    - Stereo，即立体视觉（双目视觉），本节课重点讲
+    - Monocular，一般用深度学习方式去估计
+
+=== Stereo matching
+- 一个物点将投影到我们图像中的某个点，对应于世界上的一条光线。两只眼睛的光线在同一个点相交（回忆上节课的 Epipolar geometry），这就是双目视觉的原理
+- 但与上节课的光流不同，这里立体视觉任务实际上是更简单的
+  - 首先，我们常常假设两个相机的内参相同，并且相对位置不变（即从 left view 到 right view 的外参已知）
+  - 其次由 epipolar line 的约束，已知 $X_L$，不管它的 3D 点深度如何，它在右图上的投影点 $X_R$ 一定在红线上，这极大简化了我们搜索的区域
+  #fig("/public/assets/Courses/CV/2024-11-07-10-26-19.png", width: 50%)
+- Simplest Case: Parallel images
+  - 像平面平行而且平行与 baseline，相机中心的高度一致，相机焦距一致
+  - 这样子我们只需要搜索另一张图中同一高度的水平线即可，更加缩小了搜索的空间，提高效率
+  - 并且有一个很简单的视差(disparity)公式
+  #grid2(
+    fig("/public/assets/Courses/CV/2024-11-07-10-28-41.png", width: 60%),
+    fig("/public/assets/Courses/CV/2024-11-07-10-32-36.png", width: 60%),
+  )
+- Complex Case: Stereo image rectification
+  - 那么对于并不平行的像平面，很直观的想法，就是通过几何变换使得它们平行，这被称作*立体影像矫正*
+  #grid2(
+    fig("/public/assets/Courses/CV/2024-11-07-10-29-16.png", width: 60%),
+    fig("/public/assets/Courses/CV/2024-11-07-10-33-43.png", width: 90%)
+  )
+
+=== Stereo matching algorithms
+- 我们已经将问题简化，不再需要特征点之类的方法。很直观的想法就是对这张图的当前点，在另一张图的对极线上取一个小窗口滑动，寻找最相似的小区域
+- 一般有 $3$ 种 Popular matching scores 的计算方法，其中前二者假设亮度一致，第三个通过归一化考虑了亮度变化
+  #fig("/public/assets/Courses/CV/2024-11-07-10-42-56.png", width: 60%)
+- 另外一个影响因素是窗口的大小
+  - 窗口太小可以增加细节，但是会增加噪声；窗口太大虽然噪声小了，但是我们提取不到细节，后续重建的效果就不好
+  - 可以看到即使是最佳的 window size，得到的深度图与实际还是有一定差距，因为噪声很多（当然，Better methods exist，e.g. Graph cuts-based）
+  #grid2(
+    fig("/public/assets/Courses/CV/2024-11-07-10-45-52.png"),
+    fig("/public/assets/Courses/CV/2024-11-07-10-46-03.png")
+  )
+- 我们可以将立体匹配转化为一个优化问题，把像素点周围的视差约束考虑进来，最小化一个能量函数
+  $ E(d) = E_d (d) + la E_s (d) $
+  - 匹配本身的损失：目的是在另一张图中找到最佳匹配(match cost) #h(1fr)
+  $ E_d (d) = sum_((x,y) in I) C(x,y,d(x,y)) ~~~ "e.g. SSD, SAD, ZNCC" $
+  - 光滑性的损失：相邻的两个像素，视察应该尽可能接近(smoothness cost) #h(1fr)
+    $ E_s (d) = sum_((p,q) in ep) V(d_p, d_q) ~~~ ep ": set of neighboring pixels" $
+    - $V$ 的选取一般也有两种方法，后者对边缘处更好（不过度惩罚）
+    #fig("/public/assets/Courses/CV/2024-11-07-10-56-42.png", width: 40%)
+
+=== Stereo reconstruction pipeline
+- 至此我们可以得到立体重建(双目重建)的基本步骤：
+  + Calibrate cameras
+  + Rectify images
+  + Compute disparity
+  + Estimate depth
+- 基线(baseline)的选择
+  - 如果基线过小，则点的深度误差会比较大
+  - 如果基线过大，则一方面重合的区域比较小，另一方面两张图片的内容差别比较大，匹配越难
+  - 不过，这个 baseline 取决于两个相机相对外参，有时候也不是说想改就能改，比如人的眼睛（
+  #fig("/public/assets/Courses/CV/2024-11-07-11-02-26.png", width: 50%)
+- Possible Cause of Error
+  + Camera calibration errors
+  + Poor image resolution
+  + Occlusions
+  + Violations of brightness constancy 违反亮度一致性（比如非漫反射物体）
+  + Textureless regions 纹理缺失区域
+- Active stereo with structured light
+  - 立体匹配在纹理缺失区域歧义性太强，压根无法进行深度估计
+  - 此时我们可以用*结构光*（一般是用红外光，避免对重建出的颜色产生影响），给无纹理的区域打上光斑，属于主动方式的深度估计 (active stereo)
+  - 这个时候我们甚至不需要两个相机了（projector 和 camera 之间的变换对打光是有影响的）
+  #fig("/public/assets/Courses/CV/2024-11-07-11-11-08.png", width: 80%)
+- Summary
+  - Passive stereo，适用性比较广
+  - Active stereo，一般来说精度最高
+  - Lidar (ToF)，一般比较稳定，对无人机等有一定的应用
+
+=== Multi-view Stereo(MVS)
+- 和 SfM 一样，我们现在要将两个视角的深度估计拓展到多个视角
+- 它的优势是
+  + Can match windows using more than 1 neighbor, giving a *stronger constraint*
+  + If you have lots of potential neighbors, can *choose the best subset of neighbors* to match per reference image
+  + Can reconstruct a depth map for each reference frame, and the merge into a *complete 3D model*
+- *basic idea*
+  - 如果按照前述方法，将 $n$ 张图片两两依次匹配并依次计算重投影误差，那么效率极低
+  - 因此在这里我们选择的方法是找一个 reference view，假设实际物体点的深度，在 neighbor views 中计算重投影误差（最简单的就是算窗口的 SSD），误差累计得到一个 error-depth 曲线
+  #fig("/public/assets/Courses/CV/2024-11-07-11-20-53.png", width: 60%)
+  - 对 reference view 的每个像素都做如上操作，我们得到的误差是个三维体素，长宽对应图像，高对应计算深度值个数，称作 *cost volumn*（三维体素的集合）
+- *Plane-Sweep*
+  - 对每个像素都做上述操作是比较耗时的，有没有办法一次算出 cost volumn 的一个面呢？
+  - 先假设参考图像的所有像素深度都是同一个值（对应三维空间中的一个面），将这个面投影到其它的图像中（该投影是个单应性变换），据此计算重投影误差
+  #fig("/public/assets/Courses/CV/2024-11-07-11-26-24.png", width: 70%)
+  - cost volumn 记下了每个像素每一个深度对应的误差，最后我们提取每个像素表现最好的深度值，得到深度图
+- *PatchMatch*
+  - 不过 Plane-Sweep 计算 cost volumn 还是开销大了点，有一种更加高效的立体匹配算法（穷举 $-->$ 随机预测）
+  #fig("/public/assets/Courses/CV/2024-11-07-11-32-45.png", width: 60%)
+  + Initialization: 随机初始化，赋予图像中的每个像素一个随机的深度值，大部分是错的，但总有可能会蒙对部分像素，在上图中我们假设红色是对的
+  + Propagation: 其次我们假设相邻的像素是相似的，即在两张图像上的视差相似。对于每一个图像块，将与其相邻的图像块计算误差，如果误差变小，则更新
+  + Search: 虽然相邻的像素相似但是不完全一致，所以我们要在小范围内进行微调
+  - 反复执行步骤 2, 3 直到收敛，可以把 PatchMatch 类比为图像匹配中的梯度下降
+
+== 3D reconstruction
+- 现在我们的目标是从深度图得到实际物体的三角网格
+#note(caption: "3D reconsturction Pipeline")[
+  + Compute depth map per image
+  + Fuse the depth maps into a 3D surface
+  + Texture mapping
+]
+
+=== 3D representations
+- 这里可以参考我 #link("http://crd2333.github.io/note/AI/3DV/Representations")[另外的笔记]
+
+=== 3D surface reconsturction
+- 现在我们想要知道如何从深度图得到三角网格，基本的步骤如下：
+  - 深度图 $-->$ 体素表示的 occupancy: Poisson reconsturction
+  - Occupancy volume $-->$ mesh: Marching cubes
+
+==== Poisson Reconstruction
+- 泊松重建是从深度图到三维体素的一个过程
+  + 首先将深度图转化为点云
+    - 这时候我们得到了一堆点，其实这些点已经近似构成了一个三维表面，只是比较 noisy
+  + 第二步，我们要计算这堆分布在表面附近的三维点各个局部的法向（可以利用 PCA，对应小特征值的特征向量即为局部表面法向）
+  + 第三步，我们根据得到的法向构建 $0-1$ 的体素，即用体素拟合点云，使得 $0-1$ 交界的地方就是点云所在之处。我们可以定义一个优化问题：优化变量就是每个体素的值，为 $0$ 或 $1$
+    - Represent surface by indicator (occupancy) function
+    $
+    cX_M (p) = cases(1 ~~~ "if" p in M, 0 ~~~ "otherwise")
+    $
+    - 对于目标函数，我们可以这样思考：对于体素的边界，物体内部值为 $1$，外部值为 $0$，则该处的梯度就沿着表面的法向。而我们又已知法向，因此可以优化梯度与法向之间的 Loss
+#fig("/public/assets/Courses/CV/2024-11-07-12-21-08.png", width:70%)
+
+#note(caption: "Poisson Reconstruction")[
+  + Represent the oriented points by a vector field $V$
+  + Find the function $X$（体素场） whose gradient best approximates $V$（梯度向量场） by minimizing: $norm(na_X-V)^2$
+  + Solved by Poisson equation
+]
+
+==== Marching Cubes
+- 现在我们需要从体素表示中提取表面三维网格
+- 这个做法其实很直观，就是寻找体素中有 $0$ 和 $1$ 转化的地方，提取中点，生成三角面片。下图很直观地展示二维和三维的情况
+#fig("/public/assets/Courses/CV/2024-11-07-12-13-38.png", width: 70%)
+#fig("/public/assets/Courses/CV/2024-11-07-12-09-18.png", width: 70%)
+- [ ] 这里比较粗略（
+
+#v(1em)
+
+- 最后，得到 mesh 后做 texture mapping 即可
+
+== Neural Scene Representations
+- 最后讲了一些 Implicit Neural Representations，我就不记了
 
 
