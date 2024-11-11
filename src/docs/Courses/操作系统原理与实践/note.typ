@@ -1316,6 +1316,7 @@
 - 最极端的例子($32$ bit, $4$ bytes for each entry)
   #fig("/public/assets/Courses/OS/2024-11-06-17-19-59.png", width: 60%)
   - 页表为什么可以省内存？如果次级页表对应的页都没有被使用，就不需要分配这个页表
+    - 关于页表的空间节省，可以参考 #link("https://rcore-os.cn/rCore-Tutorial-Book-v3/chapter4/3sv39-implementation-1.html#id6")[rCore-Tutorial-Book]
   - 最坏情况下，如果只访问第一个页和最后一页，那么只用一级页表需要 $1K$ 个页用来放页表（这个页表有 $2^20$ 个条目），但是对于二级页表就只需要 $3$ 个页表（$1$ 个一级和 $2$ 个二级页表），即 $3$ 个页来放页表。内存占用 $4M -> 12K$
 - Logical Address v4
   - `<PGD, PTE, offset>`

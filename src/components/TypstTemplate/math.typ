@@ -7,7 +7,7 @@
   ($|-$, math.tack),
   ($=<$, $<=$),                // =< becomes '≤'
   ($<==$, math.arrow.l.double), // Replaces '≤'，似乎需要某一边有东西才能正常工作，原因未知
-  ($~$, $med$),
+  ($~$, $med med$),
 )
 
 // 文本运算符
@@ -36,9 +36,14 @@
 #let eb = math.text("EB")
 #let EB = math.text("EB")
 #let FPS = math.text("FPS")
+#let ms = math.text("ms")
+#let min = math.text("min")
+#let Hz = math.text("Hz")
+#let GHz = math.text("GHz")
 
 // 防铸币操作
 #let dx = $dif x$
+#let exist = $exists$
 
 // 以类似格式添加文本缩写
 #let le = $<=$

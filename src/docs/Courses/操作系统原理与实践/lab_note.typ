@@ -92,13 +92,13 @@
 #let offset = math.text("offset")
 #note(caption: "Virtual Address Translation Process(sv39)")[
   - 首先翻译一遍（部分异常处理简化）
-    + 让 $a$ 代表 $satp\.ppn$ $times 2^12$(PA)，让 $i=2$
+    + 让 $a$ 代表 $satp\.ppn$ $times 2^12$(PA of page table)，让 $i=2$ (level of page table)
     + 让 $pte$ 代表 PTE 在 $a+VA\.vpn[i]times 8$（PA 加上 PT 中偏移量）地址的值
     + 如果 $pte\.v=0$，或者 $pte\.r=0$ 且 $pte\.w=1$，或者 reserved bits 被设置，抛出 page-fault 异常
     + 否则，这个 PTE 是 valid 的。如果 $pte\.r=1$ 或 $pte\.x=1$，跳到第 $5$ 步；否则，这个 PTE 指向下一级页表，令 $i=i-1$。如果 $i < 0$，抛出 page-fault 异常；否则，令 $a=pte\.ppn times 2^12$，跳到第 $2$ 步
     + 此时说明 PTE 是 leaf 节点。检查权限是否要抛出 page-fault 异常
     + 如果 $i>0$ 并且 $pte\.ppn[i-1:0]!=0$，这是一个 misaligned superpage，抛出 page-fault 异常
-    + （可以先不管这一步）如果 $pte\.a=0$，或者如果是存储操作并且 $pte\.d=0$（可以先不管这一步）
+    + （可以先不管这一步）如果 $pte\.a=0$，或者如果是存储操作并且 $pte\.d=0$
       - Svade extension 和一些检查，略
       - 自动执行以下步骤
         + 把 $pte$ 跟 PTE 在 $a+VA\.vpn[i] times 8$（PA 加上 PT 中偏移量）地址的值比较
@@ -113,4 +113,8 @@
     + $a=pte\.ppn times 2^12, i=1$，在第二级页表中找 $a+VA\.vpn[i]times 8$ 的值，取出记为 $pte$
     + $a=pte\.ppn times 2^12, i=0$，在第三级页表中找 $a+VA\.vpn[i]times 8$ 的值，取出记为 $pte$
     + $PA = {pte\.ppn,VA\.offset}$
+  - 完整走一遍成功的触发暂时页表 gigapage 的过程
+    + $a=satp\.ppn$ $times 2^12, i=2$，在第一级页表中找 $a+VA\.vpn[i]times 8$ 的值，取出记为 $pte$
+    + 发现 $pte\.r=1$ 或 $pte\.x=1$，触发 gigapage
+    + $PA = {pte\.ppn[2],VA\.vpn[1:0],VA\.offset}$
 ]
