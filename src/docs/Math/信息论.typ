@@ -5,7 +5,7 @@
   lang: "zh",
 )
 
-#let DL = math.op("DL")
+#let DL = math.text("DL")
 = 信息论
 - 在学习《统计学习方法》和《机器学习》（周志华）时，经常遇到信息论的一些概念
   - 1948 年，香农将热力学的熵，引入到信息论，因此它又被称为香农熵(Shannon entropy)

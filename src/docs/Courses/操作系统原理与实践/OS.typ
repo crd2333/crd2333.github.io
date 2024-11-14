@@ -1204,7 +1204,7 @@
   - Partition evolution
   - Memory partition-fixed and variable
     - first,best,worst fit
-    - fragmentation:internal/external
+    - fragmentation: internal / external
   - Segmentation
     - Logical address vs physical address
   - MMU:address translation protection
@@ -1220,8 +1220,8 @@
   - 为了跑一个 $N$ pages 的程序，需要找到 $N$ 个 free 的 frames 把程序加载上去
   - 把 $N$ 个帧映射到 $N$ 个页，这个存储帧到页的映射的数据结构叫*页表 page table*
 - Paging has no *external fragmentation*, but *internal fragmentation*
-  - 那为什么我们要从 variable partition 又回到 fixed partition 呢？因为此时内部碎片问题不严重
-  - 一个进程被拆成多个 page，只有最后的页才会有碎片，worst case: 1 frame - 1 byte; average internal fragmentation: 1 / 2 frame size
+  - 那为什么我们要从 variable partition 又回到 fixed partition 呢？因为此时内部碎片问题不严重（一个进程被拆成多个 page，只有最后的页才会有碎片），比之前的 partition 要小很多
+    - worst case: 1 frame - 1 byte; average internal fragmentation: 1 / 2 frame size
   - page(frame) size
     - 页如果小，碎片少，但是映射更多，页表需要更大的空间
     - 反之页如果大，碎片多但映射更少，页表较小
@@ -1283,29 +1283,29 @@
   #fig("/public/assets/Courses/OS/2024-11-06-16-36-25.png",width: 60%)
 - Effective Access Time（要会算）
   #fig("/public/assets/Courses/OS/2024-11-06-16-39-17.png",width: 70%)
-- 题外话：Segmatation 和 Paging 两个机制其实是差不多时间发明的，后者更优越但硬件上实现更难，所以更晚被广泛使用
+- 题外话：Segmatation 和 Paging 两个机制其实是差不多时间(1961 and 1962)发明的，后者更优越但硬件上实现更难，所以更晚被广泛使用
 
-=== Memory Protection
-- 到目前为止，页表里放了物理帧号。我们可以以页为粒度放上保护的一些权限（如可读、写、执行），这样就可以实现内存保护
-  - Each page table entry has a present (aka. valid) bit
-    - present: the page has a valid physical frame, thus can be accessed
-  - Each page table entry contains some protection bits.
-    - 任何违反内存保护的行为导致 kernel 陷入 trap
-- XN: protecting code
-  - 把内存分为 code 和 data 区，只有 code 区可以执行。e.g. Intel: XD(execute disable), AMD: EVP (enhanced virus protection), ARM: XN (execute never)
-- PXN: Privileged Execute Never
-  - A Permission fault is generated if the processor is executing at EL1(kernel) and attempts to execute an instruction fetched from the corresponding memory region when this PXN bit is 1 (usually user space memory). e.g. Intel: SMEP
-#fig("/public/assets/Courses/OS/2024-11-06-16-45-02.png", width: 60%)
-
-=== Page Sharing
-- Paging allows to share memory between processes
-  - shared memory can be used for inter-process communication
-  - shared libraries
-- 同一程序的多个进程可以使用同一份代码，只要这份代码是 reentrant code（or non-self-modifying code:never changes between execution）
-#fig("/public/assets/Courses/OS/2024-11-06-16-56-43.png",width: 60%)
+=== Page with Memory Protection and Sharing
+- Memory Protection
+  - 到目前为止，页表里放了物理帧号。我们可以以页为粒度放上保护的一些权限（如可读、写、执行），这样就可以实现内存保护
+    - Each page table entry has a present (aka. valid) bit
+      - present: the page has a valid physical frame, thus can be accessed
+    - Each page table entry contains some protection bits.
+      - 任何违反内存保护的行为导致 kernel 陷入 trap
+  - XN: protecting code
+    - 把内存分为 code 和 data 区，只有 code 区可以执行。e.g. Intel: XD(execute disable), AMD: EVP (enhanced virus protection), ARM: XN (execute never)
+  - PXN: Privileged Execute Never
+    - A Permission fault is generated if the processor is executing at EL1(kernel) and attempts to execute an instruction fetched from the corresponding memory region when this PXN bit is 1 (usually user space memory). e.g. Intel: SMEP
+  #fig("/public/assets/Courses/OS/2024-11-06-16-45-02.png", width: 60%)
+- Page Sharing
+  - Paging allows to share memory between processes
+    - shared memory can be used for inter-process communication
+    - shared libraries
+  - 同一程序的多个进程可以使用同一份代码，只要这份代码是 reentrant code（or non-self-modifying code:never changes between execution）
+  #fig("/public/assets/Courses/OS/2024-11-06-16-56-43.png",width: 50%)
 
 === Structure of Page Table
-- Page Table 需要物理地址连续(*physically contiguous*)，因为它是由 MMU 去管的，MMU 不知道 logical address 这件事
+- *重要*！！！Page Table 需要物理地址连续(*physically contiguous*)，因为它是由 MMU 去管的，MMU 不知道 logical address 这件事
 - 如果只有一级的页表，那么页表所占用的内存将大到不可接受
   - e.g. 32-bit logical address space and 4KB page size. page table would have 1 million entries $(2^32/2^12)$. If each entry is 4 bytes -> 4 MB of memory for page table alone
   - 我们需要有方法压缩页表
@@ -1316,7 +1316,7 @@
 - 最极端的例子($32$ bit, $4$ bytes for each entry)
   #fig("/public/assets/Courses/OS/2024-11-06-17-19-59.png", width: 60%)
   - 页表为什么可以省内存？如果次级页表对应的页都没有被使用，就不需要分配这个页表
-    - 关于页表的空间节省，可以参考 #link("https://rcore-os.cn/rCore-Tutorial-Book-v3/chapter4/3sv39-implementation-1.html#id6")[rCore-Tutorial-Book]
+    - 关于页表的空间节省计算，可以参考 #link("https://rcore-os.cn/rCore-Tutorial-Book-v3/chapter4/3sv39-implementation-1.html#id6")[rCore-Tutorial-Book]
   - 最坏情况下，如果只访问第一个页和最后一页，那么只用一级页表需要 $1K$ 个页用来放页表（这个页表有 $2^20$ 个条目），但是对于二级页表就只需要 $3$ 个页表（$1$ 个一级和 $2$ 个二级页表），即 $3$ 个页来放页表。内存占用 $4M -> 12K$
 - Logical Address v4
   - `<PGD, PTE, offset>`
@@ -1326,12 +1326,12 @@
   - 一个比较生草的问题是页表里以及 PTBR 存的是 logical address 还是 physical address，答案肯定是后者，因为我们本来就是在做 LA $->$ PA 的转译，要还是 LA 就“鸡生蛋蛋生鸡”了
   - 另外这里经常出 *page size* 和 *entry size* 变化后的分区大小问题
     - 如果 page size 变大，offset 需要变大，Page Table 能容纳的 entries 也变多；如果 entry size 变大……
-- 例如，$64$ bit 下，每个页表 entry size 变为 $8B$，一个页可以放 $2^9=512$ entries
-  - $64$ bit 能 index 的地址太大了，一般都用不完
+- 例如，$64$ bit 下，每个页表 entry size 变为 $8B$，一个页可以放 $2^12\/2^3=512$ entries
+  - $64$ bit 能索引的地址太大了，一般都用不完
     - AMD-64 supports $48$ bits; ARM64 supports $39$ bits, $48$ bits
-    - 对 $39=9+9+9+12$ bits，有 $3$ 级页表，能 index $1$ GB
-    - 对 $48=9+9+9+9+12$ bits，有 $4$ 级页表，能 index $512$ GB
-    - 对 $57=9+9+9+9+9+12$ bits，有 $5$ 级页表，已经能 index $128$ PB 了
+    - 对 $39=9+9+9+12$ bits，有 $3$ 级页表，能索引$1$ GB
+    - 对 $48=9+9+9+9+12$ bits，有 $4$ 级页表，能索引$512$ GB
+    - 对 $57=9+9+9+9+9+12$ bits，有 $5$ 级页表，已经能索引$128$ PB 了
   #tbl(
     columns: 7,
     [#h(8pt)],[9],[9],[9],[9],[9],[12],
@@ -1342,7 +1342,206 @@
 - Hashed Page Tables
   - 在地址空间足够大且分布足够稀疏的时候有奇效（因为如果地址空间太大，用 $5$ 级页表最坏情况下要做足足 $5$ 次访存）
   - In hashed page table, virtual `page#` is hashed into a `frame#`
+  - 哈希页表的每一个条目除了 page number 和 frame number 以外，还有一个指向有同一哈希值的下一个页表项的指针。这个结构与一般的哈希表是一致的
+  #fig("/public/assets/Courses/OS/2024-11-12-14-40-23.png", width: 60%)
 - Inverted Page Tables
+  - 动机：LA 一般远大于 PA，造成需要 index 的项很多，inverted page table 的想法是去索引 physical frame 而不是 logical pages；另外一个不太重要的原因是，历史上由于 linux 发展较慢，$32 bits$ 只能支持 $4GB$，比 $8GB$ 内存要小
+  - 每个 physical frame 对应一个 entry $-->$ 整个 Page Table 占用的内存是固定的！每个 entry 储存 pid 和 page number（对比之前 hierarchical page table 存 frame number，而且它不存 pid 因为每个进程独享自己的 page table），也就是说，Inverted page tables 索引 PA 而不是 LA
+  - 现在寻址时，为了 translate LA 到 PA，找到对应有这个 page number 的 entry，不能像原版 page table 那样把 frame number 当做 index 直接找了，必须遍历整个页表找到对应的 pid 和 page number，其在页表中所处的位置即为 frame number
+    - 这可以用 TLB 来加速，但是 TLB miss 时代价是很大的
+  - 而且这样不能共享内存，因为一个物理帧只能映射到一个页（除非你把每个 entry 做成一个链表进去，也是一种实现）；对比原版 page table，shared memory 只需要两个进程的 page table 指向同一个物理帧号即可
+  #fig("/public/assets/Courses/OS/2024-11-12-14-35-28.png", width: 60%)
 
+== Swapping
+- 我们前面说 Paging 机制对内存消耗还是比较大的，假如物理内存用完了，能不能把一部分进程放到磁盘上呢？
+  - swap out: 用 disk 备份内存，就把 frame 的值交换到 disk 上，然后把 frame 释放出来
+  - swap in: 当进程要执行的时候，再把 frame 从 disk 读回来。换回来时不需要相同的物理地址，但是逻辑地址要是一样的
+  - 显然这个过程是很慢的，因此当进程在 swap 的时候，会被丢到硬盘的 waiting queue 里
+  #fig("/public/assets/Courses/OS/2024-11-12-14-42-26.png", width: 60%)
+- Swapping with Paging
+  - 为了减轻负担，我们并不是把整个进程塞到 disk，而是部分 page
+  - 这样，我们在 load 进程的 disk 部分的同时，进程还在 main memory 的部分可以先执行
+    - 换句话说，paging 机制让我们拥有了 partially excuting 一个进程的能力
+  #fig("/public/assets/Courses/OS/2024-11-12-14-42-38.png", width: 60%)
 
+== Example: Intel 32- and 64-bit Architectures
+- Intel IA-32 支持 Segmentation 和 Paging
+- Intel 32 bit 提出 Physical Address Extension(PAE) 来支持 $4GB$ 以上寻址
+- 这部分感觉应该不用太详细了解
+
+#note(caption: "Takeaway")[
+  - Partition evolution
+  - Contiguous allocation
+    - Fixed, variable
+      - first, best, worst fit
+      - fragmentation: internal/ external
+    - Segmentation
+      - Logical address v.s. physical address
+  - Fragmentation
+    - Internal， external
+  - MMU: address translation + protection
+  - Paging
+    - Page table
+      - Hierarchical, hashed page table, inverted
+      - Two-level, three-level, four-level
+      - For 32 bits and 64 bits architectures
+]
+#note(caption: "Page table quiz（看看考试是怎么考的）")[
+  - In $32 bit$ architecture, $4KB$ page
+  + for 1-level page table, how large is the whole page table?
+    - $4KB$
+  + for 2-level page table, how large is the whole page table?
+    + How large for the 1st level PGT?
+      - $4KB$
+    + How large for the 2nd level PGT?
+      - $1K times 4KB = 4MB$
+  + Why can 2-level PGT save memory?
+    - 允许内存不连续 + 可以按需取用（如果次级页表对应的页没有被使用就不需要分配）
+  + 2-level page table walk example
+    + Page table base register holds `0x0061,9000`
+    + Virtual address is `0xf201,5202` #h(1fr)
+      #tbl(columns:3,[PGD$(10)$],[PTE$(10)$],[offset$(12)$],[968],[21],[514])
+      - 在 PTBR 中提取 PGD 的地址，然后加上 index 取 PTE 地址……
+    + Page table base register holds `0x1051,4000`
+    + Virtual address is `0x2190,7010` #h(1fr)
+      #tbl(columns:3,[PGD$(10)$],[PTE$(10)$],[offset$(12)$],[134],[263],[16])
+      - 在 PTBR 中提取 PGD 的地址，然后加上 index 取 PTE 地址……
+      - 题外话：$4KB + 32 bits$ 真的是绝配，对别的 page size、bits 架构就不是这样，如下
+  - How about page size is $64KB$
+    + What is the virtual address format for 32-bit?  #h(1fr)
+      #tbl(columns:3,[PGD],[PTE],[offset],[2],[14],[16])
+    + What is the virtual address format for 64-bit?
+      - for $39 bit$ VA —— 只能支持两级页表
+      #tbl(columns:4,[PGD],[PMD],[PTE],[offset],[],[10],[13],[16])
+      - for $48 bit$ VA —— 可以支持三级页表
+      #tbl(columns:4,[PGD],[PMD],[PTE],[offset],[6],[13],[13],[16])
+  - 以及要学会画 page table walk 的图和过程
+]
+
+= Virtual Memory
+== Introduction
+- Background: 代码需要在内存中执行，但很少需要或同时使用整个程序
+  - unused code: error handling code, unusual routines
+  - unused data: large data structures
+- *partially-loaded*（在 Swapping 部分已经提到这种思想）
+  - 我们可以把还没用到的 code 和 data 延迟加载到内存里，用到时再加载
+  - 另一个好处是，program size 可以不受 physical memory size 的限制
+- 为了实现部分加载，我们有一个虚拟内存（在这门课里和逻辑地址是等价的）的概念，主要靠 Paging 来实现
+  - 需要注意的是虚拟地址只是范围，并不能真正的存储数据，数据只能存在物理空间里
+#fig("/public/assets/Courses/OS/2024-11-13-16-25-55.png",width:50%)
+
+== Demand Paging
+- *Demand paging*: 一般 OS 采用的方法是，当页被需要的时候(when it is demanded)才被移进来(page in)，demand 的意思是 access(read/write)
+  - if page is invalid (error) $-->$ abort the operation
+  - if page is valid but not in physical memory $-->$ bring it to physical memory
+    - 这就叫 *page fault*
+  - 优劣：no unnecessary I/O, less memory needed, slower response, more apps. 简而言之，时间换空间
+- 几个问题
+  - Demand paging 和 page fault 的关系？
+    - 前者是利用后者实现的
+  - What causes page fault？
+    - User space program accesses an address
+  - Which hardware issues page fault and Who handles page fault?
+    - MMU & OS 后面详细展开
+- Demand paging 需要硬件支持：
+  + page table entries with valid / invalid bit
+  + backing storage (usually disks)
+  + instruction restart
+- 另外这里我们可以思考 Segmentation 能不能实现 demand paging 机制？其实是不太行的，因为它的粒度太大了，就算实现了效果也不好
+
+== Page Fault
+- 比如，C 语言调用 `malloc` 的时候，采用的就是 lazy allocation 策略
+  - VMA 是 Virtual Memory Area，malloc 调用 `brk()` 只是增大了 VMA 的大小（修改 vm_end），但是并没有真正的分配内存
+  - 只有当我们真正访问这个地址的时候，会触发 page fault，然后找一个空闲帧真正分配内存，并做了映射
+  - 那有没有直接 allocate 的呢？`kmalloc` 会直接分配虚拟连续、物理连续的内存，`vmalloc` 会直接分配虚拟连续、物理不连续的内存
+  #fig("/public/assets/Courses/OS/2024-11-13-16-35-45.png",width:70%)
+- *MMU issues page fault*，走到页表最低层的时候发现对应的条目的 valid bit 不为 $1$，说明并没有映射，就触发了 page fault
+  - $v$ (valid) $->$ frame mapped, $i$ (invalid) $->$ frame not mapped
+- *OS handles page fault* (Linux implementation)
+  - Page Fault 出现有两种情况（检测是真的 fault 还是只是空头支票没兑现）
+    + 一种是地址本身超过了 VMA 的范围，或者落在 Heap 内但权限不对，这种情况操作系统会杀死进程；
+      - 为了判断地址是否落在 VMA 里，Linux 使用了红黑树来加速查找
+    + 否则，这个时候 OS 就会分配一个 free frame，然后把这个页映射到这个帧上。但这个时候也分两种情况：
+      + 这个 page 属于 file-backed(e.g. Data, Text)，它不在内存里面，这时需要先从磁盘读取这个 page，然后映射
+        - 或者后面会讲，一个原本属于 anonymous page 但是因为 free list 不够而被 swap out 到磁盘的情况，也需要从磁盘读取
+      + 这个 page 属于 anonymous(e.g. BSS, Heap, Stack)，它本身就在内存里，这时只需要直接映射即可
+  #fig("/public/assets/Courses/OS/2024-11-13-16-44-38.png",width:80%)
+  - 具体来说就是
+    + MMU 先去 access 这个地址，发现 valid bit 是 $i$，issue page fault
+    + OS handle page fault，检查之后发现是合法的，分两种情况
+      + Major page fault: 把这个页从磁盘读到内存，然后 reset 页表对应的 valid bit $i --> v$
+      + Minor page fault: 找一个 free frame 映射到它，省了 $3,4$ 两步，然后 reset 页表对应的 valid bit $i --> v$
+    + 这样之后，重新执行一遍指令，MMU 再重新走一遍这个过程，去 access 这个地址，去 TLB 里找就 miss 了（又一个 fault），这时候把它从页表搬到 TLB 里
+    #fig("/public/assets/Courses/OS/2024-11-13-16-54-40.png",width:60%)
+    - 这个过程里图中 $4$ 最耗时间，因为要读磁盘。如果跟 schedling 结合，此时会把该进程 sleep，丢到 disk 的 waiting queue 里。等 disk 做完了，触发一个 interrupt，然后 OS 会把这个进程移到 ready queue 里
+- How to Get Free Frame
+  - OS 为内存维护一个 free-frame list
+  - Page fault 发生时，OS 从 free list 里拿一个空闲帧进行分配
+  - 为了防止信息泄露，在分配时把帧的所有位都置 $0$ (zero-fill-on-demand)
+  - 没有空闲的帧怎么办？之后讲 (page replacement)
+- Page Fault with swapper
+  - 还是说 page replacement 的 case，要把页换进来(swap in)和换出去(swap out)
+  - Lazy swapper: 懒惰执行 swap in，只有需要的时候才真正 swap in
+    - the swapper that deals with pages is also called a pager.
+  - Pre-Paging: pre-page all or some of pages a process will need, before they are referenced.
+    - 空间换时间，减少 page fault 的次数（主要是想少掉 major 的），但是如果 pre page 来的没被用就浪费了
+
+#note(caption: [Stages in Demand Paging – Worse Case])[
+  + Trap to the operating system.
+  + Save the user registers and process state. (pt_regs)
+  + Determine that the interrupt was a page fault.
+    - Check that the page reference was legal and determine the location of the page on the disk.
+  + Find a free frame
+  + Determine the location of the page on the disk, issue a read from the disk to the free frame
+    + Wait in a queue for this device until the read request is serviced.
+    + Wait for the device seek and/or latency time.
+    + Begin the transfer of the page to a free frame.
+  + While waiting, allocate the CPU to other process.
+  + Receive an interrupt from the disk I/O subsystem. (I/O completed)
+    + Determine that the interrupt was from the disk.
+    + Mark page fault process ready.
+  + Handle page fault: wait for the CPU to be allocated to this process again.
+    + Save registers and process state for other process.
+    + Context switch to page fault process.
+  + Correct the page table and other tables to show page is now in memory.
+  + Return to user: restore the user registers, process state, and new page table, and then resume the interrupted instruction.
+  - 其实跟之前总结得差不太多，只是再结合 context switch
+  #fig("/public/assets/Courses/OS/2024-11-13-17-25-11.png",width:70%)
+]
+
+== Demand Paging Optimizations
+- 先来分析一下 demand paging 的 overhead
+  - page fault rate: $0 =< p =< 1$
+  - Effective Access Time(EAT):
+    $ (1-p) times "memory access" + p times ("page fault overhead" + "swap page out" + "swap page in" + "instruction restart overhead") $
+  #fig("/public/assets/Courses/OS/2024-11-13-17-36-32.png",width:60%)
+  - 真实场景下，确实可以让减速比 $=< 10%$，因为有 program locality，而且也不是每个 page fault 都是 major
+- Discard
+  - 仍旧从 disk 读取(page in)，但是对于部分只是拿来读的数据（比如 Code），我们不需要把它写回 disk（写了也是白写），而是直接丢弃，下次直接从 disk 读取（少一次 I/O）
+  - 但下列情况还是需要写回
+    - Pages not associated with a file (like stack and heap) – anonymous memory
+    - Pages modified in memory but not yet written back to the file system
+- Copy-on-Write (COW)
+  - 我们之前讲 `fork()` 的时候说过，child 从 parent 完全复制，这是很耗时的
+  - 我们可以让 child 跟 parent 使用 shared pages，只有当父进程或子进程修改了页的内容时，才会真正为修改的页分配内存（copy 并修改）
+  - `vfork` syscall optimizes the case that child calls `exec` immediately after `fork`
+  #fig("/public/assets/Courses/OS/2024-11-13-17-45-30.png", width: 60%)
+
+== Page Replacement
+- 没有空闲的物理帧时应该怎么办呢？
+  - 我们可以交换出去一整个进程从而释放它的所有帧；
+  - 更常见地，我们找到一个当前不在使用的帧，并释放它
+- Page replacement: find some page in memory but not really in use, and page it out
+  - 与物理地址无关 #h(1fr)
+  #fig("/public/assets/Courses/OS/2024-11-13-17-48-23.png", width: 60%)
+
+=== Page Replacement Mechanism
+- Page Fault Handler (with Page Replacement) 为了 page in 一个 page，需要
+  + find the location of the desired page on disk
+  + find a free frame:
+    + if there is a free frame, use it
+    + if there is none, use a page replacement policy to pick a victim frame, write victim frame to disk if dirty
+  + bring the desired page into the free frame; update the page tables
+  + restart the instruction that caused the trap.
+  - 一次 page fault 可能发生 2 次 page I/O，一次 out（可能要把脏页写回）一次 in
 

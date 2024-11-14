@@ -5,16 +5,32 @@
   lang: "zh",
 )
 
-- ZJU Machine Learning 的简单笔记
-  - 任课老师：赵洲
-  - 因为这门课讲得不是很好（高情商），另外机器学习的内容跟当今深度学习的内容有一定 gap，所以只简单记一下*脉络与归纳*，复杂公式等均不会涉及
+#let TP = math.text("TP")
+#let FP = math.text("FP")
+#let TN = math.text("TN")
+#let FN = math.text("FN")
+#let ACC = math.text("ACC")
+#let F1 = math.text("F1")
+#let cY = math.cal("Y")
+#let Ent = math.op("Ent")
+#let Gain = math.op("Gain")
+
+#let GainRatio = math.op("GainRatio")
+#let Gini = math.op("Gini")
+#let GiniIndex = math.op("GiniIndex")
+#let cC =math.cal("C")
+#info()[
+  - ZJU Machine Learning 的简单笔记
+    - 任课老师：赵洲
+    - 因为这门课讲得不是很好（高情商），另外机器学习的内容跟当今深度学习的内容有一定 gap，所以只简单记一下*脉络与归纳*，复杂公式等均不会涉及
+]
 
 = 绪论
 - 机器学习的定义
   - 关键词：经验、数据、性能
 - 机器学习究竟是什么？能简述机器学习经典过程
 - 机器学习能做什么?
-  - 举1-2个例子说明
+  - 举 $1-2$ 个例子说明
 - 机器学习与其它学科的关系
 - 前沿机器学习期刊和会议
 - 机器学习的历史和可能的未来？
@@ -47,12 +63,6 @@
   - 假设空间、版本空间、归纳偏好、No Free Lunch 定理
 
 == 模型评估
-#let TP = math.text("TP")
-#let FP = math.text("FP")
-#let TN = math.text("TN")
-#let FN = math.text("FN")
-#let ACC = math.text("ACC")
-#let F1 = math.text("F1")
 - 经验误差与过拟合
 - 评估方法
   + 留出法(Hold-out)
@@ -120,12 +130,6 @@
     - 阈值移动(threshold-moving)
 
 = 决策树
-#let cY = math.cal("Y")
-#let Ent = math.op("Ent")
-#let Gain = math.op("Gain")
-#let GainRatio = math.op("GainRatio")
-#let Gini = math.op("Gini")
-#let GiniIndex = math.op("GiniIndex")
 - 了解决策树基本流程
 - 决策树算法的关键：划分选择
   - 信息增益(ID3)或增益率(C4.5)：使用信息熵概念，越小越纯 #h(1fr)
@@ -323,9 +327,12 @@
 
 = 聚类
 - 聚类任务
-  - 能够清晰说出聚类任务是什么
+  - 将数据样本划分为若干个通常不相交的“簇”(cluster)。不相交的簇 —— 硬聚类；可相交的簇 —— 软聚类
 - 性能度量
-  - 能够大体说出度量的核心是什么，有哪些考虑
+  - 基本想法：“簇内相似度”(intra-cluster similarity)高，且“簇间相似度”(inter-cluster similarity)低
+  - *外部指标(external index)*：将聚类结果与某个“参考模型”(reference model)进行比较，如 Jaccard 系数，FM 指数，Rand 指数
+    - 数据集 $D={x1,x2,x_m}$
+  - *内部指标(internal index)*：直接考察聚类结果，无参考模型，如 DB 指数，Dunn 指数
 - 距离计算
   - 能够说出距离计算对聚类的意义
 - 原型聚类

@@ -80,10 +80,10 @@ $
 == SARSA & Q-learning
 - SARSA是一种针对表格环境中的*时序差分*方法，其得名于表格中的内容（状态-动作-奖励-状态-动作）
 - SARSA的策略评估为更新状态-动作值函数$ Q(s_t,a_t)<-Q(s_t,a_t)+alpha(R_(t+1)+gamma Q(s_(t+1),a_(t+1))-Q(s_t,a_t)) $
-- SARSA的策略改进为$epsilon-"greedy"$
+- SARSA的策略改进为 $epsilon-"greedy"$
 - 在线策略时序差分控制(on-policy TD control)使用当前策略进行动作采样，即SARSA算法中的两个动作“A”都是由当前策略选择的
 
-- Q-learning学习状态动作值函数$Q(s, a) in RR$，是一种离线策略(off-policy)方法
+- Q-learning学习状态动作值函数 $Q(s, a) in RR$，是一种离线策略(off-policy)方法
 $
 Q(s_t, a_t)=sum_(t=0)^T gamma^t R(s_t,a_t), ~~~ a_t wave mu(s_t)
 $
@@ -122,29 +122,21 @@ $
 - 引出 Double DQN，使用两个网络减少随机噪声的影响，恰巧，我们就有*目标网络*($omega^-$)和*当前策略网络*($omega$)这两个网络，分别用于计算TD目标值、选择行为
   #fig("/public/assets/AI/AI_RL/img-2024-07-04-16-20-27.png")
 - 其算法流程
-#algo(caption: "DDQN")[
-  ```typ
-  #no-number
-  算法输入：迭代轮数$T$，状态特征维度$n$，动作集$A$,步长$alpha$，衰减因子$gamma$，探索率$epsilon$，当前网络$Q$，目标网络$Q'$，批量梯度下降的样本数$m$,目标网络参数更新频率$C$
-  #no-number
-  算法输出：$Q$网络参数
-  #no-number
-
-  随机初始化所有的状态和动作对应的价值$Q$，随机初始化当前网络$Q$的参数，目标网络$Q'$的参数$w'=w$。清空经验回放集合$D$
-  初始化$S$为当前状态序列的第一个状态，拿到其特征向量$phi(S)$
-  在$Q$网络中使用$phi(S)$作为输入，得到$Q$网络的有动作对应的$Q$值输出。用$epsilon-"greedy"$法在输出中选择对应的动作$a$
-  在状态$S$执行当前动作$a$，得到新状态$S'$对应的特征向量$phi(S')$和奖励$R$,是否终止状态`is_end`
-  将${phi(S), a, R, phi(S'), "is_end"}$这个五元组存入经验回放集合$D$
-  令 $S = S'$
-  从经验回放集合$D$中采样$m$个样本${phi(S_j), a_j,R_j,phi(S'_j),"is_end"_j},j = 1,2,dots,m$，计算当前目标$Q$值$y_j$ $ y_j = cases(R_j\, &"is_end"_j = "True", R_j + gamma Q'(phi(S'_j)\, arg max_a' Q(phi(S'_j)\,a\, w)\, w')\, & "is_end"_j = "False") $
-  使用均方差损失函数$1/m sum_(j=1)^m (y_j-Q(phi(S_j),a_j,w))^2$，通过神经网络的梯度反向传播来更新$Q$网络的所有参数$w$
-  如果 `i % C == 1`，则更新目标网络参数$w' <- w$
-  如果 $S'$ 是终止状态，则当前轮迭代完毕，转到2，否则转到3
-  #no-number
-
-  #no-number
-  注意，上述的7步和8步的$Q$值计算也都需要通过$Q$网络计算得到。另外，实际应用中，为了算法较好的收敛，探索率$epsilon$需要随着迭代的进行而变小。
-  ```
+#algo(title: [*Algorithm:* DDQN])[
+  - 算法输入：迭代轮数$T$，状态特征维度$n$，动作集$A$,步长$alpha$，衰减因子$gamma$，探索率$epsilon$，当前网络$Q$，目标网络$Q'$，批量梯度下降的样本数$m$,目标网络参数更新频率$C$
+  - 算法输出：$Q$网络参数
+  + 随机初始化所有的状态和动作对应的价值$Q$，随机初始化当前网络$Q$的参数，目标网络$Q'$的参数$w'=w$。清空经验回放集合$D$
+  + for $i$ from $1$ to $T$, do:
+    + a) 初始化$S$为当前状态序列的第一个状态，拿到其特征向量$phi(S)$
+    + b) 在$Q$网络中使用$phi(S)$作为输入，得到$Q$网络的有动作对应的$Q$值输出。用$epsilon-"greedy"$法在输出中选择对应的动作$a$
+    + c) 在状态$S$执行当前动作$a$，得到新状态$S'$对应的特征向量$phi(S')$和奖励$R$,是否终止状态`is_end`
+    + d) 将${phi(S), a, R, phi(S'), "is_end"}$这个五元组存入经验回放集合$D$
+    + e) 令 $S = S'$
+    + f) 从经验回放集合$D$中采样$m$个样本${phi(S_j), a_j,R_j,phi(S'_j),"is_end"_j},j = 1,2,dots,m$，计算当前目标$Q$值$y_j$ $ y_j = cases(R_j\, &"is_end"_j = "True", R_j + gamma Q'(phi(S'_j)\, arg max_a' Q(phi(S'_j)\,a\, w)\, w')\, & "is_end"_j = "False") $
+    + g) 使用均方差损失函数$1/m sum_(j=1)^m (y_j-Q(phi(S_j),a_j,w))^2$，通过神经网络的梯度反向传播来更新$Q$网络的所有参数$w$
+    + h) 如果 `i % C == 1`，则更新目标网络参数$w' <- w$
+    + i) 如果 $S'$ 是终止状态，则当前轮迭代完毕，转到2，否则转到3
+    - 注意，上述的 f 步和 g 步的 $Q$ 值计算也都需要通过 $Q$ 网络计算得到。另外，实际应用中，为了算法较好的收敛，探索率 $epsilon$ 需要随着迭代的进行而变小。
 ]
 
 === Dueling DQN

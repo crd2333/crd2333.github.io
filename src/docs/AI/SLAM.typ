@@ -5,16 +5,6 @@
   lang: "zh",
 )
 
-#let bx = $bold(x)$
-#let bH = $bold(H)$
-#let bg = $bold(g)$
-#let bJ = $bold(J)$
-#let bE = $bold(E)$
-#let bF = $bold(F)$
-#let bB = $bold(B)$
-#let bC = $bold(C)$
-
-
 = SLAM 中的 CV
 == SfM
 - 参考 #link("https://blog.csdn.net/shyjhyp11/article/details/104108926")

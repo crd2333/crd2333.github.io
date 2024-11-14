@@ -5,16 +5,7 @@
   lang: "zh",
 )
 
-#let bo = $bold(o)$
-#let bxi = $bold(xi)$
-#let bnu = $bold(nu)$
-#let bK = $bold(K)$
-#let bI = $bold(I)$
-#let bT = $bold(T)$
-#let bP = $bold(P)$
 #let batch_size = math.text("batch_size")
-#let br = math.bold("r")
-#let cV = math.cal("V")
 
 #info()[
   - 参考

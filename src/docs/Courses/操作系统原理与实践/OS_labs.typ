@@ -9,6 +9,19 @@
   lang: "zh",
 )
 
+#info()[
+  - 实验过程中的一些笔记
+]
+
+#let LEVELS = math.text("LEVELS")
+#let pte = math.text("pte")
+#let satp = math.text("satp")
+#let ppn = math.text("ppn")
+#let VA = math.text("VA")
+#let PA = math.text("PA")
+#let vpn = math.text("vpn")
+#let offset = math.text("offset")
+
 = lab1
 == RISCV 汇编
 - 汇编文件的后缀是 `.s` 或 `.S`，所不同的是 `.S` 中可以加入预处理命令（`#include`, `#define` 等）。
@@ -42,7 +55,6 @@
   - `.align` 用于对齐
   - 参考 #link("https://github.com/riscv-non-isa/riscv-asm-manual/blob/main/src/asm-manual.adoc#pseudo-ops")[riscv-asm-manual\#pseudo-ops]
 
-
 == 链接脚本
 - 链接脚本的后缀是 `.ld` 或 `.lds`。
 - 参考
@@ -75,21 +87,12 @@
 - 看了 #link("https://wangzhou.github.io/riscv-timer%E7%9A%84%E5%9F%BA%E6%9C%AC%E9%80%BB%E8%BE%91/")[这篇文章] 更不理解了
 - 现在理解了
 
-
 == 关于中断
 - 参考 #link("https://blog.csdn.net/zzy980511/article/details/130642258")[RISC-V架构中的异常与中断详解]
 
 
 = lab3
 == 页表寻址 —— sv39
-#let LEVELS = math.text("LEVELS")
-#let pte = math.text("pte")
-#let satp = math.text("satp")
-#let ppn = math.text("ppn")
-#let VA = math.text("VA")
-#let PA = math.text("PA")
-#let vpn = math.text("vpn")
-#let offset = math.text("offset")
 #note(caption: "Virtual Address Translation Process(sv39)")[
   - 首先翻译一遍（部分异常处理简化）
     + 让 $a$ 代表 $satp\.ppn$ $times 2^12$(PA of page table)，让 $i=2$ (level of page table)
@@ -118,3 +121,7 @@
     + 发现 $pte\.r=1$ 或 $pte\.x=1$，触发 gigapage
     + $PA = {pte\.ppn[2],VA\.vpn[1:0],VA\.offset}$
 ]
+
+= lab4
+
+

@@ -1,7 +1,7 @@
 #import "/src/components/TypstTemplate/lib.typ": *
 
 #show: project.with(
-  title: "机器学习",
+  title: "TCS",
   lang: "zh",
 )
 
@@ -27,6 +27,10 @@
 #let CF = math.text("CF")
 #let REC = math.text("REC")
 #let EQ = math.text("EQ")
+#let ALL = math.text("ALL")
+#let NotALL = math.text("NotALL")
+#let INF = math.text("INF")
+#let iff = math.bold("iff")
 = Language, FA 与 REX
 - 语言的定义：字母表、字符串、语言 #h(1fr)
 - DFA:
@@ -170,7 +174,7 @@
   - 只要满足以下两点即可规约
     + 建立 $\"D\"\"w\" in A_NFA$ iff $\"D\"\"w\" in A_DFA$ 的双射
     + 这个 function 是 computable 的
-  - 注：规约这种东西，虽然我们要求双向 iff 条件，但好像对于问题本身还是单向的
+  - 注：规约这种东西，虽然我们要求双向 iff 条件，但对于问题本身还是单向的
   - 利用规约证明 Regular Language $subset$ recursive Language
     - $D$ is a DFA, $L(D) = {w | D "accepts" w}$
     - $w in L(D) <==> D "accepts" w <==> \"D\"\"w\" in A_DFA$
@@ -190,7 +194,7 @@
 - Regular $subset.neq_1$ Context-Free $subset.neq_2$ Recursive $subset_3$ Recursively Enumerable(R.E.) $subset_4$ All Languages
   - 我们已经知道 $1$ 和 $2$ 是真包含，分别举例 ${a^n b^n|n>=0}, {a^n b^n c^n|n>=0}$
   - 现在我们想知道 $3$ 和 $4$ 的关系，事实上也是真包含（利用“停机问题的变种 —— 接受问题”来导出）
-  - $3$: $A_TM = {\"M\"\"w\"|M "is a TM that accepts" w}$
+  - $3$: $A_TM = {\"M\"\"w\"|M "is a TM that accepts" w}$，以及后续非常多的举例
   - $4$: $A_d = {\"M\"|M "is a TM that does not accept" \"M\"}$ 以及 $overline(A_TM)$
 - 引理
   + 一个集合 $A$ 是 countable，当且仅当它是 finite 或存在双射(bijection) $f: A -> cN$，and uncountable otherwise
@@ -212,47 +216,75 @@
     - 是该定理的直接推论：如果 $L, overline(L)$ 是 R.E. 的，那么 $L$ 是 recursive 的（并行跑，总是至少一个会停机，利用它来 accept / reject，排除了 looping 的情况）
 
 == Rice's Theorem 和 Not Recursive Languages
-- 逆否规约
+- 重新审视*规约 (Reduction)* —— （逆否用法）
+  - Formal definition:
+    - $A,B$ are languages over some alphabet $Si$
+    - A reduction from $A$ to $B$ (denoted as $A =< B$) is a *computable* function $f: Si^* -> Si^*$, ~s.t. #h(1fr)
+    $ forall w in Si^*, w in A iff f(w) in B $
+  - If there is a reduction from $A$ to $B$ $A =< B$, then:
+    + if $B$ is $P$, so is $A$
+    + if $A$ is not $P$, neither is $B$
+    - ($P$ is regular, context-free, recursive, R.E., etc.)
   - 例子：把*乘法*规约到*加法* $A =< B$
     + $B$ yes 则 $A$ yes: 如果 $M$ 可以做加法，那它一定可以做乘法（之前的用法）；
     + $A$ no 则 $B$ no: 反过来，如果 $M$ 不能做乘法，那它一定不能做加法！（如果能做加法，它就应该能做乘法）
 - 考虑停机问题 $H_TM = {\"M\"\"w\"| M "is a TM halting on" w}$（跟之前的 $A_TM$ 比较）
   - $H_TM$ 是 not recursive 但 R.E. 的，跟 $A_TM$ 的一样，证明方法也一样（分别用对角化证明和 $U$ 模拟证明即可）
   - 这里用另一种方法，把 $A_TM$ 规约到它，如果 $A_TM$ 是 not recursive 的，那么 $H_TM$ 也是！
-    - 怎么规约？$M "accepts" w "iff" M^* "halts on" w$，对同一输入 $x$，如果 $M$ accept 我也 accept，如果 $M$ reject 或 looping 我就 looping（不 reject）
+    - 怎么规约？$M "accepts" w iff M^* "halts on" w$，对同一输入 $x$，如果 $M$ accept 我也 accept，如果 $M$ reject 或 looping 我就 looping（不 reject）
     - 具体而言，假设 $H_TM$ 是 recursive 的，$exist M_H "decide" H_TM$，据此构建 $M_A$ 来 decide $A_TM$ 推出矛盾
     - 如何构建？对于输入 $\"M\"\"w\"$，$M_A$ 再根据 $M$ 和规约关系构建一个 $M^*$，然后再在 $M_H$ 上跑 $\"M^*\"\"w\"$，如果 $M_H$ accepts 了，那么 $M^*$ accepts 了 $\"w\"$，根据规约就有 $M$ accepts 了 $\"w\"$，那 $M_A$ 就返回 accept，否则返回 reject
     - 这里一共有 $4$ 个 TM，$M_A,M_H$ 是用来解问题的算法，对应 $A_TM, H_TM$；而 $M,M^*$ 虽然也是 TM，却是作为被判定的输入编码（但它们作为 TM 构建了 iff 关系）
     - *总结一下套路就是*：利用 $A$ 的 no 证明 $B$ 的 no，就是把 $A$ 规约到 $B$，然后反证假设 $B$ 是 recursive，根据由此得出的 $M_B$ 构建 $M_A$ 解决 $A$ 来推出矛盾，解决过程中用 $A$ 的输入 $\"M\"$ 根据规约构建 $B$ 的输入 $\"M^*\"$，然后在 $M_B$ 上跑 $M^*$，返回 $M_B$ 的结果
 - 下面继续看一些不可判定问题
-  + 不可判定问题 $L_1$ #h(1fr)
-    $ L_1 = {\"M\"|M "is a TM that accepts" e} $
-    - $A_TM =< L_1$ 规约：$M "accepts" w "iff" M^* "accepts" e$
+  + 不可判定问题 $E_TM$ #h(1fr)
+    $ E_TM = {\"M\"|M "is a TM that accepts" e} $
+    - $A_TM =< L_1$ 规约：$M "accepts" w iff M^* "accepts" e$
     - 如果 $M$ accept $w$，我 accept 所有 inputs（包括 $e$），如果 $M$ reject $w$ 或 looping，我 reject 所有 inputs（也可以 looping，没有影响）
-  + 不可判定问题 $L_2$
-    $ L_2 = {\"M\"|M "is a TM accepting all strings"} $
-    - 跟 $L_1$ 一模一样的规约
-  + 不可判定问题 $L_3$ ($EQ_TM$)
-    $ L_3 = {\"M_1\"\"M_2\"|M_1,M_2 "are two TMs that accept the same language"} $
-    - $L_2 =< L_3$ 规约：$M "accepts all strings" "iff" M^*, M_r "accepts same languages"$
+  + 不可判定问题 $ALL_TM$
+    $ ALL_TM = {\"M\"|M "is a TM accepting all strings"} $
+    - 跟 $E_TM$ 一模一样的规约
+  + 不可判定问题 $EQ_TM$
+    $ EQ_TM = {\"M_1\"\"M_2\"|M_1,M_2 "are two TMs that accept the same language"} $
+    - $ALL_TM =< EQ_TM$ 规约：$M "accepts all strings" iff M^*, M_r "accepts same languages"$
     - 给 $L_3$ 构建一个参照物 $M_r$，它接受所有输入（相当于是构建了 $L_2$ 中的一个实例）
-  + 不可判定问题 $E_1$ ($R_TM$)
-    $ E_1 = {\"M\"|M "is a TM with" L(M)={w|M "accepts" w} "is regular"} $
-    - $A_TM =< E_1$ 规约：$M "accepts" w "iff" L(M^*) "is not regular"$
+  + 不可判定问题 $R_TM$
+    $ R_TM = {\"M\"|M "is a TM with" L(M)={w|M "accepts" w} "is regular"} $
+    - $A_TM =< R_TM$ 规约：$M "accepts" w iff L(M^*) "is not regular"$
     - 如果 $M$ accept $w$，那么令 $L(M^*)=A_TM$（怎么做？用 $U$ semidecide $A_TM$，$L(U)=A_TM$），它都不 recursive 自然不 regular；如果 $M$ reject $w$ or looping，就令 $L(M^*)=emptyset$ 是 rugular 的
-  + 不可判定问题 $E_2$ ($CF_TM$)
-    $ E_2 = {\"M\"|M "is a TM with" L(M)={w|M "accepts" w} "is context-free"} $
-    - 跟 $E_1$ 一模一样的规约
-  + 不可判定问题 $E_3$ ($REC_TM$)
-    $ E_3 = {\"M\"|M "is a TM with" L(M)={w|M "accepts" w} "is recursive"} $
-    - 跟 $E_1$ 一模一样的规约
+  + 不可判定问题 $CF_TM$ ($CF_TM$)
+    $ CF_TM = {\"M\"|M "is a TM with" L(M)={w|M "accepts" w} "is context-free"} $
+    - 跟 $R_TM$ 一模一样的规约
+  + 不可判定问题 $REC_TM$
+    $ REC_TM = {\"M\"|M "is a TM with" L(M)={w|M "accepts" w} "is recursive"} $
+    - 跟 $R_TM$ 一模一样的规约
 - 上述判定问题的统一化 (Rice's Theorem)
   $ R(P) = {\"M\"|M "is a TM with" L(M) in cL, cL subset "all R.E. Languages and is non-empty with property" P } $
   - 比如 $cL_1={L|e in L}, cL_2={L|Si^*=L}={Si^*}$，$L_3$ 不好说（？），$cL_4, cL_5, cL_6$ 分别是所有 regular languages 的集合、CF languages 的集合、 REC languages 的集合
   - 规约证明
     - 不妨令 $emptyset in.not cL$（否则令 $cL=overline(cL)$ 即可），从 $cL$ 中取出一个 $A$，存在 $M_A$ semidecide $A$
-    - $A_TM =< R$ 规约：$M "accepts" w "iff" L(M^*)=L(M_A)=A in cL$，$M^*$ 对于 input $x$，如果 $M$ accepts $w$ 就返回 $M_A$ 跑 $x$ 的结果 ~~~~ ($L(M_A) in cL$)；如果 $M$ reject $w$ or looping 就 reject ($emptyset in.not cL$)
-
+    - $A_TM =< R$ 规约：$M "accepts" w iff L(M^*)=L(M_A)=A in cL$，$M^*$ 对于 input $x$，如果 $M$ accepts $w$ 就返回 $M_A$ 跑 $x$ 的结果 ~~~~ ($L(M_A) in cL$)；如果 $M$ reject $w$ or looping 就 reject ($emptyset in.not cL$)
+- 最后再举一个复杂点的例子，不可判定问题 $ALL_PDA$
+  $ ALL_PDA = {\"P\"|P "is a PDA with" L(P)=Si^*} \
+    NotALL_PDA = {\"P\"|P "is a PDA with" L(P)!=Si^*} $
+  - 它跟前面复杂的点在于，前面都是用 TM 之间的规约，这里我们要先把 $ALL_PDA$ 双向规约到（等价于） $NotALL_PDA$，然后再用 $H_TM$ 规约到 $NotALL_PDA$ 来证明其 undecidable，而这是 TM 到 PDA 之间的构造，要求：$M "halts on" w iff L(P) != Si^*$
+  - 为此，把 "computing history of TM that halts on $w$" 表示成一个 string：$tri em s w \# dots.c \# tri em a h v$ ($c1 \# c2 \# dots.c \# c_k$, $ci$ is a configuration)
+  - $P$ 接受所有不满足上述形式的字符串，这包括三种情况：$c1$ 不满足其形式 (1)、$c_2$ 不满足其形式 (2)、$exist ci attach(cancel(|-), br:M) c_(i+1) $ (3)
+  - 让 PDA non-deterministically 判定以上三种情况，只要有一个不满足就接受，其中对于 (3)
+  $
+  #text(size: 7pt,fill: blue)[#h(45em)这里有个小细节，$c_(2i)$ 需要写成 $c_(2i)^R$ 才能让 PDA 顺序处理] \
+  cases(
+    ci &= ~ tri a_1 a_2 dots.c a_(j-1) #box([$a_j q a_(j+1)$],outset:(x: 2pt, y: 3pt),stroke: red) a_(j+2) dots.c a_n,
+    c_(i+1) &= ~ tri a_1 a_2 dots.c a_(j-1) #box([~~~~~~~~~~],baseline: 1pt,outset: (x: 2pt, y: 2pt),stroke: red) a_(j+2) dots.c a_n,
+    reverse: #true
+  )
+  #grid(
+    rows: 2,
+    row-gutter: 3pt,
+    grid.cell(align: left)[对#redt[红框]外的部分，push and pop 可以验证 #bluet[#sym.arrow.t]],
+    grid.cell(align: left)[~~ #redt[红框]内的部分，其规则是有限的，一一枚举]
+  )
+  $
 #note(caption: "总结：可（半）判定与不可（半）判定的技巧")[
   - 证明可判定(recursive)
     + 通过定义证明，构建 TM 来 decide 它（具体问题具体分析）
@@ -267,4 +299,50 @@
     + 对角化(diagonalization)技巧证明（如 $A_d$）
     + 通过规约证明，一个已知 not R.E. 语言 $=<$ 当前语言 $A$
     + 通过定理的逆否证明，$A, overline(A)$ is R.E. $==>$ $A$ recursive 的反证（如 $overline(A_TM)$）
+]
+#note(caption: "总结：DFA, PDA, TM 的判定问题")[
+ #grid3(
+  columns: (1fr, 1fr, 1fr),
+  [$
+  DFA, NFA, REX \
+  cases(
+    reverse: #true,
+    A_DFA\,A_NFA\,&A_REX,
+    &E_DFA,
+    &EQ_DFA,
+    &ALL_DFA,
+    &INF_DFA
+  )
+  "decidable"
+  $],
+  [$
+  PDA, CFG \
+  cases(
+    reverse: #true,
+    A_PDA\,A_CFG,
+    E_PDA\,E_CFG,
+  )
+  "decidable" \
+  cases(
+    reverse: #true,
+    ALL_PDA
+  )
+  "undecidable"
+  $],
+  [$
+  TM \
+  cases(
+    reverse: #true,
+    &A_TM,
+    &E_TM,
+    &EQ_TM,
+    &H_TM,
+    R_TM\,CF_TM\,&REC_TM,
+    &ALL_TM,
+    &INF_TM
+  )
+  "undecidable"
+  $],
+ )
+ - 从中我们可以看出，从 DFA 到 PDA 再到 TM，虽然模型的计算能力越来越强，但是其判定却越来越复杂，算是一种 trade-off 吧
 ]

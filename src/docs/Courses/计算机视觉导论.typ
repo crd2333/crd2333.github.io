@@ -253,12 +253,12 @@ $ Delta x = -(J_R^T J_R + lambda I)^(-1) J_R^T R(x_k) $
 - 特征点需要满足独特性（至少要在局部唯一）
   - 使用一个小的像素窗口去探测像素的变化（用梯度分布来衡量）
   - 可以用 PCA 算梯度分布的主方向（特征值）
-    + flat: $l1, l2$ are small
-    + edge: $l1 >> l2$ or $l1 << l2$
-    + corner: $l1, l2$ are large, $l1 wave l2$
+    + flat: $la1, la2$ are small
+    + edge: $la1 >> la2$ or $la1 << la2$
+    + corner: $la1, la2$ are large, $la1 wave la2$
   - 为了方便计算，引入 Harris operator
 - Harris operator
-  $ f = frac(l1 l2, l1 + l2) = "determinant"(H)/"tr"(H) $
+  $ f = frac(la1 la2, la1 + la2) = "determinant"(H)/"tr"(H) $
   - pipeline:
     + Compute derivatives at each pixel
     + Computer matrix $H$ in a Gaussian window around each pixel
@@ -337,7 +337,7 @@ $ Delta x = -(J_R^T J_R + lambda I)^(-1) J_R^T R(x_k) $
 - 对于不满足 small motion 的情况（比如说特征点实际上移动了八个像素），我们有方法可以解决 —— *降采样*！
   - 一个直观的想法就是将图片缩小到原来的八分之一，在缩小后的图片中就满足 small motion 了，处理之后再放大回去。缺点就是在缩小图片的过程中会丢失信息，这样图像移动距离的精度就无法保证
   - 一个想法就是使用*像素金字塔*(*Coarse-to-fine*)。其中金字塔一是时间为 $t$ 时的图像,金字塔二是时间为 $t + 1$ 时的图像。在金字塔上逐层估计,并逐步细化。例如先估计运动距离小于一个像素的最上层图像，根据此估计在金字塔一中的第二层恢复出运动（做一个补偿），再与金字塔二进行比较，此时特征点移动的距离经过较为准确的估计后也小于一个像素，以此类推
-  #fig("/public/assets/Courses/CV/2024-10-24-10-11-11.png", width: 80%)
+  #fig("/public/assets/Courses/CV/2024-10-24-10-11-11.png", width: 60%)
 
 #hline()
 Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 Deep learning for optical flow
@@ -499,7 +499,7 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
     - 当然，这里涉及到选哪三个点，因为 3D-2D 匹配有可能是有问题的，需要找到合理的三个点。怎么做？RANSAC
     - 具体而言，对每组三个点计算 P3P 问题，不优化直接做重投影误差，使用 RANSAC 找出最好的一组，拿来做优化问题的初始值
 
-== Structrue from motion
+== Structrue from motion (SfM)
 - 下面再回到 SfM。回顾一下 SfM 的任务：内参已知，场景未知，从多视角图片恢复相机位姿（外参），并重建场景（三维点坐标）
 - 一般通过如下步骤
   + Find a few reliable corresponding points
@@ -715,4 +715,5 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
 == Neural Scene Representations
 - 最后讲了一些 Implicit Neural Representations，我就不记了
 
-
+= Deep Learning
+- 都比较基础，就不记了

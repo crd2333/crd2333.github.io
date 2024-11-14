@@ -24,7 +24,7 @@
 - 这节课不包含：OpenGL, DirectX, Vulcan 等计算机图形学 API、Maya, Blender, Unity, Unreal Engine 等 3D 建模、计算机视觉（一切需要猜测的事情，识别）、硬件编程
 - CG 和 CV 的区别
   - 实际上并没有明显的界限
-  #fig("/public/assets/Courses/CG/img-2024-07-25-10-25-57.png")
+  #fig("/public/assets/Courses/CG/img-2024-07-25-10-25-57.png", width: 80%)
 
 = Math 数学基础
 == Linear Algebra 向量与线性代数
@@ -135,11 +135,11 @@
 
 == 画线算法
 - DDA(Digital Differential Analyzer)：数字微分分析器，用来画直线，但受限于浮点数精度
-- Breseham's Line Drawing Algorithm：更高效的画线算法，只需要整数运算
+- Breseham's Line Drawing Algorithm：更高效的画线算法，只需要整数运算 #h(1fr)
   - 注意到每次 $x$ 加一，$y$ 的变化不会超过 $1$
-  #fig("/public/assets/Courses/CG/2024-09-18-09-19-46.png")
+  #fig("/public/assets/Courses/CG/2024-09-18-09-19-46.png", width: 80%)
 - 画圆算法
-  #fig("/public/assets/Courses/CG/2024-09-18-09-22-15.png")
+  #fig("/public/assets/Courses/CG/2024-09-18-09-22-15.png", width: 80%)
   - 但 Further acceleration 可能会有误差累积的问题
   - Breseham's Circle Drawing Algorithm
     - 把 360° 分成 8 个部分，每次画一个点，然后对称画出另外 7 个点
@@ -175,7 +175,7 @@
   - 无法处理所有情况（如被遮挡的正面）
 - 画家算法(Painter's Algorithm)：油画家，先画远的，再画近的覆盖掉
   - 物体作为一个整体有时候难以排序（一个三角形，每条边都一半架在另一条边上），一个简单的解决办法是把物体分成小块，引出 Warnock's Area Subdivision
-  #algo[
+  #algo(title: [Painter's Algorithm])[
     - Start with whole image
     - If one of the easy cases is satisfied,draw what's in front
       - front polygon covers the whole window or
@@ -254,8 +254,8 @@
   - 大多数命令以两个字符结尾，用于确定预期参数的数据类型
 - OpenGL 是 Event Driven Programming
   - 通过注册回调函数(callbacks)来处理事件
-  - 事件包括键盘、鼠标、窗口大小变化等
-  #fig("/public/assets/Courses/CG/2024-09-22-16-45-55.png", width: 70%)
+  - 事件包括键盘、鼠标、窗口大小变化等 #h(1fr)
+  #fig("/public/assets/Courses/CG/2024-09-22-16-45-55.png", width: 50%)
 - Double buffering
   - 隐藏绘制过程，避免闪烁
   - 有时也会用到 Triple buffering
@@ -295,7 +295,7 @@
   - 过于复杂，一般用一个常数来代替
   - $L_a = k_a I_a$
 - 综合得到 Blinn-Phong 模型
-  #fig("/public/assets/Courses/CG/img-2024-07-26-23-37-29.png")
+  #fig("/public/assets/Courses/CG/img-2024-07-26-23-37-29.png",width: 70%)
 - 着色频率
   - Flat Shading, Gouraud Shading, Phong Shading，平面、顶点、像素，依次增加计算量
   - 平面着色的法向量很好理解，但顶点和像素就绕一些，需要插值方法得到平滑效果
@@ -370,34 +370,84 @@
   + 曲线与曲面（贝塞尔曲线、曲面细分、曲面简化）
   + 网格处理、阴影图
 ]
-- 主要分为两类：隐式几何、显式几何
+- 主要分为两类：隐式几何、显式几何，显式几何又可以把参数化表示单独拿出来
+
+== 隐式几何
 - 隐式几何：不告诉点在哪，而描述点满足的关系，generally $f(x,y,z)=0$
-  - 好处：很容易判断给定点在不在面上；坏处：不容易看出表示的是什么
+  - 好处：很容易判断给定点在不在面上；坏处：不容易看出表示的是什么，不容易找到其上的所有点
   - Constructive Solid Geometry(CSG)：可以对各种不同的几何做布尔运算，如并、交、差
   - Signed Distance Function(SDF)：符号距离函数：描述一个点到物体表面的最短距离，外表面为正，内表面为负，SDF 为 $0$ 的点组成物体的表面
     - 对两个“规则”形状物体的 SDF 进行线性函数混合(blend)，可以得到一个新的 SDF，令其为 $0$ 反解出的物体形状将变得很“新奇”
   - 水平集(Level Set)：与 SDF 很像，也是找出函数值为 $0$ 的地方作为曲线，但不像 SDF 会空间中的每一个点有一种严格的数学定义，而是对空间用一个个格子去近似一个函数。通过 Level Set 可以反解 SDF 为 $0$ 的点，从而确定物体表面
+
+== 显式几何
 - 显式几何：所有曲面的点被直接给出，或者可以通过参数映射关系直接得到
   - 好处：容易直接看出表示是什么；坏处：很难判断内/外
-  - 以下均为显式表示法
+  - 点云、多边形模型等
 - 点云，很基础，不多说，但其实不那么常见（除了扫描出来的那种）
 - 多边形模型
   - 用得最广泛的方法，一般用三角形或者四边形来建模
   - 在代码中怎么表示一个三角形组成的模型？用 wavefront object file(.obj)
   - v 顶点；vt 纹理坐标；vn 法向量；f 顶点索引（哪三个顶点、纹理坐标、法线）
+
+== 参数几何
+- 参数几何（在 GAMES101 里被归类为显示，这里我们可以把它单独拿出来看）
+  - 如一般参数方程、贝塞尔曲线、样条线、贝塞尔曲面、样条曲面等
+
+=== 曲线
+- 一般参数方程
+  $ bC = bC(u)= [x(u),y(u),z(u)] $
+  - arc length 弧长
+  - 插值(Interpolation)
+    - 最近邻插值（最暴力的，甚至都不连续）
+    - 线性插值（连续，但一阶导不连续）
+    - 平滑插值（使用多项式，如 Cubic Hermite Interpolation）
+- Hermite Curves
+  - 从两个点及其导数插值出一条曲线
+  $ P(t) = a t^3 + b t^2 + c t + d $
+  - 四个约束，对应于 $P(0),P(1),P'(0),P'(1)$，构成线性方程组 $bh = A [a,b,c,d]$，硬编码解出 $A^(-1)$ 可以从已知的 $bh$ 解出 $[a,b,c,d]$
+  - 更进一步，可以使用 basis functions 的思想，不表示为标准 $[a,b,c,d]$ 形式，用 $4$ 个基 $bH_1 (t),bH_2 (t),bH_3 (t),bH_4 (t)$ 来表示
+    $ P(t) = sumi^3 h_i bH(t) $
+  - 指定 $4$ 个基函数如下
+    #fig("/public/assets/Courses/CG/2024-11-13-08-44-14.png",width:60%)
+  - 这个 $bH_1 (t)$ 比较有意思，因为比较平滑，可以借以构建伪动画
+- Catmull-Rom Curves
+  - Hermite 曲线的优化，用 $4$ 个点插值出一条曲线，用点 $0,2$ 连线模拟点 $1$ 的导数，用点 $1,3$ 连线模拟点 $2$ 的导数
+  #fig("/public/assets/Courses/CG/2024-11-13-15-21-18.png",width:60%)
 - 贝塞尔曲线
-  - 用三个控制点确定一条二次贝塞尔曲线，de Casteljau 算法。三次、四次等也是一样的思路。用伯恩斯坦多项式
+  - 用三个控制点确定一条二次贝塞尔曲线（de Casteljau 算法），三次、四次等也是一样的思路（如果是尺规作图或者可视化可以这么做）
+  - 本质上是用伯恩斯坦(Bernstein)多项式定义出 $n$ 个控制点（作为基）对曲线上点的权重
+    $
+    C(t) = sumi^n B_(i,n) (t) P_i ~~, t in [0,1] \
+    B_(i,n) (t) = C_n^i t^i (1-t)^(n-i)
+    $
+    #fig("/public/assets/Courses/CG/2024-11-13-15-21-38.png",width:60%)
   - 贝塞尔曲线好用的性质
     + 首/尾两个控制点一定是起点/终点
-    + 对控制点做仿射变换，再重新画曲线，跟原来的一样，不用一直记录曲线上的每个点
+    + 对称性：由 ${P_0,P_1,dots,P_(n-1)}$ 确定的曲线和 ${P_(n-1),dots,P_1,P_0}$ 确定的曲线是一样的
+    + 仿射不变性：对控制点做仿射变换，再重新画曲线，跟原来的一样，不用一直记录曲线上的每个点
     + 凸包性质：画出的贝塞尔曲线一定在控制点围成的线之内
+    + Variation Diminishing;: 曲线不会突然变化方向
+  - 贝塞尔曲线不好的性质
+    + global: 一个控制点的变化会影响整条曲线（牵一发而动全身）
   - piecewise Bezier Curve：每 $4$ 个顶点为一段，定义多段贝塞尔曲线，每段的终点是下一段的起点
+- Rational Bezier Curve
+  - 有理贝塞尔曲线，对贝塞尔曲线的一种扩展
 - Splines 样条线：一条由一系列控制点控制的曲线
   - B-splines 基样条：对贝塞尔曲线的一种扩展，比贝塞尔曲线好的一点是：局部性，可以更局部的控制变化
-  - NURBS：比B样条更复杂的一种曲线，了解即可
+  - 利用阶数（跟控制点个数解耦）在 平滑性 v.s. 局部性 中做 trade-off
+  - NURBS(Non-Uniform Rational B-Spline)：比 B-splines 更复杂的一种曲线
+- 总结：两种视角
+  $ overbrace(P(t),"parametric curves") = sumin underbrace(P_i,"control points") overbrace(B_(i,n),"basis functions"), t in [t0,t1) $
+  + 第一种：对基函数的线性组合，控制点作为系数
+  + 第二种：对控制点的加权平均，基函数在对应 $t$ 算出的值作为权重
+
+=== 曲面
 -  贝塞尔曲面：将贝塞尔曲线扩展到曲面
   - 用 $4 times 4$ 个控制点得到三次贝塞尔曲面。每四个控制点绘制出一条贝塞尔曲线，这 $4$ 条曲线上每一时刻的点又绘制出一条贝塞尔曲线，得到一个贝塞尔曲面
-- 几何操作：Mesh operations(mesh subdivision, mesh simplification, mesh regularization)，下面依次展开
+
+== 几何操作
+几何操作：Mesh operations(mesh subdivision, mesh simplification, mesh regularization)，下面依次展开
 - 曲面细分
   - Loop 细分：分两步，先增加三角形个数，后调整位置
     - 新顶点：$3/8 * (A+B) + 1/8 * (C+D)$
@@ -447,7 +497,7 @@
     + 计算交点是否在三角形内
   - 求交方法二：Möller-Trumbore射线-三角形求交算法
     - 直接结合重心坐标计算
-    #fig("/public/assets/Courses/CG/img-2024-07-30-14-36-34.png")
+    #fig("/public/assets/Courses/CG/img-2024-07-30-14-36-34.png", width: 50%)
 == Accelerating Ray-Surface Intersection
 - 空间划分与包围盒 Bounding Volumes
   - 常用 Axis-Aligned-Bounding-Box(AABB) 轴对齐包围盒
@@ -495,7 +545,7 @@
   + 难以处理毛面光滑材质？
   + 忽略了漫反射物体之间的反射影响
 - 采样蒙特卡洛方法解渲染方程：直接光照；全局光照，采用递归
-  #fig("/public/assets/Courses/CG/img-2024-08-01-22-25-38.png")
+  #fig("/public/assets/Courses/CG/img-2024-08-01-22-25-38.png", width: 70%)
   - 问题一：$"rays"=N^"bounces"$，指数级增长。当 $N=1$ 时，就称为 *path tracing* 算法
     - $N=1$ 时 noise 的问题：在每个像素内使用 $N$ 条 path，将 path 结果做平均（同时也解决了采样频率，解决锯齿问题）
   - 问题二：递归算法的收敛条件。如果设置终止递归条件，与自然界中光线就是弹射无数次相悖。如何不无限递归又不损失能量？
@@ -569,14 +619,14 @@
 == 微表面材质(Microfacet Material)
 - 微表面模型：微观上——凹凸不平且每个微元都认为只发生镜面反射(bumpy & specular)；宏观上——平坦且略有粗糙(flat & rough)。总之，从近处看能看到不同的几何细节，拉远后细节消失
 - 用法线分布描述表面粗糙程度
-  #fig("/public/assets/Courses/CG/img-2024-08-04-12-48-55.png")
+  #fig("/public/assets/Courses/CG/img-2024-08-04-12-48-55.png",width: 30%)
 - 微表面的 BRDF
-  #fig("/public/assets/Courses/CG/img-2024-08-04-12-52-57.png")
-  - 其中 $G$ 项比较难理解。 当入射光以非常平(Grazing Angle 掠射角度)的射向表面时，有些凸起的微表面就会遮挡住后面的微表面。$G$项 其实对这种情况做了修正
+  #fig("/public/assets/Courses/CG/img-2024-08-04-12-52-57.png",width: 50%)
+  - 其中 $G$ 项比较难理解。当入射光以非常平(Grazing Angle 掠射角度)的射向表面时，有些凸起的微表面就会遮挡住后面的微表面。$G$项 其实对这种情况做了修正
 - 微表面模型效果特别好，是 sota，现在特别火的 PBR(physically Based Rendering)一定会使用微表面模型
 
 == 各向同性(Isotropic)和各向异性(Anisotropic)材质
-- 各向同性——各个方向法线分布相似；各项异性——各个方向法线分布不同，如沿着某个方向刷过的金属
+- 各向同性 —— 各个方向法线分布相似；各项异性 —— 各个方向法线分布不同，如沿着某个方向刷过的金属
 - 用 BRDF 定义，各向同性材质满足 BRDF 与方位角 $phi$ 无关($f_r (th_i,phi_i; th_r, phi_r) = f_r (th_i, th_r, |phi_r - phi_i|)$)
 - BRDF 的性质总结
   + 非负性(non-negativity)：$f_r (omega_i -> omega_r) >= 0$
@@ -647,14 +697,14 @@
     + TRT：穿过第一层表面折射后，在第二层的内壁发生反射，然后再从第一层折射出去，也是一块锥形区域
   - 把人的毛发认为类似于玻璃圆柱体，分为表皮(cuticle)和皮质(cortex)。皮质层对光线有不同程度的吸收，色素含量决定发色，黑发吸收多，金发吸收少
     #grid2(
-      fig("/public/assets/Courses/CG/img-2024-08-04-21-10-19.png"),
-      fig("/public/assets/Courses/CG/img-2024-08-04-21-13-52.png")
+      fig("/public/assets/Courses/CG/img-2024-08-04-21-10-19.png", width: 80%),
+      fig("/public/assets/Courses/CG/img-2024-08-04-21-13-52.png", width: 80%)
     )
 - 动物皮毛(Animal Fur Appearance)
   - 如果直接把人头发的模型套用到动物身上效果并不好
   - 从生物学的角度发现，皮毛最内层还可以分出*髓质*(medulla)，人头发的髓质比动物皮毛的小得多。而光线进去这种髓质更容易发生散射
   - 双层圆柱模型(Double Cylinder Model)：某些人（闫）在之前的毛发模型基础上多加了两种作用方式 TTs, TRTs，总共五种组成方式
-    #fig("/public/assets/Courses/CG/img-2024-08-04-21-25-48.png")
+    #fig("/public/assets/Courses/CG/img-2024-08-04-21-25-48.png", width: 70%)
 
 === 颗粒状材质(Granular Material)
 - 由许多小颗粒组成的物体，如沙堡等
@@ -665,10 +715,10 @@
 - 实际上不太应该翻译成“半透明”(semi-transparent)，因为它不仅仅是半透明所对应的吸收，还有一定的散射
 - *次表面散射*(Subsurface Scattering)：光线从一个点进入材质，在表面的下方（内部）经过多次散射后，从其他一些点射出
   - 双向次表面散射反射分布函数(BSSRDF)：是对 BRDF 概念的延伸，某个点出射的 Radiance 是其他点的入射 Radiance 贡献的
-    #fig("/public/assets/Courses/CG/img-2024-08-04-21-35-28.png")
+    #fig("/public/assets/Courses/CG/img-2024-08-04-21-35-28.png", width: 80%)
   - 计算比较复杂，因此又有一种近似的方法被提出
 - Dipole Approximation：引入两个点光源来近似达到次表面散射的效果
-  #fig("/public/assets/Courses/CG/img-2024-08-04-21-38-45.png")
+  #fig("/public/assets/Courses/CG/img-2024-08-04-21-38-45.png", width: 70%)
 
 === 布料材质(Cloth)
 - 布料有一系列缠绕的纤维组成
@@ -701,7 +751,7 @@
 - 针孔相机：没有景深，任何地方都是锐利的而不是虚化的
 - 视场(Field of Vied, FOV)
   - 定义针孔相机的 $h$ 和 $f$，$"FOV" = 2 * arctan(0.5 * h / f)$
-  #fig("/public/assets/Courses/CG/img-2024-08-05-12-08-38.png")
+  #fig("/public/assets/Courses/CG/img-2024-08-05-12-08-38.png",width: 60%)
   - 通常描述焦距都会换算到 $h=35"mm"$ 所对应的焦距长度
   - 如果改传感器大小，涉及到传感器和胶片的关系，一般认为混淆着使用二者概念
 - 曝光(Exposure)
@@ -718,8 +768,8 @@
     + 任意光通过焦点射向透镜，会变为互相平行的光
     + 假设薄透镜的焦距可以任意改变（用透镜组来实现）
   - 薄透镜公式：$1/f = 1/z_i + 1/z_o$
-  - Circle of Confusion(CoC)：可以看出C和A成正比——光圈越大越模糊
-    #fig("/public/assets/Courses/CG/img-2024-08-05-13-53-49.png")
+  - Circle of Confusion(CoC)：可以看出C和A成正比——光圈越大越模糊 #h(1fr)
+    #fig("/public/assets/Courses/CG/img-2024-08-05-13-53-49.png",width: 70%)
 - 渲染中模拟透镜(Ray Tracing Ideal Thin Lenses)
   - 一般光线追踪和光栅化使用的是针孔摄像机模型，但是如果想做出真实相机中的模糊效果，需要模拟薄透镜相机（而且不再需要 MVP 等）
   - (One possible setup)定义成像平面尺寸、透镜焦距 $f$、透镜尺寸（光圈影响模糊程度）、透镜与相机成像平面的距离 $z_i$，根据公式$1/f = 1/z_o + 1/z_i$，算出 focal plane 到透镜的距离 $z_o$
@@ -731,7 +781,7 @@
   - 好像还有简化的方法，参考 #link("https://blog.csdn.net/Motarookie/article/details/122998400#:~:text=简化实现方法")[根据我抄的笔记]
 - 景深(Depth of Field)
   - 在 focal point 附近的一段范围内的 CoC 并不大（比一个像素小或者差不多大），如果从场景中来的光经过理想透镜后落在这一段内，可以认为场景中的这段深度的成像是清晰、锐利的
-    #fig("/public/assets/Courses/CG/img-2024-08-05-14-27-55.png")
+    #fig("/public/assets/Courses/CG/img-2024-08-05-14-27-55.png",width: 70%)
 
 = Color and Perception 光场、颜色与感知 <color>
 - 光场(Light Field / Lumigraph)
@@ -773,7 +823,7 @@
   - Cones 相对少很多，用来感知颜色，它又被分为 $3$ 类(S-Cone, M-Cone, L-Cone)，SML 三类细胞对光的波长敏感度（回应度）不同
     - 事实上，不同的人这三种细胞的比例和数量呈现很大的差异（也就是颜色在不同人眼中是不一样的，只是定义统一成一样）
 - 人看到的不是光谱，而是两种曲线积分后得到 SML 再叠加的结果
-  - [ ] 图
+  #fig("/public/assets/Courses/CG/2024-11-14-14-03-31.png", width:70%)
   - 那么一定存在一种现象：两种光，对应的光谱不同，但是积分出来的结果是一样的，即同色异谱(Metamerism)；事实上，还有同谱异色
 
 == 色彩复制 / 匹配
@@ -783,7 +833,7 @@
 - CIE sRGB 颜色匹配
   - 利用 RGB 三原色匹配单波长光，SPD 表现为集中在一个波长上（如前所述，有其它 SPD 也能体现出同样的颜色，但选择最简单的）
   - 然后，给定任意波长的*单波长光*（目标测试光），我们可以测出它需要上述 RGB 的匹配（可能为负，意思是加色系统匹配不出来，但可以把目标也加个色），得到*匹配曲线*
-    #fig("/public/assets/Courses/CG/img-2024-08-05-18-32-22.png", width: 80%)
+    #fig("/public/assets/Courses/CG/img-2024-08-05-18-32-22.png", width: 70%)
   - 然后对于自然界中并非单波长光的任意 SPD，我们可以把它分解成一系列单波长光，然后分别匹配并加权求和，也就是做积分
 
 == 颜色空间

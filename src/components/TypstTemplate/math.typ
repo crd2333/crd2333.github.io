@@ -1,7 +1,15 @@
 #import "@preview/quick-maths:0.1.0": shorthands
 #import "@preview/mitex:0.2.4": *
 
-// 以类似格式添加符号缩写
+#let dcases(..args) = math.cases(..args.pos().map(math.display)) // cases with display style
+
+#let cnum(num) = str.from-unicode(9311 + num)  // 带圈数字
+
+// ---------- 文本运算符 ----------
+#let argmax = math.op("argmax", limits: true)
+#let argmin = math.op("argmin", limits: true)
+
+// ---------- 符号缩写 ----------
 #let shorthand = shorthands.with(
   ($+-$, $plus.minus$),
   ($|-$, math.tack),
@@ -10,15 +18,48 @@
   ($~$, $med med$),
 )
 
-// 文本运算符
-#let argmax = math.op("argmax", limits: true)
-#let argmin = math.op("argmin", limits: true)
+// ---------- 文本缩写和杂项 ----------
+#let Or = $slash.big$ // 'or' as union, use 'Or' for big slash instead
+#let le = $<=$
+#let ge = $>=$
+#let Pi = $product$ // big pi as product
+#let infty = $infinity$
+#let int = $integral$
+#let wave = $tilde$ // alternative to '~'       // $wave$, $prop$, $approx$
+#let na = $nabla$
+#let di = $dif$
+#let pa = $diff$ // partial
+#let ii = $i i$
+#let ij = $i j$
+#let ik = $i k$
+#let ji = $j i$
+#let jj = $j j$
+#let jk = $j k$
+#let ki = $k i$
+#let kj = $k j$
+#let kk = $k k$
+#let sumi = $sum_i$
+#let sumij = $sum_(i j)$
+#let sumin = $sum_(i=1)^n$
+#let sumjn = $sum_(j=1)^n$
+#let sumiN = $sum_(i=1)^N$
+#let sumjN = $sum_(j=1)^N$
+#let sumkK = $sum_(k=1)^K$
+#let summM = $sum_(m=1)^M$
+#let sumnN = $sum_(n=1)^N$
+#let sumtT = $sum_(t=1)^T$
+#let Pii = $product_i$
+#let Pij = $product_(i j)$
+#let Piin = $product_(i=1)^n$
+#let Pijn = $product_(j=1)^n$
+#let PiiN = $product_(i=1)^N$
+#let PijN = $product_(j=1)^N$
+#let PikK = $product_(k=1)^K$
+#let PimM = $product_(m=1)^M$
+#let PinN = $product_(n=1)^N$
+#let PitT = $product_(t=1)^T$
 
-#let dcases(..args) = math.cases(..args.pos().map(math.display)) // cases with display style
-
-#let cnum(num) = str.from-unicode(9311 + num)  // 带圈数字
-
-// 计算机专业常用单位（这样它们就可以直接囊括入 $$）
+// ---------- 常用单位（这样它们就可以直接囊括入 $$） ----------
 #let bit = math.text("bit")
 #let bits = math.text("bits")
 #let byte = math.text("byte")
@@ -35,86 +76,213 @@
 #let PB = math.text("PB")
 #let eb = math.text("EB")
 #let EB = math.text("EB")
+#let fps = math.text("fps")
 #let FPS = math.text("FPS")
 #let ms = math.text("ms")
-#let min = math.text("min")
+#let sec = math.text("sec")
+// #let min = math.text("min") // 'min' used for min op
+#let hr = math.text("hr")
+#let days = math.text("days")
+#let weeks = math.text("weeks")
+#let months = math.text("months")
+#let years = math.text("years")
 #let Hz = math.text("Hz")
 #let GHz = math.text("GHz")
 
-// 防铸币操作
+// ---------- 防铸币操作 ----------
 #let dx = $dif x$
 #let exist = $exists$
 
-// 以类似格式添加文本缩写
-#let le = $<=$
-#let ge = $>=$
-#let Pi = $product$ // big pi as product
-#let infty = $infinity$
-#let int = $integral$
-#let wave = $tilde$ // alternative to ~
-// $wave$, $prop$, $approx$
-#let na = $nabla$
-#let di = $dif$
-#let pa = $diff$ // partial
-#let ij = $i j$
-#let ji = $j i$
-
-// 希腊字母
-#let r1 = $rho_1$
-#let r2 = $rho_2$
-#let si = $sigma$
-#let Si = $Sigma$
-#let s1 = $sigma_1$
-#let s2 = $sigma_2$
-#let de = $delta$
-#let De = $Delta$
-#let d1 = $delta_1$
-#let D1 = $Delta_1$
-#let d2 = $delta_2$
-#let D2 = $Delta_2$
-#let al = $alpha$
-#let a1 = $alpha_1$
-#let a2 = $alpha_2$
-#let an = $alpha_n$
-#let aN = $alpha_N$
-#let ta = $tau$
+// ---------- 希腊字母 (siplified to 2 letters) ----------
+#let rh  = $rho$
+#let rh0 = $rho_0$
+#let rh1 = $rho_1$
+#let rh2 = $rho_2$
+#let rhi = $rho_i$
+#let rhj = $rho_j$
+#let rhk = $rho_k$
+#let rhm = $rho_m$
+#let rhM = $rho_M$
+#let rhn = $rho_n$
+#let rhN = $rho_N$
+#let si  = $sigma$
+#let si0 = $sigma_0$
+#let si1 = $sigma_1$
+#let si2 = $sigma_2$
+#let sii = $sigma_i$
+#let sij = $sigma_j$
+#let sik = $sigma_k$
+#let sim = $sigma_m$
+#let siM = $sigma_M$
+// #let sin = $sigma_n$ // 'sin' is a keyword
+#let siN = $sigma_N$
+#let Si  = $Sigma$
+#let Si0 = $Sigma_0$
+#let Si1 = $Sigma_1$
+#let Si2 = $Sigma_2$
+#let Sii = $Sigma_i$
+#let Sij = $Sigma_j$
+#let Sik = $Sigma_k$
+#let Sim = $Sigma_m$
+#let SiM = $Sigma_M$
+#let Sin = $Sigma_n$ // 'Sin' is a keyword
+#let SiN = $Sigma_N$
+#let de  = $delta$
+#let de0 = $delta_0$
+#let de1 = $delta_1$
+#let de2 = $delta_2$
+#let dei = $delta_i$
+#let dej = $delta_j$
+#let dek = $delta_k$
+#let dem = $delta_m$
+#let deM = $delta_M$
+#let den = $delta_n$
+#let deN = $delta_N$
+#let De  = $Delta$
+#let De0 = $Delta_0$
+#let De1 = $Delta_1$
+#let De2 = $Delta_2$
+#let Dei = $Delta_i$
+#let Dej = $Delta_j$
+#let Dek = $Delta_k$
+#let Dem = $Delta_m$
+#let DeM = $Delta_M$
+#let Den = $Delta_n$
+#let DeN = $Delta_N$
+#let al  = $alpha$
+#let al0 = $alpha_0$
+#let al1 = $alpha_1$
+#let al2 = $alpha_2$
+#let ali = $alpha_i$
+#let alj = $alpha_j$
+#let alk = $alpha_k$
+#let alm = $alpha_m$
+#let alM = $alpha_M$
+#let aln = $alpha_n$
+#let alN = $alpha_N$
+#let be  = $beta$
+#let be0 = $beta_0$
+#let be1 = $beta_1$
+#let be2 = $beta_2$
+#let bei = $beta_i$
+#let bej = $beta_j$
+#let bek = $beta_k$
+#let bem = $beta_m$
+#let beM = $beta_M$
+#let ben = $beta_n$
+#let beN = $beta_N$
+#let ta  = $tau$
+#let ta0 = $tau_0$
+#let ta1 = $tau_1$
+#let ta2 = $tau_2$
+#let tai = $tau_i$
+#let taj = $tau_j$
+#let tak = $tau_k$
+#let tam = $tau_m$
+#let taM = $tau_M$
+// #let tan = $tau_n$ // 'tan' is a keyword
+#let taN = $tau_N$
+#let Ta  = $Tau$
+#let Ta0 = $Tau_0$
+#let Ta1 = $Tau_1$
+#let Ta2 = $Tau_2$
+#let Tai = $Tau_i$
+#let Taj = $Tau_j$
+#let Tak = $Tau_k$
+#let Tam = $Tau_m$
+#let TaM = $Tau_M$
+#let Tan = $Tau_n$
+#let TaN = $Tau_N$
 #let th = $theta$
-#let t1 = $theta_1$
-#let t2 = $theta_2$
-#let tn = $theta_n$
-#let tN = $theta_N$
+#let th0 = $theta_0$
+#let th1 = $theta_1$
+#let th2 = $theta_2$
+#let thi = $theta_i$
+#let thj = $theta_j$
+#let thk = $theta_k$
+#let thm = $theta_m$
+#let thM = $theta_M$
+#let thn = $theta_n$
+#let thN = $theta_N$
+#let Th = $Theta$
+#let Th0 = $Theta_0$
+#let Th1 = $Theta_1$
+#let Th2 = $Theta_2$
+#let Thi = $Theta_i$
+#let Thj = $Theta_j$
+#let Thk = $Theta_k$
+#let Thm = $Theta_m$
+#let ThM = $Theta_M$
+#let Thn = $Theta_n$
+#let ThN = $Theta_N$
 #let ep = $epsilon$
+#let ep0 = $epsilon_0$
 #let ep1 = $epsilon_1$
 #let ep2 = $epsilon_2$
+#let epi = $epsilon_i$
+#let epj = $epsilon_j$
+#let epk = $epsilon_k$
+#let epm = $epsilon_m$
+#let epM = $epsilon_M$
+#let epn = $epsilon_n$
+#let epN = $epsilon_N$
 #let ga = $gamma$
+#let ga0 = $gamma_0$
+#let ga1 = $gamma_1$
+#let ga2 = $gamma_2$
+#let gai = $gamma_i$
+#let gaj = $gamma_j$
+#let gak = $gamma_k$
+#let gam = $gamma_m$
+#let gaM = $gamma_M$
+#let gan = $gamma_n$
+#let gaN = $gamma_N$
 #let Ga = $Gamma$
-#let g1 = $gamma_1$
-#let g2 = $gamma_2$
-#let la = $lambda$
-#let l1 = $lambda_1$
-#let l2 = $lambda_2$
-#let ln = $lambda_n$
-#let lN = $lambda_N$
-#let La = $Lambda$
-#let L1 = $Lambda_1$
-#let L2 = $Lambda_2$
-#let Ln = $Lambda_n$
-#let LN = $Lambda_N$
-#let p1 = $pi_1$
-#let p2 = $pi_2$
-#let pn = $pi_n$
-#let pN = $pi_N$
+#let Ga0 = $Gamma_0$
+#let Ga1 = $Gamma_1$
+#let Ga2 = $Gamma_2$
+#let Gai = $Gamma_i$
+#let Gaj = $Gamma_j$
+#let Gak = $Gamma_k$
+#let Gam = $Gamma_m$
+#let GaM = $Gamma_M$
+#let Gan = $Gamma_n$
+#let GaN = $Gamma_N$
+#let la  = $lambda$
+#let la0 = $lambda_0$
+#let la1 = $lambda_1$
+#let la2 = $lambda_2$
+#let lai = $lambda_i$
+#let laj = $lambda_j$
+#let lak = $lambda_k$
+#let lam = $lambda_m$
+#let laM = $lambda_M$
+#let lan = $lambda_n$
+#let laN = $lambda_N$
+#let La  = $Lambda$
+#let La0 = $Lambda_0$
+#let La1 = $Lambda_1$
+#let La2 = $Lambda_2$
+#let Lai = $Lambda_i$
+#let Laj = $Lambda_j$
+#let Lak = $Lambda_k$
+#let Lam = $Lambda_m$
+#let LaM = $Lambda_M$
+#let Lan = $Lambda_n$
+#let LaN = $Lambda_N$
+#let pi0 = $pi_0$
+#let pi1 = $pi_1$
+#let pi2 = $pi_2$
+#let pii = $pi_i$
+#let pij = $pi_j$
+#let pik = $pi_k$
+#let pim = $pi_m$
+#let piM = $pi_M$
+#let pin = $pi_n$
+#let piN = $pi_N$
 
-// bold, cal, hat, tilde, arrow letters
-// bold and cal letters
-#let bx = math.bold("x")
-#let by = math.bold("y")
-#let bz = math.bold("z")
-#let bs = math.bold("s")
-#let bt = math.bold("t")
-#let bu = math.bold("u")
-#let bv = math.bold("v")
-#let bw = math.bold("w")
+// ---------- bold, cal, hat, tilde, arrow letters ----------
+// bold letters
 #let ba = math.bold("a")
 #let bb = math.bold("b")
 #let bc = math.bold("c")
@@ -126,9 +294,51 @@
 #let bi = math.bold("i")
 #let bj = math.bold("j")
 #let bk = math.bold("k")
-#let cN = math.cal("N")
-#let cL = math.cal("L")
+#let bs = math.bold("s")
+#let bt = math.bold("t")
+#let bu = math.bold("u")
+#let bv = math.bold("v")
+#let bo = math.bold("o")
+#let br = math.bold("r")
+#let bw = math.bold("w")
+#let bx = math.bold("x")
+#let by = math.bold("y")
+#let bz = math.bold("z")
+#let bA = math.bold("A")
+#let bB = math.bold("B")
+#let bC = math.bold("C")
+#let bE = math.bold("E")
+#let bF = math.bold("F")
+#let bH = math.bold("H")
+#let bI = math.bold("I")
+#let bJ = math.bold("J")
+#let bK = math.bold("K")
+#let bP = math.bold("P")
+#let bS = math.bold("S")
+#let bT = math.bold("T")
+#let bM = math.bold("M")
+#let bN = math.bold("N")
+#let bX = math.bold("X")
+#let bY = math.bold("Y")
+#let bZ = math.bold("Z")
+#let bxi = math.bold($xi$)
+#let bpi = math.bold($pi$)
+// cal letters
+#let cA = math.cal("A")
+#let cB = math.cal("B")
+#let cC = math.cal("C")
 #let cD = math.cal("D")
+#let cF = math.cal("F")
+#let cG = math.cal("G")
+#let cH = math.cal("H")
+#let cJ = math.cal("J")
+#let cL = math.cal("L")
+#let cM = math.cal("M")
+#let cN = math.cal("N")
+#let cP = math.cal("P")
+#let cS = math.cal("S")
+#let cV = math.cal("V")
+#let cW = math.cal("W")
 #let cX = math.cal("X")
 // letters with hat
 #let hx = $hat(x)$
@@ -187,111 +397,198 @@
 #let af = $arrow(f)$
 #let ag = $arrow(g)$
 #let ah = $arrow(h)$
-#let ai = $arrow(i)$
-#let aj = $arrow(j)$
-#let ak = $arrow(k)$
+// #let ai = $arrow(i)$
+// #let aj = $arrow(j)$
+// #let ak = $arrow(k)$ // 'a' used for alpha
 
+// ---------- subscripts for common letters ----------
+#let x0 = $x_0$
 #let x1 = $x_1$
 #let x2 = $x_2$
 // #let xi = $x_i$ // 'xi' used for xi
 #let xj = $x_j$
+#let xk = $x_k$
+#let xm = $x_m$
+#let xM = $x_M$
 #let xn = $x_n$
 #let xN = $x_N$
+#let y0 = $y_0$
 #let y1 = $y_1$
 #let y2 = $y_2$
 #let yi = $y_i$
 #let yj = $y_j$
+#let yk = $y_k$
+#let ym = $y_m$
+#let yM = $y_M$
 #let yn = $y_n$
 #let yN = $y_N$
+#let z0 = $z_0$
 #let z1 = $z_1$
 #let z2 = $z_2$
 #let zi = $z_i$
 #let zj = $z_j$
+#let zk = $z_k$
+#let zm = $z_m$
+#let zM = $z_M$
 #let zn = $z_n$
 #let zN = $z_N$
-// #let s1 = $s_1$
-// #let s2 = $s_2$
-// #let sn = $s_n$
-// #let sN = $s_N$
-// #let t1 = $t_1$
-// #let t2 = $t_2$
-// #let tn = $t_n$
-// #let tN = $t_N$ // 's' and 't' used for sigma and tau
+#let s0 = $s_0$
+#let s1 = $s_1$
+#let s2 = $s_2$
+#let si = $s_i$
+#let sj = $s_j$
+#let sk = $s_k$
+#let sm = $s_m$
+#let sM = $s_M$
+#let sn = $s_n$
+#let sN = $s_N$
+#let t0 = $t_0$
+#let t1 = $t_1$
+#let t2 = $t_2$
+#let ti = $t_i$
+#let tj = $t_j$
+#let tk = $t_k$
+#let tm = $t_m$
+#let tM = $t_M$
+#let tn = $t_n$
+#let tN = $t_N$
+#let u0 = $u_0$
 #let u1 = $u_1$
 #let u2 = $u_2$
 #let ui = $u_i$
 #let uj = $u_j$
+#let uk = $u_k$
+#let um = $u_m$
+#let uM = $u_M$
 #let un = $u_n$
 #let uN = $u_N$
+#let v0 = $v_0$
 #let v1 = $v_1$
 #let v2 = $v_2$
 #let vi = $v_i$
 #let vj = $v_j$
+#let vk = $v_k$
+#let vm = $v_m$
+#let vM = $v_M$
 #let vn = $v_n$
 #let vN = $v_N$
+#let w0 = $w_0$
 #let w1 = $w_1$
 #let w2 = $w_2$
 #let wi = $w_i$
 #let wj = $w_j$
+#let wk = $w_k$
+#let wm = $w_m$
+#let wM = $w_M$
 #let wn = $w_n$
 #let wN = $w_N$
-// #let a1 = $a_1$
-// #let a2 = $a_2$
-// #let an = $a_n$
-// #let aN = $a_N$ // 'a' used for alpha
+#let a0 = $a_0$
+#let a1 = $a_1$
+#let a2 = $a_2$
+#let ai = $a_i$
+#let aj = $a_j$
+#let ak = $a_k$
+#let am = $a_m$
+#let aM = $a_M$
+#let an = $a_n$
+#let aN = $a_N$
+#let b0 = $b_0$
 #let b1 = $b_1$
 #let b2 = $b_2$
 // #let bi = $b_i$
-// #let bj = $b_j$ // b is used for bold
+// #let bj = $b_j$
+// #let bk = $b_k$ // b is used for bold
+#let bm = $b_m$
+// #let bM = $b_M$ // 'bM' used for bold
 #let bn = $b_n$
-#let bN = $b_N$
+// #let bN = $b_N$ // 'bN' used for bold
+#let c0 = $c_0$
 #let c1 = $c_1$
 #let c2 = $c_2$
 #let ci = $c_i$
 #let cj = $c_j$
+#let ck = $c_k$
+#let cm = $c_m$
+// #let cM = $c_M$ // 'cM' used for cal
 #let cn = $c_n$
-// #let cN = $c_N$ // 'N' used for cal
-// #let d1 = $d_1$
-// #let d2 = $d_2$
-// #let dn = $d_n$
-// #let dN = $d_N$ // 'd' used for delta
+// #let cN = $c_N$ // 'cN' used for cal
+#let d0 = $d_0$
+#let d1 = $d_1$
+#let d2 = $d_2$
+#let di = $d_i$
+#let dj = $d_j$
+#let dk = $d_k$
+#let dm = $d_m$
+#let dM = $d_M$
+#let dn = $d_n$
+#let dN = $d_N$
+#let e0 = $e_0$
 #let e1 = $e_1$
 #let e2 = $e_2$
 #let ei = $e_i$
 #let ej = $e_j$
+#let ek = $e_k$
+#let em = $e_m$
+#let eM = $e_M$
 #let en = $e_n$
 #let eN = $e_N$
+#let f0 = $f_0$
 #let f1 = $f_1$
 #let f2 = $f_2$
 #let fi = $f_i$
 #let fj = $f_j$
+#let fk = $f_k$
+#let fm = $f_m$
+#let fM = $f_M$
 #let fn = $f_n$
 #let fN = $f_N$
-// #let g1 = $g_1$
-// #let g2 = $g_2$
-// #let gn = $g_n$
-// #let gN = $g_N$ // 'g' used for gamma
+#let g0 = $g_0$
+#let g1 = $g_1$
+#let g2 = $g_2$
+#let gi = $g_i$
+#let gj = $g_j$
+#let gk = $g_k$
+#let gm = $g_m$
+#let gM = $g_M$
+#let gn = $g_n$
+#let gN = $g_N$
+#let h0 = $h_0$
 #let h1 = $h_1$
 #let h2 = $h_2$
 #let hi = $h_i$
 #let hj = $h_j$
+#let hk = $h_k$
+#let hm = $h_m$
+#let hM = $h_M$
 #let hn = $h_n$
 #let hN = $h_N$
+#let i0 = $i_0$
 #let i1 = $i_1$
 #let i2 = $i_2$
-#let ii = $i_i$
+// #let ii = $i_i$ 'ii' used for i i with backspace between
 // #let ij = $i_j$ 'ij' used for i j with backspace between
+// #let ik = $i_k$ // 'ik' used for i k with backspace between
+#let im = $i_m$
+#let iM = $i_M$
 // #let in = $i_n$ // 'in' is a keyword
 #let iN = $i_N$
+#let j0 = $j_0$
 #let j1 = $j_1$
 #let j2 = $j_2$
 // #let ji = $j_i$ // 'ji' used for j i with backspace between
-#let jj = $j_j$
+// #let jj = $j_j$ // 'jj' used for j j with backspace between
+// #let jk = $j_k$ // 'jk' used for j k with backspace between
+#let jm = $j_m$
+#let jM = $j_M$
 #let jn = $j_n$
 #let jN = $j_N$
+#let k0 = $k_0$
 #let k1 = $k_1$
 #let k2 = $k_2$
-#let ki = $k_i$
-#let kj = $k_j$
+// #let ki = $k_i$ // 'ki' used for k i with backspace between
+// #let kj = $k_j$ // 'kj' used for k j with backspace between
+// #let kk = $k_k$ // 'kk' used for k k with backspace between
+#let km = $k_m$
+#let kM = $k_M$
 #let kn = $k_n$
 #let kN = $k_N$

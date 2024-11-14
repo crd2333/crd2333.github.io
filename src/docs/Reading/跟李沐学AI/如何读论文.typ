@@ -52,3 +52,13 @@ order: 1
   + 论文中的实验及结果有没有很好地支持需要验证的科学假设？
   + 这篇论文到底有什么贡献？
   + 下一步呢？有什么工作可以继续深入？
+
+#note(caption: "一些缩写")[
+  + i.e. $==>$ id est ("that is")
+  + e.g. $==>$ exempli gratia ("for example")
+  + etc. $==>$ et cetera ("and so forth")
+  + et al. $==>$ et alii ("and others", "and co-workers")
+  + w.r.t $==>$ with respect to —— 关于；谈及，谈到
+  + a.k.a $==>$ also known as
+  + w/ and w/o: with and without（常见于消融实验）
+]
