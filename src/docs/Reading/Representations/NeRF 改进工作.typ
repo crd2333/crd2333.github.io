@@ -6,6 +6,7 @@
 )
 
 #let batch_size = math.text("batch_size")
+#let bnu = math.bold($nu$)
 
 #info()[
   - 参考

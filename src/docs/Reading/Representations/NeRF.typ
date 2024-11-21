@@ -81,7 +81,7 @@ order: 3
     - 输出为 $(#batch_size, 192, 4)$
   - 后处理2：
     - 将模型 2 输出通过体渲染，转换为像素
-  #fig("/public/assets/Reading/Representations/NeRF/2024-10-12-21-27-35.png")
+  #fig("/public/assets/Reading/Representations/NeRF/2024-10-12-21-27-35.png",width:80%)
 - 下面一个个描述其中的关键步骤
   - 输入图片如何得到这些粒子？
     - 训练时，一张图片（或者多个图片）采样 $#batch_size = 1024$ 个像素
@@ -107,7 +107,7 @@ order: 3
     - 一个观察（先验）：一个点的密度越高，射线通过它之后变得越弱，*密度和透光度呈反比*；同时这个点的颜色反应在像素上的*权重越大*。这就是下面 $T(t)$ 在描述的事情 —— 采样点权重由其*密度*和*与光心距离*共同决定
     - 连续体渲染公式（确切地说应该是体渲染中的 Ray-Tracing 方法）
       - 其中 $c $ 表示颜色， $si$ 表示密度， $r$ 表示 camera ray，$t$ 和 $d$ 分别表示 camera ray 上的距离、方向
-    $ C(br) = int_(tn)^(tj) T(t) si(br(t)) c(br(t), bd) dif t, "where" T(t) = exp(- int_(t_n)^t si(br(s)) dif s) $
+    $ C(br) = int_(t_n)^(tj) T(t) si(br(t)) c(br(t), bd) dif t, "where" T(t) = exp(- int_(t_n)^t si(br(s)) dif s) $
     - 实际计算需要将其离散化（掌握其推导：将射线划分为小区间，$delta_i=t_i - t_(i-1)$ 为区间长度，区间内 $si, c$ 为常数）
     $ hat(C)(br) = sum_(i=1)^N T_i (1 - exp(-si_i delta_i)) c_i, "where" T_i = exp(- sum_(j=1)^(i-1) si_j delta_j) $
     - 如果是在推理，通过这个公式从 $c_i, si_i$ 得到像素颜色，从而得到图片

@@ -278,10 +278,10 @@ for i in range(seq_length):
 - 目标检测 topic 下比较有里程碑意义的网络有：
   - RCNN（Region-based Convolutional Neural Networks，区域卷积神经网络） 系列
     + RCNN：使用选择性搜索选择提议区域，然后使用 CNN 提取特征，最后使用 SVM 进行分类
-    + Fast RCNN：仅在整张图象上执行卷积神经网络的前向传播，仍使用选择性搜索选择提议区域
+    + Fast RCNN：仅在整张图像上执行卷积神经网络的前向传播，仍使用选择性搜索选择提议区域
     + Faster RCNN：将生成提议区域的方法从选择性搜索改为了区域提议网络（RPN，相当于一个糙一点的目标检测模型），也即 two-stage 方法
     + Mask RCNN：利用数据集中的像素级信息提升目标检测精度
-  - SSD（Single Shot MultiBox Detector，单发多框检测）：使用CNN提取多尺度特征块（特征金字塔），然后在每个特征块上预测目标的类别和位置
+  - SSD（Single Shot MultiBox Detector，单发多框检测）：使用 CNN 提取多尺度特征块（特征金字塔），然后在每个特征块上预测目标的类别和位置
   - YOLO(you only look once) 系列
 
 === 语义分割

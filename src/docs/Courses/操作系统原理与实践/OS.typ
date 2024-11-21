@@ -1428,15 +1428,22 @@
   - 另一个好处是，program size 可以不受 physical memory size 的限制
 - 为了实现部分加载，我们有一个虚拟内存（在这门课里和逻辑地址是等价的）的概念，主要靠 Paging 来实现
   - 需要注意的是虚拟地址只是范围，并不能真正的存储数据，数据只能存在物理空间里
-#fig("/public/assets/Courses/OS/2024-11-13-16-25-55.png",width:50%)
+#grid(
+  columns: 2,
+  [
+    #fig("/public/assets/Courses/OS/2024-11-13-16-25-55.png")
+    - 这样，右图的 stack 就处在连续的虚拟地址下，但它们经页表映射后的帧并不连续，而且不一定都在内存中
+  ],
+  fig("/public/assets/courses/os/2024-11-19-14-27-31.png", width:50%)
+)
 
 == Demand Paging
 - *Demand paging*: 一般 OS 采用的方法是，当页被需要的时候(when it is demanded)才被移进来(page in)，demand 的意思是 access(read/write)
   - if page is invalid (error) $-->$ abort the operation
   - if page is valid but not in physical memory $-->$ bring it to physical memory
     - 这就叫 *page fault*
-  - 优劣：no unnecessary I/O, less memory needed, slower response, more apps. 简而言之，时间换空间
-- 几个问题
+  - 优劣：no unnecessary I/O, less memory needed, slower response, more apps. 简而言之，用时间换取空间
+- 三个核心问题
   - Demand paging 和 page fault 的关系？
     - 前者是利用后者实现的
   - What causes page fault？
@@ -1452,6 +1459,7 @@
 == Page Fault
 - 比如，C 语言调用 `malloc` 的时候，采用的就是 lazy allocation 策略
   - VMA 是 Virtual Memory Area，malloc 调用 `brk()` 只是增大了 VMA 的大小（修改 vm_end），但是并没有真正的分配内存
+    - VMA 这个数据结构类似于 OS 的“账本”
   - 只有当我们真正访问这个地址的时候，会触发 page fault，然后找一个空闲帧真正分配内存，并做了映射
   - 那有没有直接 allocate 的呢？`kmalloc` 会直接分配虚拟连续、物理连续的内存，`vmalloc` 会直接分配虚拟连续、物理不连续的内存
   #fig("/public/assets/Courses/OS/2024-11-13-16-35-45.png",width:70%)
@@ -1462,9 +1470,8 @@
     + 一种是地址本身超过了 VMA 的范围，或者落在 Heap 内但权限不对，这种情况操作系统会杀死进程；
       - 为了判断地址是否落在 VMA 里，Linux 使用了红黑树来加速查找
     + 否则，这个时候 OS 就会分配一个 free frame，然后把这个页映射到这个帧上。但这个时候也分两种情况：
-      + 这个 page 属于 file-backed(e.g. Data, Text)，它不在内存里面，这时需要先从磁盘读取这个 page，然后映射
-        - 或者后面会讲，一个原本属于 anonymous page 但是因为 free list 不够而被 swap out 到磁盘的情况，也需要从磁盘读取
-      + 这个 page 属于 anonymous(e.g. BSS, Heap, Stack)，它本身就在内存里，这时只需要直接映射即可
+      + *Major*: 这个 page 属于 file-backed(e.g. Data, Text)，它不在内存里面，这时需要先从磁盘读取这个 page，然后映射
+      + *Minor*: 这个 page 属于 anonymous(e.g. BSS, Heap, Stack)，它本身就在内存里，这时只需要直接映射即可
   #fig("/public/assets/Courses/OS/2024-11-13-16-44-38.png",width:80%)
   - 具体来说就是
     + MMU 先去 access 这个地址，发现 valid bit 是 $i$，issue page fault
@@ -1531,6 +1538,7 @@
 - 没有空闲的物理帧时应该怎么办呢？
   - 我们可以交换出去一整个进程从而释放它的所有帧；
   - 更常见地，我们找到一个当前不在使用的帧，并释放它
+  - （听起来像是 frame replacement？但其实 frame 一直在那里，只是 page 变了
 - Page replacement: find some page in memory but not really in use, and page it out
   - 与物理地址无关 #h(1fr)
   #fig("/public/assets/Courses/OS/2024-11-13-17-48-23.png", width: 60%)
@@ -1544,4 +1552,134 @@
   + bring the desired page into the free frame; update the page tables
   + restart the instruction that caused the trap.
   - 一次 page fault 可能发生 2 次 page I/O，一次 out（可能要把脏页写回）一次 in
+  #fig("/public/assets/courses/os/2024-11-19-14-44-37.png",width:50%)
 
+=== Page Replacement Algorithms
+- 就像 Scheduling 一样，这里我们也需要对 page 研究算法好坏
+  - 之后我们也可以思考一下这跟 scheduling 有什么异同
+  - 如何评价？用一串 memory reference string，每个数字都是一个页号，给出物理页的数量，看有多少个 page faults（考试必考）
+- 比如
+  - FIFO, optimal, LRU, LFU, MFU
+  - 下面我们考虑 $7,0,1,2,0,3,0,4,2,3,0,3,0,3,2,1,2,0,1,7,0,1$ 这一串数字
+- *First-In-First-Out Algorithm (FIFO)*
+  - 替换第一个加载进来的 page
+  - $15$ page faults with $3$ frames
+  - Belady's Anomaly: For FIFO, 增多 frames 不一定减少 page faults
+- *Optimal Algorithm*
+  - 如果知道后续页号，替换未来最长时间里不会被用的 Page
+  - $9$ page faults with $3$ frames
+  - 最优算法，但无法预测未来什么时候会访问这些页，用来评价其它算法的好坏
+- *Least Recently Used Algorithm (LRU)*
+  - 属于 Time-based 方法，替换最近最少被用的
+  - $12$ page faults with $3$ frames
+  - 如何实现？基本上有两种方法
+    - counter-based，存时间戳，在每次访问时查找最小的页并更新时间戳
+    - stack-based，每次访问一个页的时候把它移到栈顶
+    - 但这两种方法其实开销都很大，我们有近似的办法，在 PTE 中加了一个 *reference bit*
+      - 一开始都设置成 $0$
+      - 硬件实现：如果一个 page 被访问，就设置成 $1$
+      - 替换时选择 reference bit = 0 (if one exists)
+      - 当所有位都设为 $1$ 的时候就只能随机选一个，而且我们无法知道他们的访问顺序
+  - LRU 的改进
+    - *Additional-Reference-Bits Algorithm*
+      - 直觉上，只要我们多设几个 bits，就可以追踪它们的访问顺序。设置 $8$ 个 Bits
+      -在一个 time interval (100ms) 之内，对每个 page，refernce bits 每个时刻都右移一位，低位抛弃，高位如果被使用就设成 $1$，否则为 $0$
+      - 所以只要比较大小就可以确定该替换哪个
+    - *Second-chance algorithm*
+      - 给第二次机会，对一个将要被 replaced page，如果它的
+        - Reference bit = $0$，那么替换它
+        - Reference bit = $1$，把它设置成 $0$，但留在 memory 内，下一次又选到它了才真正换掉它
+    - *Enhanced Second-Chance Algorithm*
+      - 用 *reference bit* and *modify bit* (if available) 更进一步表征 page 的状态
+      - Take ordered pair (reference, modify):
+        - $(0, 0)$ neither recently used not modified – best page to replace.
+        - $(0, 1)$ not recently used but modified – not quite as good, must write out before replacement
+        - $(1, 0)$ recently used but clean – probably will be used again soon
+        - $(1, 1)$ recently used and modified – probably will be used again soon and need to write out before replacement
+      - 一般是找 $(0,0)$ 的来替换
+- *Counting-based Page Replacement*
+  - *Least Frequently Used (LFU)* replaces page with the smallest counter
+  - *Most Frequently Used (MFU)* replaces page with the largest counter
+  - 一般是 LFU 好一些
+
+== 琐碎概念
+- Page-Buffering Algorithms
+  - 但一般来说我们不会等到 frame 要去替换了才去行动，而是
+  - 维持一个空闲帧的池子，当需要的时候直接从池子里取一个即可。系统不繁忙的时候，预先把一些 victime frame 释放掉（写回到磁盘，这样帧可以加到 free list 里）
+  - Possibly
+    - keep list of modified pages
+    - keep free frame contents intact and note what is in them - a kind of cache
+  - *double buffering*: 内存密集型任务可能会导致这个问题，User 和 OS 都缓存了同一份内容，导致一个文件占用了两个帧，浪费了 memory 的空间
+- Allocation of Frames
+  - 每个进程都至少需要一定数量的 frames，那么我们该如何分配？
+    - Equal allocation
+    - Proportional allocation - Allocate according to the size of process
+    - Linux 其实两个都不是，它是 demand paging
+  - 当帧不够用的时候，我们需要替换，分两种
+    - Global replacement 可以抢其它线程的帧
+      - 其中一种实现是 Reclaiming Pages：如果 free list 里的帧数低于阈值，就根据 OOM score aggressively Kill some processes。这个策略希望保证这里有充足的自由内存来满足新的需求
+      #fig("/public/assets/courses/os/2024-11-19-15-34-24.png",width:50%)
+    - Local replacement 只能从自己的帧里选择替换
+- Non-Uniform Memory Access
+  - 不同 CPU 距离不同的内存的距离不同，因此访问时间也不同
+  #fig("/public/assets/courses/os/2024-11-19-15-37-44.png",width:40%)
+
+== Thrashing
+- 如果我们的进程一直在换进换出页，那么 CPU 使用率反而会降低。进程越多，可能发生一个进程的页刚加载进来又被另一个进程换出去，最后大部分进程都在 sleep
+  #fig("/public/assets/courses/os/2024-11-19-15-40-04.png",width:40%)
+- 为什么会这样呢？
+  - demand paging 之所以起效就是因为 *locality*
+  - 所以当进程过多，total size of locality > total memory size，自然就发生了 thrashing
+- 如何解决 thrashing
+  - Option I: 使用 local page replacement
+  - Option II: 根据进程的需要分配 locality，使用*工作集模型 (working set model)*来描述
+    #fig("/public/assets/courses/os/2024-11-20-16-27-26.png",width:50%)
+    - 每当进程到了一个新的 locality，page fault rate 就会变高
+    #fig("/public/assets/courses/os/2024-11-20-16-22-35.png",width:40%)
+    - working set model 描述得很好但不好计算，很自然地我们会想，用 page fault rate 来间接反映 working set。如果太低，说明给资源太多；反之给的资源太少
+    - 怎么实现？跟 LRU 很像
+
+== Other Considerations
+- Prepaging
+  - page fault 时，除了被 fault 的 page，其他相邻的页也一起加载
+- Page Size
+  + Fragmentation $->$ small page size
+  + Page table size $->$ large page size
+  + Resolution $->$ small page size
+  + I/O overhead $->$ large page size
+  + Number of page faults $->$ large page size
+  + Locality $->$ small page size
+  + TLB size and effectiveness $->$ large page size
+  + On average, growing over time
+- TLB Reach
+  - TLB 总共可以索引到的大小，不考虑 TLB 也分级，可以简单计算为
+  - $ "TLB reach" = ("TLB size") $times$ ("page size") $
+- Program Structure
+  - 程序结构也会影响 page fault，最经典的就是二维数组行主序和列主序访问的例子
+- I/O interlock: 把页面锁住，这样就不会被换出去。
+
+== Memory management in Linux
+- page fault 是针对 user space 的，kernel 分配的内存不会发生 page fault（否则会嵌套）
+- 一个进程有自己的 `mm_struct`，所有线程共享同一个页表，内核空间有自己的页表 `swapper_pg_dir`。 这里的 `pgd` 存的是虚拟地址，但当加载到 `satp` 里时会转为物理地址
+- Linux Buddy System
+  - 从物理连续的段上分配内存；每次分配内存大小是 2 的幂次方，例如请求是 11KB，则分配 16KB
+  - 当分配时，从物理段上切分出对应的大小（每次切分都是平分）；当释放时，会*合并(coalesce)*相邻的块形成更大的块供之后使用
+  - 优劣
+    - advantage: 可以迅速组装成大内存（释放后即可合并）
+    - disadvantage: internal fragmentation 比如请求是 11KB 但分配 16KB
+- Slab Allocation
+  - Buddy System 管理整页的大内存，但我们需要更细粒度（小于一个 page）的分配。另一方面，随着进程越来越大，即使是 `task_struct` 也变得很大，我们需要有高效管理它们的办法
+  - 当要分配很多 `task_struct`，如何迅速分配？
+    - 我们把多个连续的页面放到一起，将 objects 统一分配到这些页面上
+    - 比如 `task_struct` 有 $3KB$，但 page 是 $4KB$，最好的办法就是找最小公倍数，用 $3$ 个 page 放 $4$ 个 `task_struct`
+  - 进一步，我们不想每次一个 field 一个 field 地 initial，而是一次加载好多个，把它作为一个 pool 来用，另外也能充当 cache 的作用
+  - 优点：no fragmentation, fast memory allocation
+
+#note(caption: "Takeaway")[
+  - Page fault
+    - Valid virtual address, invalid physical address
+  - Page replacement
+    - FIFO, Optimal, LRU, 2nd chance
+  - Thrashing and working set
+  - Buddy system and slab
+]

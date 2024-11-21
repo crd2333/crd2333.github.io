@@ -6,8 +6,8 @@
 )
 
 = 3DGS
-- 原论文：3D Gaussian Splatting for Real-Time Radiance Field Rendering(time: 2023.8)
-- 原论文方法部分讲得不直观，结合这篇综述 A Survey on 3D Gaussian Splatting(time: 2024.1)，一起理解 3DGS
+- 原论文：3D Gaussian Splatting for Real-Time Radiance Field Rendering (time: 2023.8)
+- 原论文方法部分讲得不直观，结合综述 A Survey on 3D Gaussian Splatting (time: 2024.1)，一起理解 3DGS
 
 == 前言
 - 初看 3DGS 感觉有点像是 Plenoxels

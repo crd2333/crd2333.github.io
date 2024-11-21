@@ -21,6 +21,72 @@
 #let PA = math.text("PA")
 #let vpn = math.text("vpn")
 #let offset = math.text("offset")
+#let tbl_white(white_row: 1 , content_size: 9pt,..args) = align(center, block[
+  #show table.cell: it => if it.y <= white_row - 1 {
+    set text(fill: white, stroke: white)
+    it
+  } else {
+    set text(size: content_size)
+    it
+  }
+  #tbl(..args)
+])
+
+= 一些速查表
+== RISCV 基本寄存器
+#tlt(
+  columns: 4,
+  [Register], [ABI Name], [Description], [Saver],
+  [x0], [zero], [Hard-wired zero], [—],
+  [x1], [ra], [Return address], [Caller],
+  [x2], [sp], [Stack pointer], [Callee],
+  [x3], [gp], [Global pointer], [—],
+  [x4], [tp], [Thread pointer], [—],
+  [x5–7], [t0–2], [Temporaries], [Caller],
+  [x8], [s0/fp], [Saved register/frame pointer], [Callee],
+  [x9], [s1], [Saved register], [Callee],
+  [x10–11], [a0–1], [Function arguments/return values], [Caller],
+  [x12–17], [a2–7], [Function arguments], [Caller],
+  [x18–27], [s2–11], [Saved registers], [Callee],
+  [x28–31], [t3–6], [Temporaries], [Caller]
+)
+
+== RISCV 特权级寄存器
+- `sstatus` 寄存器
+  #fig("/public/assets/Courses/OS/2024-11-17-13-33-32.png",width:80%)
+  + `SPP`: 进入 S-Mode 之前处理器的特权级别，`sret` 时会用到它，$0$ 表示 U-Mode，$1$ 表示其它
+  + `SIE`: S-Mode 下全局中断使能位，$1$ 表示开启，$0$ 表示关闭
+  + `SPIE`: S-Mode 下全局中断使能位的 Previous 值，当 trap 时，硬件自动将 SIE 位放置到 SPIE 位上，并将 SIE 置为 $0$（硬件逻辑上默认不支持嵌套中断）；`sret` 时，硬件自动将 SPIE 位放置到 SIE 位上
+  + `SUM`: 如果置 $1$，让 S 特权级下的程序在即使用户页 `PTE[U]` 置 $1$ 时也能访问
+
+- `mcause` & `scause` 表（只记有用的）
+  - `mie` & `sie` 中断使能寄存器，针对各种中断类型的使能位，具体就是查这个表，将需要的位设置为 1（最多有 `SXLEN-2` 个中断类型，每个 $1$ 位，实验以 $64 bits$ 为例）
+  - `medeleg` & `mideleg` 委托寄存器，在 M-Mode 下配置寄存器使 S-Mode 下的某类 trap 被 S-Mode 下的 trap 处理函数自动接管，分别管理 exception 和 interrupt 的委派。具体也是查这个表
+#fig("/public/assets/Courses/OS/2024-11-17-13-44-36.png",width:80%)
+#tlt(
+  columns: 3,
+  [Interrupt],[Exception Code],[Description],
+  [1],[1],[Supervisor Software Interrupt],
+  [1],[3],[Machine Software Interrupt],
+  [1],[5],[Supervisor Timer Interrupt],
+  [1],[7],[Machine Timer Interrupt],
+  [1],[9],[Supervisor External Interrupt],
+  [1],[11],[Machine External Interrupt],
+  [0],[0],[Instruction Address Misaligned],
+  [0],[1],[Instruction Access Fault],
+  [0],[2],[Illegal Instruction],
+  [0],[3],[Breakpoint],
+  [0],[4],[Load Address Misaligned],
+  [0],[5],[Load Access Fault],
+  [0],[6],[Store/AMO Address Misaligned],
+  [0],[7],[Store/AMO Access Fault],
+  [0],[8],[Environment Call from U-mode],
+  [0],[9],[Environment Call from S-mode],
+  [0],[11],[Environment Call from M-mode],
+  [0],[12],[Instruction Page Fault],
+  [0],[13],[Load Page Fault],
+  [0],[15],[Store/AMO Page Fault]
+)
 
 = lab1
 == RISCV 汇编
@@ -49,10 +115,34 @@
   - 参考 #link("https://github.com/riscv-non-isa/riscv-asm-manual/blob/main/src/asm-manual.adoc#a-listing-of-standard-risc-v-pseudoinstructions")[riscv-asm-manual\#pseudoinstructions]
 
 - 关注一下伪操作
-  - `.section` 用于定义段
-  - `.globl` 用于定义全局变量
-  - `.extern` 用于引用外部变量
-  - `.align` 用于对齐
+  ```asm
+      .text
+      .align 2
+      .globl main
+  main:
+      addi sp, sp, -16
+      sw ra, 12(sp)
+      lui a0, %hi(string1)
+      addi a0, a0, %lo(string1)
+      lui a1, %hi(string2)
+      addi a1, a1, %lo(string2)
+      call printf
+      lw ra, 12(sp)
+      addi sp, sp, 16
+      li a0, 0
+      ret
+
+      .section .rodata
+      .balign 4
+  string1:
+      .string "Hello, %s!\n"
+  string2:
+      .string "world"
+  ```
+  - `.section`, `.text`, `.rodata`, `.data`, `.bss` ...: 用于定义段
+  - `.globl`, `.extern` 用于声明全局变量和外部变量
+  - `.byte b1, b2, ..., bn`, `.half w1, w2, ..., wn`, `.word w1, w2, ..., wn`：存放一些字节、半字(16 bits)、字(32 bits)
+  - `.align 2`, `.balign 4`：：对齐数据段到 $2^2$ 和 $4$ 字节
   - 参考 #link("https://github.com/riscv-non-isa/riscv-asm-manual/blob/main/src/asm-manual.adoc#pseudo-ops")[riscv-asm-manual\#pseudo-ops]
 
 == 链接脚本
@@ -123,5 +213,21 @@
 ]
 
 = lab4
+== `thread_struct` 和 `task_struct` 的设置
+- 修改 `task_init()` 中 `sstatus`
+  + `SPP`: 设为 $0$，使得 sret 返回至 U-Mode
+  + `SPIE`: 设置为 $1$，使 sret 之后开启中断
+  + `SUM`: 设置为 $1$，使 S-Mode 可以访问 User 页面
+- 修改 `task_init()` 中 `sscratch`
+  #quote(caption: [什么是 `sscratch` (ref: #link("https://learningos.cn/rcore_step_by_step_webdoc/docs/Trap.html")[LearningOS-rCore-Trap])])[
+    #tab 中断可能来自用户态（U-Mode），也可能来自内核态（S-Mode）。如果是用户态中断，那么此时的栈指针 sp 指向的是用户栈；如果是内核态中断，那么 sp 指向的是内核栈。现在我们希望把寄存器保存在内核栈上，这就要求有一个通用寄存器指向内核栈。对于内核态中断来说，直接使用 sp 就可以了，但对于用户态中断，我们需要在不破坏 32 个通用寄存器的情况下，切换 sp 到内核栈。
 
+    解决问题的关键是要有一个可做交换操作的临时寄存器，这里就是 `sscratch` 。
 
+    我们规定：当 CPU 处于 U-Mode 时，`sscratch` 保存内核栈地址；处于 S-Mode 时，`sscratch` 为 $0$。
+  ]
+  - 在我们的 lab 里面（个人理解）
+    - 对于一个 U-Mode 线程，它的作用是充当 U-Mode 和一一对应的 S-Mode 跳板之间的桥梁，在 S-Mode 下存储 U-Mode 的 `sp`，在 U-Mode 下存储 S-Mode 的 `sp`
+    - 而对于一个单纯的 S-Mode 线程，规定 `sscratch=0`
+
+= Lab5
