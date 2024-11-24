@@ -9,7 +9,7 @@
 #import "@preview/treet:0.1.1": tree-list
 #import "@preview/wrap-it:0.1.0": wrap-content, wrap-top-bottom
 #import "@preview/cheq:0.2.0": checklist
-#import "@preview/pinit:0.2.0": *
+#import "@preview/pinit:0.2.2": *
 #import "@preview/indenta:0.0.3": fix-indent
 #import "@preview/numbly:0.1.0": numbly
 #import "@preview/drafting:0.2.0": *

@@ -1,8 +1,8 @@
-#import "@preview/fletcher:0.5.1" as fletcher: diagram, node, edge
+#import "@preview/fletcher:0.5.2" as fletcher: diagram, node, edge
 #import "@preview/tablem:0.1.0": tablem
 #import "@preview/lovelace:0.3.0": pseudocode-list, pseudocode, line-label
-#import "@preview/truthfy:0.4.0": truth-table, truth-table-empty
-#import "@preview/codly:0.2.0": *
+#import "@preview/truthfy:0.5.0": truth-table, truth-table-empty
+#import "@preview/codly:1.0.0": *
 #import "@preview/timeliney:0.1.0": timeline, headerline, group, taskgroup, task, milestone
 
 // 插入图片
