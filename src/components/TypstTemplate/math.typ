@@ -41,12 +41,17 @@
 #let xy = $x y$
 #let xz = $x z$
 #let yz = $y z$
+#let xyz = $x y z$
 #let sumi = $sum_i$
 #let sumij = $sum_(i j)$
 #let sumin = $sum_(i=1)^n$
 #let sumjn = $sum_(j=1)^n$
+#let sumim = $sum_(i=1)^m$
+#let sumjm = $sum_(j=1)^m$
 #let sumiN = $sum_(i=1)^N$
 #let sumjN = $sum_(j=1)^N$
+#let sumiM = $sum_(i=1)^M$
+#let sumjM = $sum_(j=1)^M$
 #let sumkK = $sum_(k=1)^K$
 #let summM = $sum_(m=1)^M$
 #let sumnN = $sum_(n=1)^N$

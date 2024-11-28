@@ -52,7 +52,7 @@
   set heading(numbering: (..nums) => { // 设置标题编号
     nums.pos().map(str).join(".") + " "
   })
-  show heading: it => it + v(6pt)
+  show heading.where(level: 1): it => it + v(3pt)
 
   // 代码相关设置
   codly(
