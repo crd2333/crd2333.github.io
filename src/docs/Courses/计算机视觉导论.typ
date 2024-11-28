@@ -874,8 +874,146 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
   - 单独估计每个关节的 3D 位置
   - 或者用参数化模型 SMPL
 
-== Dense Reconstruction
+=== Dense Reconstruction
+==== Multi-view Reconstruction
+- Recap: 传统 pipeline
+  + 对每个图像估计深度 (multi-view stereo)
+  + Fuse the depth maps into a 3D surface (e.g. Poisson reconstruction)
+  + Texture mapping
+- Recap: multi-view stereo
+  - 计算每一点相对于参考图像的深度值的误差
+- 用深度学习改进 MVS
+  - MVSNet: predict cost volume from CNN features
+- 换一种思路，从 Learning-Based 直接转成 Optimization-based
+  - 通过比较渲染出的图像跟 input 图像，来改进 mesh 的质量
+  - 难点在于：
+    + 基于 mesh 的 render process 并不可微（现在有一些近似 mesh differentiable renderer 方法，但可能比较慢）；
+    +  mesh 不是一个适合优化的 representation
+  - 但近年来 representation 方面的工作（比如 Implicit Neural Representations 或者 Explicit 的 voxel, 3DGS）使得基于优化的方法变得可行
+- 这里介绍了一些 Implicit 的 representation，如参数曲面、SDF、NeRF、NeuS
+  - NeRF 基于 volume rendering 使得渲染变得可微
+  - 但 NeRF 重建的表面往往比较粗糙，为此改进为 NeuS（网络输出 color 和 SDF 而不是原始 NeRF 的 color 和 density，但体渲染时把 SDF 转为 density）
 
+==== Single-view(Monocular) Reconstruction
+- 从单张图像推断 3D representation (e.g. Depth, Mesh, Point Cloud, Volume)
+- Monoculer depth estimation
+  - 使用网络去 guess 每个像素的深度
+  - Scale ambiguity: 单视图天然具有尺度不确定性，进而导致深度歧义性
+  - Loss function: *scale-invariant* depth error
+    - Standard L2 error
+      $ D_"L2" (y,y^*) = 1/n sumin (log y_i - log y_i^*)^2 $
+    - Scale-invariant error: 每一张图像都有一个对应的 $al$ 调整深度
+      $
+      D_"SI" (y,y^*) = 1/n sumin (log y_i - log y_i^* + al (y,y^*))^2 \
+      al (y,y^*) = 1/n sumjn (log y_i - log y_i^* + al)^2
+      $
+  - 训练数据怎么得到：一般要么是合成的数据（假但是数据准）、要么是真实数据但是用 MVS 估计出深度（真但是数据不一定准）
+- Monoculer shape estimation
+  - 从单张图片输出 mesh, point cloud, volume 等，近年来更多是输出 NeRF 或 3DGS
+  - 训练数据也是一般用的 MVS 数据
+    - 从单张图片输出 3D representation 后，再渲染成 2D image，跟 MVS 数据做 loss
+    - 可以想象这也需要 differentiable renderer，所以 NeRF 和 3DGS 所用的可微渲染方法就很有用
 
+== Deep learning for 3D understanding
+=== 3D Classification
+- 输入 3D shape（如 Multi-view images, Volume, Point Cloud, Mesh, RGBD or Depth images, Implicit Shape），输出 Class
+- Deep learning on *Multi-view images*
+  - 给定 input 3D shape，生成多个 2D views（或者如果输入本身是 multi-view images 就省了这步）
+  - *Multi-view CNNs*
+    + 每个图像用 2D CNNs 抽特征
+    + 经过 view-pooling 合并，再过一个 2D CNN 得到 final predictions
+- Deep learning on *volumetric data*
+  - volumetric data: Voxel + occupancy
+  - *3D ConvNets*: 使用 3D 卷积核处理体素数据 #h(1fr)
+    #fig("/public/assets/courses/cv/2024-11-28-11-29-47.png",width:50%)
+    - Challenge: High space/time complexity of high resolution voxels: $O(N^3)$
+  - *Sparse ConvNets*: 使用 3D shapes 的稀疏性
+    - Store the sparse surface signals (Octree)
+    - Constrain the computation near the surface
+    - 稀疏卷积: compute inner product only at the active sites (nonzero entries)
+- Deep learning on *point clouds*
+  - Point cloud
+    - The most common 3D sensor data
+    - 表示为 matrix of $N times D$ (2D array representation)，$D$ 一般为 $3$
+  - Challenge:
+    + Point cloud 是未栅格化数据，因此无法应用卷积操作
+    + point 的集合是 order-less 的，我们需要输出跟 $N!$ permutations 无关
+    + 输出应该跟 rigid transformation of points 无关
+  - *PointNet*: A point cloud processing architecture for multiple tasks(classification, detection, segmentation, registration, etc)
+    - 以 Classification and Segmentation Architecture 为例
+      #fig("/public/assets/courses/cv/2024-11-28-11-38-10.png")
+    - Challenge 1: 不能用卷积，那就用 MLP（隐患：No *local context* for each point）
+    - Challenge 2: 对 MLP 输出的特征，使用 max pooling 消除 order 信息
+    #grid2(
+      fig("/public/assets/courses/cv/2024-11-28-11-42-19.png",width:60%),
+      fig("/public/assets/courses/cv/2024-11-28-11-44-00.png",width:60%)
+    )
+    - Challenge 3: 使用另一个网络 T-Net 来估计 transformation
+  - *PointNet++*: Hierarchical structure for point cloud processing
+    - 解决 MLP 无法捕捉 local context 的问题 (*global* feature learning —— *Either one* point or *all* points)
+    - 类似卷积的局部性，引入 local pooling，分为 $3$ 部分 #h(1fr)
+      + Sampling: Sample anchor points by Farthest Point Sampling (FPS)
+      + Grouping: Find neighbourhood of anchor points
+      + Apply PointNet in each neighborhood to mimic convolution
+      #fig("/public/assets/courses/cv/2024-11-28-11-50-31.png",width:50%)
+- Deep learning on *meshes*
+  - 基本上是渲染成图片，用 Multi-view 的方式处理
+- Deep learning on *RGBD images or Depth images*
+  - 难度上相对简单一些，因为有深度信息，可以转化为点云表达，进而用点云方法处理
+  - 难点在于要知道相机的参数（如果没有提供的话）：基于 RGBD 或 Depth 运行 SfM、点云对齐方法(ICP)
+  - 最大的优势在于实时性，毕竟数据足够强
+
+=== 3D Semantic Segmentation
+- Input: sensor data of a 3D scene (RGB/depth/point cloud...)
+- Output: Label each point in point cloud with category label
+- Possible solutions
+  - directly segmenting the point cloud (like PointNet++)
+  - fuse 2D segmentation results in 3D（因为 2D 已经做得很好，直接对 3D 做不一定有对 2D 做再融合效果来得好）
+
+=== 3D Object Detection
+- Bounding Box
+  - 回忆 2D Object Detection 中: $(x,y,w,h)$
+  - 3D bouding box: $(x,y,z,w,h,l,r,p,y)$ #h(1fr)
+    - $x,y,z$ 就是中心，然后还多了欧拉角 roll, pitch, yaw 的描述
+  #fig("/public/assets/courses/cv/2024-11-28-11-57-04.png",width:40%)
+  - Simplified bbox: no roll & pitch
+  - 可以看到比 2D 难得多
+- The first attempt: classify sliding windows
+  - 2D 的 sliding windows 方法直接迁移到 3D
+  - 缺点：3D CNNs are very costly in both memory and time（候选框太多了）
+- PointRCNN: RCNN for point cloud
+  - 但是 3D 目标检测比 2D 好的一个点在于，它几乎不会重叠（可能会挨着，但是分离的）
+  - 基本思想是，把前景和背景分开，前景的 points 用聚类的方式生成好多 proposal，然后再用 PointNet++ 之类做细粒度的预测
+  #fig("/public/assets/courses/cv/2024-11-28-12-00-30.png",width:80%)
+- Frustum PointNets: Using 2D detectors to generate 3D proposals
+  - 很多时候数据不止点云，还连带着 2D 图像（比如无人驾驶，除了重建出的点云之外，相机拍摄的原始 RGB 图像就可以拿来利用）
+  - 然后利用 2D 的 proposal 生成方式，在 3D 里就对应一个视锥，这样也生成了一种 proposal 来减少候选框
+  #fig("/public/assets/courses/cv/2024-11-28-12-00-00.png",width:50%)
+
+=== 3D Instance Segmentation
+- Input: 3D point cloud
+- Output: instance labels of 3D points
+- Top-down approach
+  + Run 3D Object detection
+  + Run segmentation in each 3D bbox
+- Bottom-up approach: 应用聚类方法
+  - Group (cluster) points into different objects
+
+=== Datasets
+- Datasets for 3D Objects
+  - 计算机辅助设计(CAD)按理来说应该提供大量 3D 数据，但高质量的往往不会公开
+  - Large-scale Synthetic Objects: ShapeNet
+    - 想要对标 2D 的 ImageNet，但是
+      + 首先质量很低，物体也比较简单
+      + 其次缺少 texture，没有 BRDF 的描述
+  - Fine-grained Part: PartNet (ShapeNetPart2019)
+- Datasets for Indoor 3D Scenes
+  - 家装公司应该会有很多，但也不怎么公开
+  - Large-scale Synthetic Scenes: SceneNet
+    - 3D meshes 5M Photorealistic Images
+- Datasets for Outdoor 3D Scenes
+  - KITTI: LiDAR data, labeled by 3D bboxes
+  - Semantic KITTI: LiDAR data, labeled per point
+  - Waymo Open Dataset: LiDAR data, labeled by 3D b.boxes
 
 

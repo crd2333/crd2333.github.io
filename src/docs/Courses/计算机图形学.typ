@@ -268,6 +268,8 @@
   + 着色频率、图形管线、纹理映射
   + 插值、高级纹理映射
 ]
+
+== 光照和基本着色模型
 - 什么是 *color*？brains's reaction to a specific visual stimulus. 是观察者体验到的主观感觉。没有观察者，就没有所谓的颜色
   - Depend on
     + Physics of light
@@ -284,18 +286,23 @@
     + 颜色取决于波长，亮度取决于光子数量
     + 光的波谱
 - Lambertian(Diffuse) Term 漫反射
-  - 在某一 shading point，有 $L_d = k_d I_d \/ r^2 max(0, n dot l)$
+  - 在某一 shading point，有 #h(1fr)
+    $ L_d = k_d (I_d \/ r^2) max(0, n dot l) $
   - $k_d$ 是漫反射系数，$I_d$ 是光源强度，$n$ 是法向量，$l$ 是光线方向，$r$ 是光源到点的距离
   - 也可以用半球积分来推导
 - Specular Term 高光
-  - 亮度也取决于观察角度，用一个 trick 转化计算：半程向量(half vector) $h = (v + l) \/ ||v + l||$
-  - $L_s = k_s I_s \/ r^2 max(0, n dot h)^p$
+  $ L_s = k_s (I_s \/ r^2) max(0, n dot h)^p $
+  - 亮度也取决于观察角度，用一个 trick 转化计算：半程向量(half vector) #h(1fr)
+    $ h = (v + l) / norm(v + l) $
   - 注意简化掉了光通量项，以及 $p$ 是高光系数，$v$ 是观察方向
 - Ambient Term 环境
   - 过于复杂，一般用一个常数来代替
-  - $L_a = k_a I_a$
+  $ L_a = k_a I_a $
 - 综合得到 Blinn-Phong 模型
   #fig("/public/assets/Courses/CG/img-2024-07-26-23-37-29.png",width: 70%)
+- 我们将在 @lighting 处更详细讨论
+
+== 着色频率、图形管线
 - 着色频率
   - Flat Shading, Gouraud Shading, Phong Shading，平面、顶点、像素，依次增加计算量
   - 平面着色的法向量很好理解，但顶点和像素就绕一些，需要插值方法得到平滑效果
@@ -318,6 +325,8 @@
   - 每个顶点执行一次 $->$ 顶点着色器 vertex shader
   - 每个像素执行一次 $->$ 片元着色器 fragment shader，或者像素着色器 pixel shader
   - Geometry shader 一般是不怎么改的
+
+== 纹理
 - 纹理映射
   - 3D 世界的物体的表面是 2D 的，将其展开就是一张图，纹理映射就是将这张图映射到物体上
   - 如何知道 2D 的纹理在3D的物体上的位置？通过纹理坐标。有手动（美工）和自动（参数化）的方法，这里我们就认为已经知道 3D 物体的每一个三角形顶点对应的纹理 $u v(in [0,1])$ 坐标
@@ -358,11 +367,12 @@
 - （讲完 Geometry 后回来），阴影映射(Shadow Mapping)
   - 图像空间中计算，生成阴影时不需要场景的几何信息；但会产生走样现象
   - Key idea：不在阴影里则能被光源和摄像机同时看道；在阴影里则能被相机看到，但不能被光源看到
-  - Step1：在光源处做光栅化，得到深度图（shadow map，二维数组，每个像素存放深度）；Step2：从摄像机做光栅化，得到光栅图像；Step3：把摄像机得到图像中的每个像素所对应的世界空间中物体的点投影回光源处，得到该点的深度值，将此数值跟该 点到光源的距离做比较（注意用的是世界空间中的坐标，即透视投影之前的）
+  - 步骤
+    + Step1：在光源处做光栅化，得到深度图（shadow map，二维数组，每个像素存放深度）；
+    + Step2：从摄像机做光栅化，得到光栅图像；
+    + Step3：把摄像机得到图像中的每个像素所对应的世界空间中物体的点投影回光源处，得到该点的深度值，将此数值跟该点到光源的距离做比较（注意用的是世界空间中的坐标，即透视投影之前的）
   - 浮点数精度问题，shadow map 和光栅化的分辨率问题（采样频率）
   - 硬阴影、软阴影（后者的必要条件是光源有一定大小）
-
-
 
 = Geometry 几何
 #info()[
@@ -379,9 +389,10 @@
   - Signed Distance Function(SDF)：符号距离函数：描述一个点到物体表面的最短距离，外表面为正，内表面为负，SDF 为 $0$ 的点组成物体的表面
     - 对两个“规则”形状物体的 SDF 进行线性函数混合(blend)，可以得到一个新的 SDF，令其为 $0$ 反解出的物体形状将变得很“新奇”
   - 水平集(Level Set)：与 SDF 很像，也是找出函数值为 $0$ 的地方作为曲线，但不像 SDF 会空间中的每一个点有一种严格的数学定义，而是对空间用一个个格子去近似一个函数。通过 Level Set 可以反解 SDF 为 $0$ 的点，从而确定物体表面
-  - L-system: 用 CFG 的方法去做分形几何，很适合类似植物这种的建模
+  - L-system: 用 CFG 的方法去做分形几何
+    - 然后可以把它转成别的表达，从而生成复杂图形比如说树
     - 但是从一个 target shape 推导出目标 L-system 很困难，有一个叫 Metropolis Procedural Modeling 的论文去做这件事
-    - 另外，也可以直接从 shape 的层面得到 shape grammar
+    - 进一步，也可以直接从 shape 的层面得到 shape grammar
   - Subdivision Curves / Surfaces
   - Sweeping
 
@@ -443,20 +454,25 @@
 - 贝塞尔曲面：将贝塞尔曲线扩展到曲面
   - 用 $4 times 4$ 个控制点得到三次贝塞尔曲面。每四个控制点绘制出一条贝塞尔曲线，这 $4$ 条曲线上每一时刻的点又绘制出一条贝塞尔曲线，得到一个贝塞尔曲面
   #fig("/public/assets/Courses/CG/2024-11-20-08-12-39.png",width:60%)
-- 也可以推广到 B-spline Surface 和 NURBS Surface
+  - 怎么求曲面上的法向量？用曲面的参数方程求出 $u,v$ 方向的切线，然后叉乘得到法向量
+- 跟曲线一样，可以自然推广到 B-spline Surface 和 NURBS Surface
 
 == 显式几何
 - 显式几何：所有曲面的点被直接给出，或者可以通过参数映射关系直接得到
   - 好处：容易直接看出表示是什么；坏处：很难判断内/外
   - 点云、多边形模型等
 - 点云，很基础，不多说，但其实不那么常见（除了扫描出来的那种）
-- 多边形模型
-  - 用得最广泛的方法，一般用三角形或者四边形来建模
-  - 如何表示？
-    + Vertex-Vertex list
-    + Face-Vertex list
-  - 在代码中怎么存储一个三角形组成的模型？用 wavefront object file(.obj)：v 顶点；vt 纹理坐标；vn 法向量；f 顶点索引（哪三个顶点、纹理坐标、法线）
-  - 如何计算表面法向量？如何计算顶点法向量？
+
+=== 多边形模型
+- 用得最广泛的方法，一般用三角形或者四边形来建模
+- 如何表示？
+  + Vertex-Vertex list
+  + Face-Vertex list
+- Normal on a mesh
+  - 怎么求 face 上的法向量？用三角形的两个边向量叉乘
+  - 怎么求 vertex 上的法向量？用相邻三角形的法向量的平均
+- 在代码中怎么存储一个三角形组成的模型？用 wavefront object file(.obj)
+  - v 顶点；vt 纹理坐标；vn 法向量；f 顶点索引（哪三个顶点、纹理坐标、法线）
 
 == 几何操作
 几何操作：Mesh operations(mesh subdivision, mesh simplification, mesh regularization)，下面依次展开
@@ -482,10 +498,13 @@
 ]
 
 == 光线追踪原理
-- 光栅化：已知三角形在屏幕上的二维坐标，找出哪些像素被三角形覆盖（物体找像素点）；光线追踪：从相机出发，对每个像素发射射线去探测物体，判断这个像素被谁覆盖。（像素点找物体）
+- 光栅化 v.s. 光线追踪
+  - 光栅化：已知三角形在屏幕上的二维坐标，找出哪些像素被三角形覆盖（物体找像素点）；
+  - 光线追踪：从相机出发，对每个像素发射射线去探测物体，判断这个像素被谁覆盖（像素点找物体）
 - 为什么要有光线追踪，光栅化不能很好的模拟全局光照效果：难以考虑 glossy reflection（反射性较强的物体）, indirect illuminaiton（间接光照）；不好支持 soft shadow；是一种近似的效果，不准确、不真实
 - 首先定义图形学中的光线：光沿直线传播；光线之间不会相互影响、碰撞；光路可逆(reciprocity)，从光源照射到物体反射进入人眼，反着来变成眼睛发射光线照射物体
 - Recursive (Whitted-Style) Ray Tracing
+  #fig("/public/assets/courses/cg/2024-11-28-22-28-10.png",width:60%)
   - 两个假设前提：人眼是一个点；场景中的物体，光线打到后都会进行完美的反射/折射；
   - 每发生一次折射或者反射（弹射点）都计算一次着色，前提是该点不在阴影内，如此递归计算
     + 从视点从成像平面发出光线，检测是否与物体碰撞
@@ -494,71 +513,133 @@
     + 所有弹射点都与光源计算一次着色，前提是该弹射点能被光源看见
     + 将所有着色通过某种加权叠加起来，得到最终成像平面上的像素的颜色
   - 为了后续说明方便，课程定义了一些概念：
-    + primary ray：从视角出发第一次打到物体的光线
-    + secondary rays：弹射之后的光线
-    + shadow rays：判断可见性的光线
+    + *primary ray*：从视角出发第一次打到物体的光线
+    + *secondary rays*：弹射之后的光线
+    + *shadow rays*：判断可见性的光线
   - 那么问题的重点就成了求交点。接下来对其中的技术细节进行讲解
-- Ray Equation：$r(t)=o+t d ~~~ 0 =< t < infty$，光线由点光源和方向定义
-- Ray Intersection With Implicit Surface 光线与隐式表面求交
+
+== Ray-Surface Intersection
+- Ray Equation
+  $ r(t)=o+t d ~~~ 0 =< t < infty $
+  - 光线由点光源和方向定义
+- Ray Intersection With Implicit Surface 光线*与隐式表面求交*
   - General implicit surface: $p: f(p)=0$
-  - Substitute ray equation: $f(o+t d)=0$
-  - Solve for real,positive roots
-- Ray Intersection With Explicit Triangle 光线与显式表面(三角形)求交
-  - 通过光线和三角形求交可以实现：渲染（判断可见性，计算阴影、光照）；几何（判断点是否在物体内，通过光源到点的线段与物体交点数量的奇偶性）
+  - 直接把光线方程带入: $f(o+t d)=0$
+  - 求解 real, positive roots 即可
+- Ray Intersection With Explicit Triangle 光线*与显式表面（三角形）求交*
+  - 通过光线和三角形求交可以实现
+    + 渲染（判断可见性，计算阴影、光照）；
+    + 几何（判断点是否在物体内，通过光源到点的线段与物体交点数量的奇偶性）
   - 求交方法一：遍历物体每个三角形，判断与光线是否相交
     + 光线-平面求交
     + 计算交点是否在三角形内
-  - 求交方法二：Möller-Trumbore射线-三角形求交算法
-    - 直接结合重心坐标计算
-    #fig("/public/assets/Courses/CG/img-2024-07-30-14-36-34.png", width: 50%)
+    #fig("/public/assets/courses/cg/2024-11-28-22-33-57.png",width: 40%)
+  - 求交方法二：Möller-Trumbore 射线-三角形求交算法（MT 算法）
+    - 计算光线是否在三角形内以及与平面交点
+    - 核心出发点是用重心坐标表示平面 #h(1fr)
+    #fig("/public/assets/Courses/CG/img-2024-07-30-14-36-34.png",width: 40%)
+    - 具体步骤
+      + 求解 $t，b1，b2$（三个式子三个未知数，求解方法为克莱姆法则）
+      + 解出来之后，看是否合理：#cnum(1) 沿着这个方向（$t$ 非负）；#cnum(2) 在三角形内（$b1，b2$ 非负）
 
 == Accelerating Ray-Surface Intersection
 - 空间划分与包围盒 Bounding Volumes
-  - 常用 Axis-Aligned-Bounding-Box(AABB) 轴对齐包围盒
-  - 算 $t_"enter"$ 和 $t_"exit"$，光线与 box 有交点的判定条件：$t_"enter" < t_"exit" && t_"exit" >= 0$
-  - AABB 盒的好处就在于光线与盒子的交点很容易计算，于是我们将复杂的三角形与光线求交问题部分转化为了简单的盒子与光线求交问题：首先做预处理对空间做划分（均匀或非均匀），然后剔除不包含任何三角形的盒子，计算一条光线与哪些盒子有交点，在这些盒子中再计算光线与三角形的交点
-  - 非均匀空间划分
-    + Oct-Tree：类似八叉树结构，注意下面省略了一些格子的后续划分，格子内没有物体或物体足够少时，停止继续划分
-    + BSP-Tree：空间二分的方法，每次选一个方向砍一刀，不是横平竖直（并非 AABB），所以不好求交，维度越高越难算
-    + *KD-Tree*：每次划分只沿着某个轴砍一刀，XYZ 交替砍，不一定砍正中间，每次分出两块，类似二叉树结构
+- 常用 Axis-Aligned-Bounding-Box(AABB) 轴对齐包围盒
+  - 加速原理：AABB 盒的好处就在于光线与盒子的交点很容易计算
+    - 复杂的三角形与光线求交问题 $-->$ 先是简单的盒子与光线求交问题，再是盒子内的三角形与光线求交（更精细的相交判断）
+    + 首先做预处理对空间做划分（均匀或非均匀）
+    + 剔除不包含任何三角形的盒子
+    + 计算一条光线与哪些盒子有交点
+    + 在这些盒子中再计算光线与三角形的交点
+- 以 2D 为例，在 x-plane 和 y-plane 上分别求出 $t_min$ 和 $t_max$，然后
+  $ t_"enter"=max{t_min}, t_"exit"=min{t_max} $
+  - 算 $t_"enter"$ 和 $t_"exit"$，光线与 box 有交点的判定条件当且仅当 #h(1fr)
+    $ t_"enter" < t_"exit" "&&" t_"exit" >= 0 $
+  #fig("/public/assets/courses/cg/2024-11-28-22-45-08.png",width: 60%)
+- 包围盒的划分，一般有 Uniform grids，Spatial Partitions 和 Object Partitions 三种
+
+=== Uniform Grid
+- 将场景划分成一个个规整的格子，步骤如下
+  + 找到包围盒
+  + 创建格子
+  + 存储每个对象至格子中
+- 问题
+  - 分辨率太小则失去划分的意义，太大则要做很多次和格子求交的计算
+  - 通常只适用于规整的场景
+=== Spatial Partitions
+- 特指非均匀空间划分
+  + Oct-Tree：类似八叉树结构，注意下面省略了一些格子的后续划分，格子内没有物体或物体足够少时，停止继续划分
+  + BSP-Tree：空间二分的方法，每次选一个方向砍一刀，不是横平竖直（并非 AABB），所以不好求交，维度越高越难算
+  + *KD-Tree*：每次划分只沿着某个轴砍一刀，XYZ 交替砍，不一定砍正中间，每次分出两块，类似二叉树结构
     - KD-tree 的缺陷：不好计算三角形与包围盒的相交性（不好初始化）；一个三角形可能属于多个包围盒导致冗余计算
+  #fig("/public/assets/courses/cg/2024-11-28-22-51-25.png",width:50%)
+
+=== Object Partitions
 - 对象划分 Bounding Volume Hierarchy(BVH)
-  - 逐步对物体进行分区：所有物体分成两组，对两组物体再求一个包围盒（xyz 的最值作为边界）。这样每个包围盒可能有相交（无伤大雅）但三角形不会有重复，并且求包围盒的办法省去了三角形与包围盒求交的麻烦
-  - 分组方法：启发式——总是选择最长的轴，或选择处在中间（中位数意义上）的三角形
+  #fig("/public/assets/courses/cg/2024-11-28-22-52-20.png",width:50%)
+  - 将一个场景用一个包围盒包住，按照一定划分方案递归地将盒子划分成两组，对两组物体再求一个包围盒（$x y z$ 的最值作为边界），最终划分到叶子节点时每个都只包含少量三角形
+  - 这样每个包围盒可能有相交（无伤大雅）但三角形不会有重复（不会出现在多个包围盒中），并且求包围盒的办法省去了三角形与包围盒求交的麻烦
+  - 分组方法一般采用启发式
+    + 按轴的次序进行划分
+    + 按最长轴进行划分
+    + 选择处在中间（中位数意义上，划分后两边数量相同）的三角形
   - 课上讲的 BVH 是宏观上的概念，没有细讲其实现，可以看 #link("https://www.cnblogs.com/lookof/p/3546320.html")[这篇博客]
 
-== 辐射度量学(Basic radiometry)、渲染方程与全局光照
-- Motivation：Whitted styled 光线追踪、Blinn-phong 着色计算不够真实
+== 辐射度量学(Basic radiometry)、渲染方程与全局光照 <lighting>
+- Motivation：Blinn-phong 着色计算、Whitted styled 光线追踪都不够真实
 - 辐射度量学：在物理上准确定义光照的方法，但依然在几何光学中的描述，不涉及光的波动性、互相干扰等
-- 几个概念：Radiant Energy 辐射能 $Q$, Radiant Flux(Power) 辐射通量$Phi$, Radiant Intensity 辐射强度 $I$, Irradiance 辐照度 $E$, Radiance 辐亮度 $L$
-  + Radiance Energy：$Q[J = "Joule"]$，基本不咋用
-  + Radiant Flux：$Phi = (dif Q)/(dif t) [W = "Watt"][l m="lumen"]$，有时也把这个误称为能量
-  + 后面三个细讲
-- Radiant Intensity: Light Emitted from a Source
-  - $I(omega) = (dif Phi)/(dif omega) [W/(s r)][(l m)/(s r) = c d = "candela"]$
-  - solid angle 立体角
-- Irradiance: Light Incident on a Surface
-  - $E = (dif Phi)/(dif A cos theta) [W/m^2]$，其中 $A$ 是投影后的有效面积
-  - 注意区分 Intensity 和 Irradiance，对一个向外锥形，前者不变而后者随距离减小
-- Radiance: Light Reflected from a Surface
-  - $L = (dif^2 Phi(p, omega))/(dif A cos theta dif omega) [W/(s r ~ m^2)][(c d)/(m^2)=(l m)/(s r ~ m^2)=n i t]$，$theta$ 是入射（或出射）光线与法向量的夹角
-  - Radiance 和 Irradiance, Intensity 的区别在于是否有方向性
-  - 把 Irradiance 和 Intensity 联系起来，Irradiance per solid angle 或 Intensity per projected unit area
-- $E(p)=int_(H^2) L_i(p, omega) cos theta dif omega$
-- 双向反射分布函数(Bidirectional Reflectance Distribution Function, BRDF)：描述了入射($omega_i$)光线经过某个表面反射后在各个可能的出射方向($omega_r$)上能量分布（反射率）——$f_r(omega_i -> omega_r)=(dif L_r (omega_r))/(dif E_i (omega_i)) = (dif L_r (omega_r)) / (L_i (omega_i) cos theta_i dif omega_i) [1/(s r)]$
-- 反射方程：$ L_r(p, omega_r)=int_(H^2) f_r (p, omega_i -> omega_r) L_i (p, omega_i) cos theta_i dif omega_i $
-  - 注意，入射光不止来自光源，也可能是其他物体反射的光。递归思想，反射出去的光 $L_r$ 也可被当做其他物体的入射光 $E_i$
-- 推广为渲染方程（绘制方程）：$ L_o (p, omega_o)=L_e (p, omega_o) + int_(Omega^+) f_r (p, omega_i, omega_o) L_i (p, omega_i) (n dot omega_i) dif omega_i $
-- 把式子通过“算子”概念简写为 $L=E+K L$，然后移项泰勒展开得到 $L=E+K E+K^2 E+...$，如下图，光栅化一般只考虑前两项，这也是为什么我们需要光线追踪
-  #fig("/public/assets/Courses/CG/img-2024-07-31-23-36-46.png", width: 70%)
-  - 全局光照 = 直接光照(Direct Light) + 间接光照(Indirect Light)
+- 几个概念：
+  + *Radiance Energy 辐射能 $Q$* #h(1fr)
+    $ Q ~~~ [J = "Joule"] $
+    - 基本不咋用
+  + *Radiant Flux(Power) 辐射通量 $Phi$*
+    $ Phi = (dif Q)/(dif t) ~~~ [W = "Watt"][l m="lumen"] $
+    - 有时也把这个误称为能量
+  + *Radiant Intensity 辐射强度 $I$*
+    - Light Emitted from a Source
+    $ I(omega) = (dif Phi)/(dif omega) ~~~ [W/(s r)][(l m)/(s r) = c d = "candela"] $
+    - solid angle 立体角
+  + *Irradiance 辐照度 $E$*
+    - Light Incident on a Surface
+    - *Irradiance* 是指单位照射面积所接收到的 power
+    $ E = (dif Phi)/(dif A cos theta) ~~~ [W/m^2] $
+    - 其中 $A$ 是投影后的有效面积
+    - 注意区分 Intensity 和 Irradiance，对一个向外锥形，前者不变而后者随距离减小
+  + *Radiance 辐亮度 $L$*
+    - Light Reflected from a Surface
+    - *Radiance* 是指每单位立体角，每单位垂直面积的功率。同时指定了光的方向与照射表面所受到的亮度
+    $ L = (dif^2 Phi(p, omega))/(dif A cos theta dif omega) ~~~ [W/(s r ~ m^2)][(c d)/(m^2)=(l m)/(s r ~ m^2)=n i t] $
+    - $theta$ 是入射（或出射）光线与法向量的夹角
+    - Radiance 和 Irradiance, Intensity 的区别在于是否有方向性
+    - 把 Irradiance 和 Intensity 联系起来，Irradiance per solid angle 或 Intensity per projected unit area
+    - *Irradiance* 与 *Radiance* 之间的关系 #h(1fr)
+      $ E(p)=int_(H^2) L_i (p, omega) cos theta dif omega $
+- 双向反射分布函数(Bidirectional Reflectance Distribution Function, BRDF)
+  - 是一个 4D function $f(i,o)$（3D 的方向由于用单位向量表示所以少一个自由度，例如球面的 $th, phi$ 表示）
+  - 如果固定 $i$，就是描述了入射($omega_i$)光线经过某个表面反射后在各个可能的出射方向($omega_r$)上能量分布（反射率）
+  $ f_r (omega_i -> omega_r)=(dif L_r (omega_r))/(dif E_i (omega_i)) = (dif L_r (omega_r)) / (L_i (omega_i) cos theta_i dif omega_i) ~~~ [1/(s r)] $
+- 用 BRDF 描述的反射方程
+  $ L_r (p, omega_r)=int_(H^2) f_r (p, omega_i -> omega_r) L_i (p, omega_i) cos theta_i dif omega_i $
+  - 注意，入射光不止来自光源，也可能是其他物体反射的光（递归思想，反射出去的光 $L_r$ 也可被当做其他物体的入射光 $E_i$）
+- 推广为渲染方程（绘制方程）
+  - 物体自发光 + 反射方程，式中 $Om^+$ 表示上半球面，$p$ 是着色点
+  $ L_o (p, omega_o)=L_e (p, omega_o) + int_(Omega^+) f_r (p, omega_i, omega_o) L_i (p, omega_i) (n dot omega_i) dif omega_i $
+  - 换一个角度看，把式子通过“算子”概念简写为 $L=E+K L$ #h(1fr)
+    - 然后移项泰勒展开得到 $L=E+K E+K^2 E+...$，如下图
+    - 光栅化实质上是只考虑了前两项（直接光照），这也是为什么我们需要光线追踪
+    - 全局光照 = 直接光照(Direct Light) + 间接光照(Indirect Light)
+    #fig("/public/assets/Courses/CG/img-2024-07-31-23-36-46.png", width: 60%)
 
 == 蒙特卡洛路径追踪(Path Tracing)
 - 概率论基础
-- 回忆 Whitted-styled 光线追踪：摄像机发射光线，打到不透明物体，则认为是漫反射，直接连到光源做阴影判断、着色计算；打到透明物体，发生折射、反射。总之光线只有三种行为——镜面反射、折射、漫反射
-  + 难以处理毛面光滑材质？
-  + 忽略了漫反射物体之间的反射影响
-- 采样蒙特卡洛方法解渲染方程：直接光照；全局光照，采用递归
+- 回忆 Whitted-styled 光线追踪
+  - 摄像机发射光线，打到不透明物体，则认为是漫反射，直接连到光源做阴影判断、着色计算；
+  - 打到透明物体，发生折射、反射
+  - 总之光线只有三种行为——镜面反射、折射、漫反射
+  - 缺陷：
+    + 难以处理毛面光滑材质
+    + 忽略了漫反射物体之间的反射影响
+- 采用蒙特卡洛方法解渲染方程：直接光照；全局光照，采用递归
   #fig("/public/assets/Courses/CG/img-2024-08-01-22-25-38.png", width: 70%)
   - 问题一：$"rays"=N^"bounces"$，指数级增长。当 $N=1$ 时，就称为 *path tracing* 算法
     - $N=1$ 时 noise 的问题：在每个像素内使用 $N$ 条 path，将 path 结果做平均（同时也解决了采样频率，解决锯齿问题）
@@ -571,27 +652,27 @@
     - 蒙特卡洛在（单个像素内）立体角 $omega$ 上采样，在 $omega$ 上积分；现在对光源面采样，就需要把公式写成对光源面的积分 $ L_(o) (x, omega_(o)) & = integral_(Omega^(+)) L_(i) (x, omega_(i)) f_(r) (x, omega_(i), omega_(o)) cos theta dif omega_(i) \ & = integral_(A) L_(i) (x, omega_(i)) f_(r) (x, omega_(i), omega_(o)) (cos theta cos theta') /  norm(x^(prime) - x)^2) dif A $
     - 这样又只考虑了直接光照，对间接光照依旧按原本方式处理
   - 最终着色计算伪代码为：
-  ```
-  // 如果 depth 为 0，wo 为从像素打出的光线的出射方向，与物体的第一个交点为 p
-  // 如果 depth 不为 0，从之前的交点投出反射光线或光源光线作为 wo，p 为新的交点
-  Shade(p, wo) {
-    // 1、来自光源的贡献
-    对光源均匀采样，即随机选择光源表面一个点x';  // pdf_light = 1 / A
-    shoot a ray form p to x';
-    L_dir = 0.0;
-    if (the ray is not blocked in the middle)	// 判断是否被遮挡
-    L_dir = L_i * f_r * cosθ * cosθ' / |x' - p|^2 / pdf_light;
+    ```
+    // 如果 depth 为 0，wo 为从像素打出的光线的出射方向，与物体的第一个交点为 p
+    // 如果 depth 不为 0，从之前的交点投出反射光线或光源光线作为 wo，p 为新的交点
+    Shade(p, wo) {
+      // 1、来自光源的贡献
+      对光源均匀采样，即随机选择光源表面一个点x';  // pdf_light = 1 / A
+      shoot a ray form p to x';
+      L_dir = 0.0;
+      if (the ray is not blocked in the middle)	// 判断是否被遮挡
+      L_dir = L_i * f_r * cosθ * cosθ' / |x' - p|^2 / pdf_light;
 
-    // 2、来自其他物体的反射光
-    L_indir = 0.0;
-    Test Russian Roulette with probability P_RR;
-    Uniformly sample the hemisphere toward wi;  //pdf_hemi = 1 / 2π
-    Trace a ray r(p,wi);
-    if (ray r hit a non-emitting object at q)
-        L_indir = shade(q, -wi) * f_r * cosθ / pdf_hemi / P_RR;
-    return L_dir + L_indir;
-  }
-  ```
+      // 2、来自其他物体的反射光
+      L_indir = 0.0;
+      Test Russian Roulette with probability P_RR;
+      Uniformly sample the hemisphere toward wi;  //pdf_hemi = 1 / 2π
+      Trace a ray r(p,wi);
+      if (ray r hit a non-emitting object at q)
+          L_indir = shade(q, -wi) * f_r * cosθ / pdf_hemi / P_RR;
+      return L_dir + L_indir;
+    }
+    ```
 - 最后的结语与拓展
   - Ray tracing: Previous vs. Modern Concepts
     - 过去：Ray tracing == Whitted-style ray tracing
@@ -603,61 +684,114 @@
   - 算出来的 radiance 还不是最终的颜色（而且并非线性对应），还需要 gamma correction，curves, color space 等
 
 = Materials and Appearances 材质与外观
-- 自然界中的材质
+- 自然界中的材质，实际上并不要求完全一致，我们追求的是计算机模拟真实感
+
 == 计算机图形学中的材质
-- 材质 == BRDF（Bidirectional Reflectance Distribution Function，双向反射分布函数）
-- 漫反射材质(Diffuse)的 BRDF
+- 这一节，我们将细化之前提到的 BRDF 概念
+  - 在图形学中，材质 == BRDF(Bidirectional Reflectance Distribution Function)
+- *漫反射材质(Diffuse)的 BRDF*
   - Light is equally reflected in each output direction
-  - 如果再假设入射光也是均匀的，并且有能量守恒定律 $L_o = L_i$，那么：
-    #fig("/public/assets/Courses/CG/img-2024-08-04-11-39-26.png")
+    $ f(i,o) = "constant" $
+  - 如果再假设入射光也是均匀的，并且有能量守恒定律 $L_o = L_i$，那么： #h(1fr)
+    #fig("/public/assets/Courses/CG/img-2024-08-04-11-39-26.png",width:80%)
     - 定义反射率 $rho$ 来表征一定的能量损失，还可以对 RGB 分别定义 $rho$
-- 抛光/毛面金属(Glossy)材质的 BRDF
+- *抛光/毛面金属(Glossy)材质的 BRDF*
   - 这种材质散射规律是在镜面反射方向附近，一小块区域进行均匀的散射
   - 代码实现上，算出*镜面*反射方向$(x,y,z)$，就以$(x,y,z)$为球心（或圆心），内部随机生成点，以反射点到这个点作为真的光线反射方向。在较高 SPP(samples per pixel)下，就能均匀的覆盖镜面反射方向附近的一块小区域
-- 完全镜面反射+折射材质(ideal reflective/refractive)的 BRDF
-  - （完全）镜面反射(reflect)
-    - 方向描述
-      + 直接计算：$omega_o = - omega_i + 2 (omega_i dot n) n$
-      + 用天顶角 $phi$ 和方位角 $theta$ 描述：$phi_o = (phi_i+pi) mod 2 pi, ~~ theta_o = theta_i$
-      + 还有之前讲过的半程向量描述（简化计算）
-    - 镜面反射的 BRDF 不太好写，因为它是一个 delta 函数，只有在某个方向上有值，其它方向上都是 $0$(?)
-  - 折射(refract)
-    - Snell's Law（斯涅耳定律，折射定律）：$n_1 sin theta_1 = n_2 sin theta_2$
-    - $cos theta_t = sqrt(1 - (n_1/n_2)^2 (1 - (cos theta_i)^2))$，有全反射现象（光密介质$->$光疏介质）
-    - 折射无法用严格意义上的 BRDF 描述，而应该用 BTDF(T: transmission)，可以把二者统一看作 BSDF(S: scattering) = BRDF + BTDF。不过，通常情况下，当我们说 BRDF 时，其实就指的是 BSDF
-    - 反射与折射能量的分配与入射角度物体属性有关，用 Fresnel Equation 描述
-- 菲涅尔项(Fresnel Term)
-  - 精确计算菲涅尔项（复杂，没有必要），只要知道这玩意儿跟 出/入射角度、介质反射率 $eta$ 有关j就行
-  - 近似计算：Schlick’s approximation（性价比更高）：$R(th)=R_0+(1-R_0)(1-cos th)^5$，其中 $R_0=((n_1-n_2)/(n_1+n_2))^2$
+- *（完全）镜面反射(reflect)的 BRDF *
+  - 方向描述
+    + 直接计算：$omega_o = - omega_i + 2 (omega_i dot n) n$
+    + 用天顶角 $phi$ 和方位角 $theta$ 描述：$phi_o = (phi_i+pi) mod 2 pi, ~~ theta_o = theta_i$
+    + 还有之前讲过的半程向量描述（简化计算）$h = frac(i+o,norm(i+o))$
+  - 镜面反射的 BRDF 不太好写，因为它是一个 delta 函数，只有在某个方向上有值，其它方向上都是 $0$
+- *折射材质(ideal reflective/refractive)的 BRDF*
+  - Snell's Law（斯涅耳定律，折射定律）：$n_1 sin theta_1 = n_2 sin theta_2$
+  - $cos theta_t = sqrt(1 - (n_1/n_2)^2 (1 - (cos theta_i)^2))$，有全反射现象（光密介质$->$光疏介质）
+  - 折射无法用严格意义上的 BRDF 描述，而应该用 BTDF(T: transmission)
+    - 可以把二者统一看作 BSDF(S: scattering) = BRDF + BTDF
+    - 不过，通常情况下，当我们说 BRDF 时，其实就指的是 BSDF
+  - 反射与折射能量的分配与入射角度物体属性有关，用 Fresnel Equation 描述
+- *菲涅尔项(Fresnel Term)*
+  - 菲涅尔效应指：视线垂直于表面时，反射较弱；而当视线非垂直表面时，夹角越小，反射越明显。譬如看脚底游泳池的水是透明的，但是远处的水面反射强烈
+  - 定性分析：绝缘体和导体的菲涅尔项不同
+  - 定量分析：精确计算菲涅尔项。但很复杂，没有必要，只要知道这玩意儿跟 出/入射角度、介质反射率 $eta$ 有关就行
+  - 近似计算：Schlick’s approximation（性价比更高） #h(1fr)
+    $ R(th)=R_0+(1-R_0)(1-cos th)^5 $
+    - 其中 $R_0=((n_1-n_2)/(n_1+n_2))^2$
 
 == 微表面材质(Microfacet Material)
-- 微表面模型：微观上——凹凸不平且每个微元都认为只发生镜面反射(bumpy & specular)；宏观上——平坦且略有粗糙(flat & rough)。总之，从近处看能看到不同的几何细节，拉远后细节消失
+- 微表面模型
+  - 微观上 —— 凹凸不平且每个微元都认为只发生镜面反射(bumpy & specular)；
+  - 宏观上 —— 平坦且略有粗糙(flat & rough)。总之，从近处看能看到不同的几何细节，拉远后细节消失
+  - 微表面 BRDF 的核心是认为每个微表面都有自己的法向量，它们的分布对整体的法向量有贡献
 - 用法线分布描述表面粗糙程度
   #fig("/public/assets/Courses/CG/img-2024-08-04-12-48-55.png",width: 30%)
-- 微表面的 BRDF
+- 微表面的 BRDF (Microfacet Material's BRDF)
+  - 可以看到，微表面材质模型对前面说的几种模型做了整合
   #fig("/public/assets/Courses/CG/img-2024-08-04-12-52-57.png",width: 50%)
-  - 其中 $G$ 项比较难理解。当入射光以非常平(Grazing Angle 掠射角度)的射向表面时，有些凸起的微表面就会遮挡住后面的微表面。$G$项 其实对这种情况做了修正
-- 微表面模型效果特别好，是 sota，现在特别火的 PBR(physically Based Rendering)一定会使用微表面模型
+  - $F$ 函数是菲涅尔项
+    - 它解释了菲涅耳效应，该效应使得与表面成较高的入射角的光线会以更高的镜面反射率进行反射
+  - $G$ 是几何衰减项
+    - 当入射光以非常平(Grazing Angle 掠射角度)的射向表面时，有些凸起的微表面就会遮挡住后面的微表面，也就是 *shadowing*
+    - 当出射光以非常平的角度离开表面时，有些凸起的微表面就会遮挡住前面的微表面，也就是 *masking*
+    - $G$项 其实对这些情况做了修正
+  - $D$ 是法向分布项
+    - 它解释了在观看者角度反射光的微平面的比例，描述了在这个表面周围的法线分布情况
+    - 例如，当输入向量 $h$ 时，如果微平面中有 $35%$ 与向量 $h$ 取向一致，则法线分布函数就会返回 $0.35$
+  - 不同的 microfacet BRDFs 主要在 $D$ 上有所不同，经典模型包括: Blinn, Cook-Torrance, Ashikmin, GGX, Oren-Nayar
+  - 以 Cook-Torrance Model 为例
+    $
+    D = frac(e^(frac(-tan^2 (al),m^2)), pi m^2 cos^4 (al)), ~~~ al = arccos (n dot h)\
+    G = min(1, frac(2 (h dot n) (o dot n), o dot n), frac(2 (h dot n) (i dot n), o dot n))
+    $
+    - D is the Beckmann distribution
+    - Parameter m controls the shape of highlight
+    - Highly compact representation
+- 可以根据物体微表面是否具有方向性将物体分类 —— 各向同性(Isotropic)和各向异性(Anisotropic)材质
+  - *各向同性* —— 各个方向法线分布相似；
+  - *各向异性* —— 各个方向法线分布不同，如沿着某个方向刷过的金属
+  - 后者会造成一个现象，高光方向会跟物体的方向不一致 #h(1fr)
+    #fig("/public/assets/Courses/CG/2024-11-27-18-53-25.png",width: 40%)
+  - 用 BRDF 定义，各向同性材质满足 BRDF 与方位角 $phi$ 无关
+    $ f_r (th_i,phi_i; th_r, phi_r) = f_r (th_i, th_r, |phi_r - phi_i|) $
+    - $phi_i,phi_r$ 各自的描述变为它们的差值，BRDF 从 4D 降低到 3D
+- 微表面模型效果特别好，是 SOTA，现在特别火的 PBR(physically Based Rendering)一定会使用微表面模型
 
-== 各向同性(Isotropic)和各向异性(Anisotropic)材质
-- 各向同性 —— 各个方向法线分布相似；各项异性 —— 各个方向法线分布不同，如沿着某个方向刷过的金属
-- 用 BRDF 定义，各向同性材质满足 BRDF 与方位角 $phi$ 无关($f_r (th_i,phi_i; th_r, phi_r) = f_r (th_i, th_r, |phi_r - phi_i|)$)
+== BRDF Summary
 - BRDF 的性质总结
-  + 非负性(non-negativity)：$f_r (omega_i -> omega_r) >= 0$
-  + 线性(linearity)：$L_r (p, omega_r) = int^(H^2) f_r (p, omega_i -> omega_r) L_i (p, omega_i) cos theta_i dif omega_i$
-  + 可逆性(reciprocity)：$f_r (omega_i -> omega_r) = f_r (omega_r -> omega_i)$
-  + 能量守恒(energy conservation)：$forall omega_r int^(H^2) f_r (omega_i -> omega_r) cos theta_i dif omega_i =< 1$
+  + 非负性(non-negativity) #h(1fr)
+    $ f_r (omega_i -> omega_r) >= 0 $
+  + 线性(linearity)
+    $ L_r (p, omega_r) = int^(H^2) f_r (p, omega_i -> omega_r) L_i (p, omega_i) cos theta_i dif omega_i $
+  + 可逆性(reciprocity)
+    $ f_r (omega_i -> omega_r) = f_r (omega_r -> omega_i) $
+  + 能量守恒(energy conservation)
+    $ forall omega_r, int^(H^2) f_r (omega_i -> omega_r) cos theta_i dif omega_i =< 1 $
   + 各向同性和各向异性(Isotropic vs. anisotropic)
-- 测量 BRDF
-  - 前面对于 BRDF 的讨论都隐藏了 BRDF 的定义细节，即使我们对微表面模型的 BRDF 给出了一个公式，但其中比如菲涅尔项是近似计算的，不够精确。有时候，我们不需要给出 BRDF 的精确模型（公式），只需要测量后直接用即可
-  - 一般测量方法：遍历入射、出射方向，测量 radiance（入射出射可以互换，因为光路可逆），复杂度为 $O(n^4)$
-  - 一些优化
-    + 各向同性的材质，可以把 4D 降到 3D
-    + 由于光的可逆性，工作量可以减少一半
-    + 不用采样那么密集，就采样若干个点，其中间的点可以插值出来
-    + $dots$
-  - 测量出来 BRDF 的存储，应该挺热门的方向是用神经网络压缩数据
+- *测量 BRDF (Reflectance Capture)*
+  - 前面对于 BRDF 的讨论都隐藏了 BRDF 的定义细节。况且，即使我们对微表面模型的 BRDF 给出了一个公式，但其中比如菲涅尔项本身就是近似计算的，不够精确。有时候，我们不需要给出 BRDF 的精确模型（公式），只需要测量后直接用即可
+  - 我们希望 Reflectance Capture 能够 Accurate modeling of real-world materials
+    + High fidelity
+    + High performance
+    + Fully / semi-automatic
+    - Tuning BRDF parameters is an art!
+  - 一般测量方法
+    - 遍历入射、出射方向，测量 radiance（入射出射可以互换，因为光路可逆），复杂度为 $O(n^4)$
+    - 这是最普遍的方法，质量也最高，但极度 time consuming
+    - 一些优化
+      + 各向同性的材质，可以把 4D 降到 3D
+      + 由于光的可逆性，工作量可以减少一半
+      + 不用采样那么密集，就采样若干个点，其中间的点可以插值出来
+      + ...
+  - Illumination Multiplexing 测量方法
+    - 用 hundreds of 光源同时照射，相机的数量少一些(one or a couple of cameras)
+    - 每个光源在任意时刻的亮度有所不同（基函数），通过光源的不同组合(Project certain patterns)去照射
+    - 然后用计算的方法去反解如果每个灯单独亮时的反射情况(recover the reflectance with a lookup table)
+    - Far more efficient, Widely used in movie production
+  - 测量出来 BRDF 的存储，一个挺热门的方向是用神经网络压缩数据
   - MERL BRDF Database 是一个很好的 BRDF 数据库
+- 可视化 BRDF
+  - 一个有用的工具 #link("https://www.disneyanimation.com/technology/brdf.html")[Disney's BRDF Explorer]
 
 = Advanced Topics in Rendering 渲染前沿技术介绍
 - 偏概述和思想介绍，具体技术细节不展开
@@ -681,7 +815,8 @@
     + Stage 1——photon tracing：光源发射光子，类似光线一样正常传播（反射、折射），打到 Diffuse 表面后停止并记录
     + Stage 2——photon collection(final gathering)：摄像机出发打出子路径，正常传播，打到 Diffuse 表面后停止
     + Calculation——local density estimation：对于每个像素，找到它附近的 $N$ 个光子（怎么找？把光子排成加速结构如 k 近邻），计算它们的密度为 $N/A$
-  - 这种渲染方法，往往是模糊和噪声(bias & variance)之间的平衡：$N$ 取小则噪声大，$N$ 取大则变模糊（BTW，有偏 == 模糊；一致 == 样本接近无穷则能收敛到不模糊的结果）
+  - 这种渲染方法，往往是模糊和噪声(bias & variance)之间的平衡：$N$ 取小则噪声大，$N$ 取大则变模糊
+    - BTW，有偏 == 模糊；一致 == 样本接近无穷则能收敛到不模糊的结果
   - 由于局部密度估计应该估计每个着色点的密度 $(di N) / (di A)$，但是实际计算的是 $(Delta N) / (Delta A)$，只有加大 $N$ 使 $Delta A$ 趋近于 $0$ 才能使估计值趋近于真实值，因此是一个有偏但一致的方法
     - 此时我们也能明白为什么用固定 $N$ 计算 $A$ 的方法而不是固定 $A$，因为后者永远有偏
 - 光子映射 + 双向路径追踪 (Vertex Connection and Merging, VCM)
@@ -697,7 +832,7 @@
 === 参与介质(Participating Media)或散射介质
 - 类似云、雾霾等，显然不是定义在一个表面上的，而是定义在空间中的。当光线穿过，介质会吸收一定的能量，并且朝各个方向散射能量
 - 定义参与介质以何种方式向外散射的函数叫相位函数(Phase Function)，很像 3D 的 BRDF
-  #fig("/public/assets/Courses/CG/img-2024-08-04-20-58-32.png")
+  #fig("/public/assets/Courses/CG/img-2024-08-04-20-58-32.png", width: 80%)
 - 如何渲染：随机选择一个方向反弹（决定散射）；随机选择一个行进距离（决定吸收）；每个点都连到光源（感觉有点像 Whitted-Styled），但不再用渲染方程而是用新的 3D 的方程来算着色
 - 事实上我们之前考虑的很多物体都不算完美的表面，只是光线进入多跟少的问题
 
@@ -711,14 +846,14 @@
     + TRT：穿过第一层表面折射后，在第二层的内壁发生反射，然后再从第一层折射出去，也是一块锥形区域
   - 把人的毛发认为类似于玻璃圆柱体，分为表皮(cuticle)和皮质(cortex)。皮质层对光线有不同程度的吸收，色素含量决定发色，黑发吸收多，金发吸收少
     #grid2(
-      fig("/public/assets/Courses/CG/img-2024-08-04-21-10-19.png", width: 80%),
+      fig("/public/assets/Courses/CG/img-2024-08-04-21-10-19.png", width: 70%),
       fig("/public/assets/Courses/CG/img-2024-08-04-21-13-52.png", width: 80%)
     )
 - 动物皮毛(Animal Fur Appearance)
   - 如果直接把人头发的模型套用到动物身上效果并不好
   - 从生物学的角度发现，皮毛最内层还可以分出*髓质*(medulla)，人头发的髓质比动物皮毛的小得多。而光线进去这种髓质更容易发生散射
   - 双层圆柱模型(Double Cylinder Model)：某些人（闫）在之前的毛发模型基础上多加了两种作用方式 TTs, TRTs，总共五种组成方式
-    #fig("/public/assets/Courses/CG/img-2024-08-04-21-25-48.png", width: 70%)
+    #fig("/public/assets/Courses/CG/img-2024-08-04-21-25-48.png", width: 60%)
 
 === 颗粒状材质(Granular Material)
 - 由许多小颗粒组成的物体，如沙堡等
@@ -729,7 +864,7 @@
 - 实际上不太应该翻译成“半透明”(semi-transparent)，因为它不仅仅是半透明所对应的吸收，还有一定的散射
 - *次表面散射*(Subsurface Scattering)：光线从一个点进入材质，在表面的下方（内部）经过多次散射后，从其他一些点射出
   - 双向次表面散射反射分布函数(BSSRDF)：是对 BRDF 概念的延伸，某个点出射的 Radiance 是其他点的入射 Radiance 贡献的
-    #fig("/public/assets/Courses/CG/img-2024-08-04-21-35-28.png", width: 80%)
+    #fig("/public/assets/Courses/CG/img-2024-08-04-21-35-28.png", width: 70%)
   - 计算比较复杂，因此又有一种近似的方法被提出
 - Dipole Approximation：引入两个点光源来近似达到次表面散射的效果
   #fig("/public/assets/Courses/CG/img-2024-08-04-21-38-45.png", width: 70%)
