@@ -231,3 +231,34 @@
     - 而对于一个单纯的 S-Mode 线程，规定 `sscratch=0`
 
 = Lab5
+== 进程返回逻辑
+=== 父进程
+- 父进程的逻辑相对简单，它的过程是：
+  + 一开始在 U-Mode 运行时，其 `sp` 为用户态栈指针，`sscratch` 为内核态指针
+  + 进入 `_traps`，检测到 `sscratch` 不为零，则交换 `sp` 和 `sscratch`，进入 S-Mode
+  + 也即：在 `do_fork` 中，`sp` 为内核栈指针，`sscratch` 为用户栈指针
+  + 从 `trap_handler` 返回后，在 `_traps` 的末尾把二者换回去，回到 U-Mode
+- 父进程的 `task_struct` 并不关键，因为没有涉及进程切换。当它要切换的时候，会把那时候的 `ra, sp, s[12]` 等寄存器值更新到内核页的 `task_struct` 里
+
+=== 子进程
+- 每个内核页的低地址为 `task_struct`，高地址为内核栈（其中存储了 `pt_regs`）。我们把父进程内核页基地址记为 `F`，子进程创建的基地址记为 `C`，并从 `F ~ F + PGSIZE` 处拷贝内容。拷贝来的内容大多不用变，但部分涉及到地址的值有错位
+- `do_fork` 函数的参数 `regs` 和返回值都是基于父进程的；而对子进程来说，它的返回值和信息都存在 `C ~ C + PGSIZE` 部分的 `task_struct` 和 `pt_regs` 里
+#fig("assets/lab5/kernel_page.png",caption: "the two kernel pages")
+- 基于这两个思想，`do_fork` 中子进程的几个乱七八糟的指针设置如下：
+  - 设置子进程的 `task->thread.sp` 为子进程 `pt_regs` 的指针
+    - `pt_regs` 的指针对父进程和子进程是不同的，但在页内的偏移量相同
+    - 从而，设置为 `regs % PGSIZE + C` 即可，或者 `regs + C - F`
+  - 设置子进程的 `task->thread.sscratch` 为用户栈指针
+    - 父进程进入 `_traps` 时切换到 S-Mode，交换后，`sp` 为内核栈指针，`sscratch` 为用户栈指针，后者即为我们的目标
+    - 这个东西没有被存到 `pt_regs`，#strike[当然也可以存进去，但我懒得改了，]这里直接在 `do_fork` 的时候用 `csr_read` 读取
+  - 设置子进程的 `task->thread.ra` 为 `__ret_from_fork` 函数的地址
+    - 借用父进程恢复 `pt_regs` 的过程
+  - 修改子进程 `pt_regs` 的 `sp`，使其指向子进程的内核栈
+    - 同样的道理，设置为原本的 `sp` 加上 `C - F`
+  - 修改子进程 `pt_regs` 的 `a0`，使其 `do_fork` 返回值为 `0`
+  - 修改子进程 `pt_regs` 的 `sepc` 并加四
+    - 因为 syscall 那边写的 `sepc += 4` 是对父进程而言的，对子进程我们要额外处理，即在子进程的内核栈上加四
+- 随后梳理切换到子进程的过程：
+  + 子进程在 `__switch_to` 切换到它的时候起效，它的 `task_struct` 里的 `ra`, `sp`, `s[12]`, `sscratch` 等会被加载到寄存器里，然后 `ret` 到 `__ret_from_fork`，这时候它的 `sp` 为 `pt_regs` 指针，`sscratch` 为用户栈指针
+  + 然后，子进程蹭了父进程的从 S-Mode 到 U-Mode 的恢复过程，恢复了拷贝来的 `pt_regs`。得益于前面的设置，它读取的是自己的 `pt_regs` 而不是父进程的
+  + 接着，由于 `sscratch` 不为零，进行 `sp` 和 `sscratch` 的交换，此时 `sp` 为用户栈指针，`sscratch` 为内核栈指针，`sret` 回到加四过的 `sepc`，执行 U-Mode 代码
