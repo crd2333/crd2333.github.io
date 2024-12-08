@@ -8,6 +8,8 @@
 // ---------- 文本运算符 ----------
 #let argmax = math.op("argmax", limits: true)
 #let argmin = math.op("argmin", limits: true)
+#let avg = math.op("avg", limits: true)
+#let diag = math.op("diag", limits: true)
 
 // ---------- 符号缩写 ----------
 #let shorthand = shorthands.with(
@@ -332,7 +334,7 @@
 #let bb = math.bold("b")
 #let bc = math.bold("c")
 #let bd = math.bold("d")
-#let be = math.bold("e")
+// #let be = math.bold("e") // 'be' used for beta
 #let bf = math.bold("f")
 #let bg = math.bold("g")
 #let bh = math.bold("h")
@@ -369,12 +371,16 @@
 #let bP = math.bold("P")
 #let bS = math.bold("S")
 #let bT = math.bold("T")
+#let bU = math.bold("U")
+#let bV = math.bold("V")
+#let bW = math.bold("W")
 #let bX = math.bold("X")
 #let bY = math.bold("Y")
 #let bZ = math.bold("Z")
 #let bxi = math.bold($xi$)
 #let bpi = math.bold($pi$)
 #let bth = math.bold($theta$)
+#let bmu = math.bold($mu$)
 // cal letters (only uppercases)
 #let cA = math.cal("A")
 #let cB = math.cal("B")
@@ -565,6 +571,8 @@
 #let oK = math.macron("K")
 // #let oM = math.macron("M") // 'oM' used for cal
 #let oN = math.macron("N")
+#let oP = math.macron("P")
+#let oQ = math.macron("Q")
 #let oS = math.macron("S")
 #let oT = math.macron("T")
 #let oU = math.macron("U")

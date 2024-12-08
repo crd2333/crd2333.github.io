@@ -307,3 +307,13 @@
   ),
   ..args
 )
+
+#let tldr(..args) = abstract(
+  caption: "TL;DR",
+  ..args
+)
+
+#let takeaway(..args) = note(
+  caption: "Takeaway",
+  ..args
+)
