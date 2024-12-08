@@ -313,5 +313,3 @@ order: 3
   - KITTI: LiDAR data, labeled by 3D bboxes
   - Semantic KITTI: LiDAR data, labeled per point
   - Waymo Open Dataset: LiDAR data, labeled by 3D b.boxes
-
-

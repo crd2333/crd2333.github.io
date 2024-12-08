@@ -245,3 +245,205 @@ $ Delta x = -(J_R^T J_R + lambda I)^(-1) J_R^T R(x_k) $
 
 === Regularization
 - L1-norm, L2-norm
+
+= Computational Photography
+- 计算摄影学的任务就是通过算法使得拍出来的图像质量更高
+  - 从三维视觉内容又回到了二维图像处理，所以这节课虽然是 lec12，但我提到前面来了
+
+== High dynamic range imaging(HDR)
+=== HDR conception
+- HDR, 即高动态范围成像
+  - 回想我们生活中，在晚上拍照时，照片会出现要么一片黑，要么一片亮的情况。原因是晚上的场景对比度太大，而这种明暗的对比度就被称作动态范围
+  - HDR 可以做到既捕捉亮处的细节，也捕捉到暗处的细节
+- 对于相机，它每个像素的曝光(exposure)取决于如下三个因素：
+  $ "Exposure" = "Gain" times "Irradiance" times "Time" $
+  + 增益(Gain): controlled by the ISO. 可以理解为光电信号转化的效率。ISO 是底片的感光度
+    - ISO 越高越灵敏，但是也会导致噪声增加
+    - 当然噪声跟传感器质量也有关，传感器越大，同一个像素对应的光子数就越多，噪声就越小
+  + 辐射度(Irradiance): 可以理解为打到底片上的光的数量（光强），取决于光圈(aperture)的大小
+    - 光圈决定通光量，同时也决定景深 (Depth of Field)
+  + 曝光时间(Time)：由快门速度控制
+    - shutter speed: 快门开闭是有时间的，且 sensor 上原本的颜色清空也需要时间
+    - 快门速度越长，进光量越多，但是也会导致运动模糊
+  - 一般会有自动调节曝光的功能 the averaged exposure should be at the middle of the sensor's measurement range
+  #fig("/public/assets/Courses/CV/2024-12-06-19-10-06.png",width:60%)
+- Dynamic range
+  - 即一个场景中最亮地方和最暗地方的比值。在夜晚拍照时，由于场景动态范围太大，暗处和亮处的细节不能兼得，就会造成上图的两种情况
+  #tbl(
+    columns:2,
+    [$10:1$],[photographic print (higher for glossy paper)],
+    [$256:1$],[8-bit RGB image],
+    [$1000:1$],[LCD display（一些高端显示器，比如打游戏用的会更高）],
+    [$4096:1$],[digital SLR 单反相机 (at 12 bits)],
+    [$100000:1$],[real world]
+  )
+  - 真实世界具有很大的动态范围，但是相机的传感器只能覆盖很小的动态范围。传感器的动态范围不能覆盖真实场景的动态范围，这就是我们拍照不能兼顾明暗细节的原因
+    - 事实上人眼的动态范围也很大，这就是为什么我们总感觉自己看到的和拍到的不一样
+  - Challenge: sensor's measurement range(dynamic range) 跟 real world 不匹配！而 8bit RGB image 动态范围更低
+
+=== HDR imaging
+- 那怎么解决呢？一个很直观的想法就是我们拍多张图像，部分图像用较小的曝光时间，记录亮出的细节，另一部分图像用较长的曝光时间，记录暗处的细节，最后将所有图像合成得到最终的图像
+  - Key Idea
+    + *Exposure bracketing*: Capture multiple LDR images at different exposures
+    + *Merging*: Combine them into a single HDR image
+  - 数学描述
+    - Suppose scene radiance for image pixel $(x, y)$ is $L(x, y)$
+    - Expression for the image $I(x, y)$ as a function of $L(x, y)$ #h(1fr)
+      $ I(x, y) = "clip"[t_i dot L(x, y) + "noise"] $
+  - 对于图像合成，有以下几个步骤：
+    - For each pixel:
+      + Find "valid" pixels in each image
+        - 既不要太亮也不要太暗，我们即认为它处于合理的区间 $0.05 "(noise)" < "pixel" < 0.95 "(clipping)"$
+      + Weight valid pixel values appropriately $"pixel value" \/ t_i$)
+      + Form a new pixel value as the weighted average of valid pixel values #h(1fr)
+      #fig("/public/assets/Courses/CV/2024-12-06-19-30-44.png",width:80%)
+- 这样我们拍出了一个较大动态范围的原始照片，但还是要把它映射到低动态范围的 image，该过程称为 *tone mapping*
+  - 这势必要做 compression
+    - 一种方法是采用 Linear compression，但色调会变得不自然
+    - 另一种则是非线性的 Gamma compression #h(1fr)
+      - $gamma$ 小于 $1$ 时，图像整体变亮，增强暗部细节；$gamma$ 大于 $1$ 时，图像整体变暗，增强亮部细节
+    #fig("/public/assets/Courses/CV/2024-12-06-19-22-38.png",width:30%)
+  - 许多相机会自动帮我们做这件事，如果我们要自己调的话，需要存成 raw 格式
+
+== Deblurring
+- 任务是把模糊的图像变清楚
+- 首先我们要知道图像模糊的原因：
+  + 失焦(Defoucs): 目标在景深范围外 defoucs（在 lec2 介绍过），或者说对焦对到背景上去了，光斑取决于光圈形状
+  + 运动模糊(Motion blur): 成像的过程是对光强做积分的过程，倘若在这过程中相机或物体运动，成像结果就产生模糊。一般由曝光时间过长造成。在画面上形成运动的轨迹
+- 顺便，Get a clear image?
+  - Accurate focus
+  - Fast shutter speed, Large aperture, High ISO（这也是为什么好的 SLR cameras and lenses 那么贵
+  - hardware
+    - tripod 三脚架，但不可移动
+    - optical image stabilization and IMU，但很贵
+  - 那么，我们就寻求 software 的方法，即 *deblurring*
+- 去噪首先要用数学模型描述噪声
+  - The blur pattern of *defocusing* depends on the *aperture shape*, The blur pattern of *shaking* depends on the *camera trajectory*
+  - 回顾我们在 lec3 介绍的高斯模糊，采用了高斯核对图像进行卷积操作。因此我们可以用卷积来描述模糊的过程
+    - $F(X,Y)$ 是清晰的图像，$H(U,V)$ 是卷积核，与 $F$ 卷积后得到模糊的图像 $G(X,Y)$
+  #fig("/public/assets/Courses/CV/2024-12-06-19-49-58.png",width:50%)
+  - 因此我们要解决的问题就是去卷积，根据是否知道卷积核分成两种情况
+  #fig("/public/assets/Courses/CV/2024-12-06-19-51-45.png",width:50%)
+
+=== Non-blind image deconvolution(NBID)
+- 任务定义：给定模糊的图像和卷积核，求解原图
+- 解决方法
+  - 类比乘法只需要一个除法便可以还原。很自然想到*时域上的卷积等于频域上的乘积*
+  - 因此将图像做个傅里叶变换，在频域上做个除法再转化回去即可
+    #fig("/public/assets/Courses/CV/2024-12-06-19-54-32.png",width: 60%)
+  - 但是有一个问题，卷积核 $H(u,v)$ 一般是一个低通滤波器；去卷积的过程相当于乘上 $1/H(u,v)$，这就成了一个高通滤波器
+    #fig("/public/assets/Courses/CV/2024-12-06-19-57-24.png",width: 50%)
+    - 所以去卷积我们是在放大高频信息，但与此同时也会相应放大高频噪声。如果图像里完全没有噪声这是没问题的，但是这并不可能，现实中噪声是无处不在的
+- *维纳滤波* (Wiener Fliter)
+  - 解决这一问题的方法就是调整卷积核，即做 inverse fliter 的同时抑制高频噪声，即
+    #fig("/public/assets/Courses/CV/2024-12-08-12-18-22.png",width: 60%)
+  - 应用
+    - 比如高速公路上车牌的去模糊，由于车的轨迹是大概知道的（沿着车道），因此卷积核也是大概知道的
+    - 哈勃天文望远镜的镜头会有抖动，导致拍出来的图像是模糊的，但是我们知道镜头是什么样的，因此也可以用 NBID 去模糊
+- 用*优化*的方法来解决
+  - 优化变量：需要恢复的（清晰）图片。Blurred image generation process ($N$ is Gaussian noise): #h(1fr)
+    $ G = F times.circle H + N $
+  - 目标函数与损失函数：清晰图像过卷积后与给定的模糊图像后的差别。用每个像素值差别的平方和(MSE)来衡量
+    $ "MSE" = norm(G - F times.circle H)_2^2 = sumij [G_ij - (F times.circle H)_ij]^2 $
+  - Problem: Deconvolution is *ill-posed* (Non-unique solution)
+    #fig("/public/assets/Courses/CV/2024-12-08-12-35-31.png",width: 30%)
+    - 如上图所示，两张图片都是我们优化问题的解，但是显然左边那张图更符合实际情况，注意到它的梯度图比较稀疏
+  - 我们需要一些先验信息（解的约束条件）来解决 ill-posed 问题
+    - 以将稀疏的梯度图作为先验条件，在优化函数上加一个 L1 正则项即可 #h(1fr)
+      $ min_F norm(G - F times.circle H)_2^2 + norm(na F)_1 $
+
+=== Blind image deconvolution(BID)
+- 现在我们不知道卷积核是什么，这时候我们不能用逆向滤波求解，只能用优化的方式做，此时卷积核也成了优化的目标
+- 我们希望卷积核也是稀疏并且非负的。所以目标函数为
+  $ min_(F,H) norm(G - F times.circle H)_2^2 + la_1 norm(na F)_1 + la_2 norm(H)_1 ~~ s.t. H >= 0 $
+- 这个算法其实是 SIGGRAPH 2006 的一篇文章: Removing Camera Shake from a Single Photograph
+
+== Colorization
+- 我们希望把黑白的图像转化成彩色图像，我们必须告诉算法我们想要什么样的颜色
+=== Trandiational Colorization
+- 传统方法主要有两类
+  + Sample-based colorization: use sample image. 告诉算法大致用样本图像那样的颜色
+  + Interactive colorization: paint brush interactively. 交互式地告诉算法我们想要的颜色
+- Sample-based colorization #h(1fr)
+  #fig("/public/assets/Courses/CV/2024-12-08-12-48-13.png",width: 50%)
+  - source image 就称为样本图像。我们想要把样本图像的颜色迁移到中间的 target image 上
+  - 做法就是 “分割 + 匹配”
+    - 对于每一个像素，在样本图像中找到最佳的匹配点（亮度和梯度）。然后根据匹配点填充像素值
+    - 利用分割来匹配，草地的像素到草地去找，天空的像素到天空去找
+- Interactive colorization
+  #fig("/public/assets/Courses/CV/2024-12-08-12-50-49.png",width: 50%)
+  - 该方法是让用户在每个区域给定颜色，算法将该区域的颜色补全（扩散）
+  - 依然可以用*分割的方法*去做，然后还要考虑颜色的平滑性
+    - 但分割其实不是一件容易的事，即使是当下最先进的分割算法，也没法给出很高精度的分割结果
+  - 我们使用*优化的方法*求解
+    - 老套路，找一个约束：对两个 adjacent pixels，如果 brightness 类似，那么颜色也应该类似
+      - 通过这种方式，同时考虑了分割和平滑两件事
+    - 然后最小化下列目标函数
+      $ J(U) = sum_r (U(r) - sum_(s in N(r)) w_(r s) U(s)) $
+      - $U(r), U(s)$ 是像素 $r, s$ 的颜色
+      - $N(r)$ 是像素 $r$ 的邻居
+      - $w_(r s)$ 是权重，表示 $r, s$ 之间的相似性。一般用梯度衡量，即灰度值的差异，公式为 $e$ 的负什么什么东西
+    - Constraint: User-specified colors of brushed pixels keep unchanged
+- 图像的 colorization 可以自然扩展到视频
+  - 不只局限于把视频理解成一系列图像，一般也会把视频帧前后信息的相关度考虑进去
+
+=== Modern Colorization (Deep Learning)
+- 下面来看 modern approaches
+- FCN (CNN-based methods)
+  - 简单粗暴地使用全卷积神经网络，优化 #h(1fr)
+    $ L(Th) = norm(F(X;Th)- Y)^2 $
+  - 训练数据哪来？很丰富，因为把 RGB 转成 gray 很容易，而 2D 图像数据有茫茫多
+  - 这个 loss 的问题
+    + 没法解决 multiple solutions 的问题（根本没有建模这种情况，导致只会解出网络见过的解）
+    + 没法衡量图像的真实性
+- Generative Adversarial Network(GAN)
+  - 对于生成式问题，采用传统神经网络的固定损失函数是不合理的。因为对于一个灰度图进行上色，解不是唯一的
+  - GAN 并不自己定义损失函数，而又借助了一个神经网络来判断第一个网络生成的图片的质量
+    #fig("/public/assets/Courses/CV/2024-12-08-13-22-50.png",width: 50%)
+    - Discriminator $D$ 可以被看作是用来训练 $G$ 的损失函数，这被称为 *adversarial loss*
+    - 它是 learnable 的而不是 hand-designed 的，并且训练好的 $D$ 可以被应用到很多 image synthesis tasks 上
+  - 两个神经网络分别为生成器 $G$ 和判别器 $D$
+  - $D$ 的 loss, tries to identify the fakes
+    $ argmax_D E_(x,y) [log D(G(x)) + log (1 - D(y))] $
+    #fig("/public/assets/Courses/CV/2024-12-08-13-21-35.png",width: 40%)
+  - $G$ 的 loss, tries to synthesize fake images that fool $D$
+    $ argmin_G E_(x,y) [log D(G(x)) + log (1 - D(y))] $
+    - 同样的损失函数，但 $G$ 的目标是最小化 fake 的概率
+  - 同时训练的方法: $G$ tries to synthesize fake images that *fool* the *best* $D$
+    $ argmin_G max_D E_(x,y) [log D(G(x)) + log (1 - D(y))] $
+  - 训练 GAN 最大的困难就是难以收敛，核心在于调整二者的平衡
+  - 另外在 colorization 这一块，GAN 还有一个困难是没有用户输入
+    - Real-Time User-Guided Image Colorization with Learned Deep Priors，这篇文章就是用 mask 的方式加一个用户输入
+
+== More Image Synthesis Tasks
+- 以上任务其实都属于图像合成(Image Synthesis)的子类，下面我们介绍更多任务
+- *Super-Resolution*
+  - 最简单的肯定就是插值，但用神经网络去补一些东西效果会更好
+  - Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network. CVPR 2017
+    - 也是用 GAN 来做 #h(1fr)
+    #fig("/public/assets/Courses/CV/2024-12-08-13-31-08.png",width: 50%)
+- *Image to Image Translation*
+  #fig("/public/assets/Courses/CV/2024-12-08-13-33-14.png",width: 50%)
+  - 这里分出去子类就更多了
+    + Labels to street scene
+    + Sketch to photo
+    + Aerial photo to map
+    + Style transfer
+    + text-to-image
+    + image dehazing 图像去雾
+    + ...
+- *Pose and garment transfer*
+  - 跟人相关，姿态和服装的迁移
+  - 传统方法
+    + Use *parametric mesh*(SMPL) to represent body pose and shape
+    + Use high-dimensional *UV texture map* to encode appearance
+    + Transfer the pose and appearance, then render the image
+    + And complement the (incomplete) texture map with CNN .etc
+- *Head Re-enactment*
+  - 也是跟人相关，人脸的迁移
+  - 基本逻辑跟人体是差不多的，但是精度和复杂度更高(pose, expression, identify, lighting...)
+  - 基于此会有 voice deepfake 等应用
+- *AI generated contents (AIGC)*
+  - 以前的很多工作其实也算 AIGC，但真正让这个概念火起来的是 Difussion Models
+    - PS: Difussion Models 的重要程度真的远超我之前的理解
+

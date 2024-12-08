@@ -12,7 +12,7 @@ order: 2
 - 主要是 Games 101 的笔记，然后加入了部分 ZJU 课上的新东西
 
 #quote()[
-  - 首先上来贴几个别人的笔记，#strike[自己少记点]
+  - 首先上来贴几个别人的笔记
     + #link("https://www.bilibili.com/read/readlist/rl709699?spm_id_from=333.999.0.0")[B站笔记]
     + #link("https://iewug.github.io/book/GAMES101.html#01-overview")[博客笔记]
     + #link("https://www.zhihu.com/column/c_1249465121615204352")[知乎笔记]

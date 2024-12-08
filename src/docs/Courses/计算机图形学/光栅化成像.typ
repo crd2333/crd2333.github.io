@@ -12,7 +12,7 @@ order: 1
 - 主要是 Games 101 的笔记，然后加入了部分 ZJU 课上的新东西
 
 #quote()[
-  - 首先上来贴几个别人的笔记，#strike[自己少记点]
+  - 首先上来贴几个别人的笔记
     + #link("https://www.bilibili.com/read/readlist/rl709699?spm_id_from=333.999.0.0")[B站笔记]
     + #link("https://iewug.github.io/book/GAMES101.html#01-overview")[博客笔记]
     + #link("https://www.zhihu.com/column/c_1249465121615204352")[知乎笔记]
@@ -194,23 +194,29 @@ order: 1
   - Disadvantages:
     + Tests are quite complex and slow
     + 对硬件极不友好
-- Z-buffering（深度缓冲）
+- Z-buffering 深度缓冲
   - 怎么算深度？前面深度都是基于 vertex，现在要得到三角形内任意点的深度。可以用双线性插值（回忆之前的画线算法，用扫描线先得到两个扫描交点的插值，然后做扫描线上的插值）或者重心坐标得到。这个计算还是比较耗时的，所以在渲染时存一张深度图
   - 暂不考虑相同深度，处理不了透明物体，另外 z-buffering 可能会与 MSAA 结合
-
+  - 注：LearnOpenGL-CN 中是先用了很久的 z-buffering，然后再以高级技术形式介绍 face culling，这二者是可以结合的
 #note()[
   - 这里我们可以介绍一个历史，z-buffer 很早就被提出来了，但这种粗暴的方式当时不被人所接受
   - 人们 prefer 一种 closed-form 的形式，比如 Binary Space Partition Tree(BSP Tree)，早年间 2.5D 游戏一般就是这么做的（场景基本都不动）
   - 或者用 K-d Tree
 ]
 
-== Anti-Aliasing
+== Sampling Artifacts & Anti-Aliasing
 - 三角形：光栅化的基本单位
-  - 原因：三角形是最基本（最少边）的多边形；其他多边形都可以拆分为三角形（建模常用四边形，但到了引擎里拆成三角形）；三角形必定在一个平面内；容易定义三角形的里外；三角形内任意一点可以通过三个定点的线性插值计算得到
+  - 原因：
+    + 三角形是最基本（最少边）的多边形；
+    + 其他多边形都可以拆分为三角形（建模常用四边形，但到了引擎里拆成三角形）；
+    + 三角形必定在一个平面内；
+    + 容易定义三角形的里外；
+    + 三角形内任意一点可以通过三个定点的线性插值计算得到
 - 把三角形转化为像素：简单近似采样
   - 使用内积计算内点外点
   - 使用*包围盒*(Bounding Box)减小计算量，或者 incremental triangle traversal 等
   - 问题：Jaggies（锯齿）/ Aliasing（走样，混叠）
+  #fig("/public/assets/courses/cg/2024-11-29-14-16-04.png",width:60%)
 - 需要抗锯齿、抗走样的方法，为此先介绍采样理论：把到达光学元件上的光，产生的信息，离散成了像素，对这些像素采样，形成了照片
 - 采样产生的问题(artifacts)：走样、摩尔纹、车轮效应，本质都是信号变化频率高于采样频率
   - 香农采样定理：采样频率 $>=$ 原始频率的两倍，才能很好地恢复
@@ -264,7 +270,7 @@ order: 1
 - Double buffering
   - 隐藏绘制过程，避免闪烁
   - 有时也会用到 Triple buffering
-- 后来看了看 OpenGL 的相关教程，感觉现在的实现和这里不太一样（可能过时了）。。。还是以网络教程为准
+- 后来看了看 OpenGL 的相关教程，感觉现在的实现和这里不太一样（可能过时了……）。还是以网络教程为准
 - WebGL Tutorial / OpenGL ES
 
 = Shading 着色
@@ -282,6 +288,10 @@ order: 1
     + Interpretation of the resulting phenomenon by the human visual system and the human brain
   - 我们将会在 #link("http://crd2333.github.io/note/Courses/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6/%E5%85%89%E7%BA%BF%E4%BC%A0%E6%92%AD%E7%90%86%E8%AE%BA")[光线传播理论 —— 光场、颜色与感知] 处更详细讨论
 - 计算机图形学领域把 shading 定义为：为物体赋予*材质*的过程（把材质和着色合在一起），但不涉及 shadow(shading is local!)
+  - 注意：材质是材质，纹理是纹理，这是两个不同又相关的概念
+  - 先放这，等我更理解了再来解释
+  - #link("https://zhuanlan.zhihu.com/p/165588387")
+
 - 输入：Viewer direction $v$, Surface normal $n$, Light direction $I$(for each of many lights, Surface parameters(color,shininess)
 - 一些物理的光学知识
   - 主要分为几何光学 Particle Model 和波动光学 Wave Model，我们主要研究前者
@@ -332,49 +342,110 @@ order: 1
   - Geometry shader 一般是不怎么改的
 
 == 纹理
-- 纹理映射
-  - 3D 世界的物体的表面是 2D 的，将其展开就是一张图，纹理映射就是将这张图映射到物体上
-  - 如何知道 2D 的纹理在3D的物体上的位置？通过纹理坐标。有手动（美工）和自动（参数化）的方法，这里我们就认为已经知道 3D 物体的每一个三角形顶点对应的纹理 $u v(in [0,1])$ 坐标
-  - 四方连续纹理：tiled texture，保证纹理拼接时的连续性
+=== 纹理映射
+- 3D 世界的物体的表面是 2D 的，将其展开就是一张图，纹理映射就是将这张图映射到物体上
+  - 类似于把壁纸(wallpaper)贴到墙(wall)上，或者把地球的平面地图映射到球上恢复成地球
+  - 具体来说，涉及到三个 space 的变化
+    - 光栅化的时候，我们从 screen space 的 2D 坐标映射得到 world space 的 3D 坐标
+    - 纹理映射的时候，我们从 world space 的 3D 坐标映射得到 texture space 的 2D 坐标 #h(1fr)
+    - 简而言之就是对光栅化的屏幕坐标算出它的 $u v$ 坐标（利用三角形顶点重心坐标插值），再利用这个 $u v$ 坐标去查询 texture 上的颜色，把这个颜色信息当作这个 vertex 的颜色，再经过材质和光照模型的计算得到最终的颜色
+    #fig("/public/assets/courses/cg/2024-11-29-13-44-44.png",width:70%)
+    - 虽然 texture space 看起来是个连续的空间 ($u, v in [0,1]$)，但我们往往表示为一个固定分辨率的图片，表示出来是一个个像素（a pixel on texture，简记为 *texel*，纹理元素、纹素），不可以取非整数值
+- 纹理重用 texture reuse
+  - 并不是一张纹理一个物体，一个物体可以用多种纹理，一张纹理也可以贴到多个物体上
+  - 使用四方连续纹理：tiled texture，保证纹理拼接时的连续性（多用在墙面或地板）
+  - 这也解释了为什么早期游戏在显存如此受限的情况下还能做出看起来像模像样的效果，而现在显存大了就可以一定程度上换掉
+- 如何得到纹理坐标？有手动（美工）和自动（参数化）的方法，我们介绍后者
+  #grid(
+    columns: 2,
+    row-gutter: 4pt,
+    grid.cell(align: bottom, figure(image("/public/assets/courses/cg/2024-11-29-15-41-16.png"),caption: "Parametric Surface")),
+    grid.cell(align: bottom, figure(image("/public/assets/courses/cg/2024-11-29-15-41-37.png"),caption: "Planar Projection")),
+    grid.cell(align: bottom, figure(image("/public/assets/courses/cg/2024-11-29-15-42-08.png"),caption: "Spherical Projection")),
+    grid.cell(align: bottom, figure(image("/public/assets/courses/cg/2024-11-29-15-42-19.png"), caption: "Cubic Projection"))
+  )
+  - Idea 1(*Parametric Surface*): 通过参数化曲面的 $(u, v)$ 表示自然得到纹理坐标
+  - Idea 2(*Planar Projection*): 比如投影到 $xy$ 平面上，那 $z$ 方向上就会无限拉长，非常假
+  - Idea 3(*Spherical Projection*): 但是，类比地球仪，展开后把球面信息转换到平面上，从而得到环境 texture，同时存在拉伸和扭曲问题（因为测度不一样）
+  - Idea 4(*Cubic Projection*): 使用 Cube Map（or skybox，天空盒），将球面一一映射到立方体的六个面上，这样展开后得到的纹理面就是均匀的
+  - 以上是对 specific 的物体而言，从更 general 的角度如何建立映射
+    + 对于复杂物体，把它切分成多个部分，结合使用上述方法(e.g. box, cylindrical, spherical, planar mapping ...)
+    + 亦或者，就像剥橘子一样，首先把表面切下来(cut)，然后展平(flatten)，最后合并成一张纹理图(pack)
+      - 这是一个很数学的事情，包括怎么切、切的粒度如何、怎么保持测度等
+      - 尤其对于 packing 步骤，我们想要最大化利用纹理空间，就要让这些小块尽可能紧凑，增加有效 texel，这就是所谓的 *Texture Atlas*。而且此时需要考虑对无效区域进行填充以保持连续性（但填充多了又会导致有效区域减少）
+      - Creating Good Surface Coordinate is Hard!
+      #fig("/public/assets/courses/cg/2024-11-29-15-52-47.png",width:70%)
+  - 下面我们就认为已经知道 3D 物体的每一个三角形顶点对应的纹理 $u, v in [0,1]$ 坐标
 - 三角形内插值: 重心坐标(Barycentric Coordinates)
-  - 重心坐标：$(x,y)=al A + beta B + ga C ~~~ (al+beta+ga=1)$，通过 $al, beta, ga >= 0$ 可以任意表示三角形内的点，且与三个顶点所在坐标系无关。这个重心坐标跟三角形重心不是一回事，三角形重心的重心坐标为 $(1/3, 1/3, 1/3)$
+  - 重心坐标 #h(1fr)
+    $ (x,y)=al A + beta B + ga C ~~~ (al + beta + ga = 1) $
+    - 通过 $al, beta, ga >= 0$ 可以任意表示三角形内的点，且与三个顶点所在坐标系无关
+    - 这个重心坐标跟三角形重心不是一回事，三角形重心的重心坐标为 $(1/3, 1/3, 1/3)$
   - 对什么运用插值：插值的属性：纹理坐标，颜色，法向量等等，统一记为 $V$，插值公式为 $V = al V_A + beta V_B + ga V_C$
-  - 重心坐标没有投影不变性，所以要在三维中插值后再投影（特殊的如深度，要逆变换回3D插值后再变换回来）
-- 纹理过大过小
-  - Texture Magnification：如果纹理过小
-    - 比如一个4K分辨率的墙贴上一个$256*256$的纹理，那么就会出现 uv 坐标非整数的情况（a pixel on texture，简记为 *texel*，纹理元素、纹素，不可以取非整数值）
-    - 使用 nearest（四舍五入）, bilinear（双线性插值, 4）, bicubic（双三次插值, 16）
-  - Texture Minification：如果纹理过大
-    - 问题：走样、摩尔纹、锯齿等（且越远越严重）。原因在于屏幕上 pixel 越远就对应越大面积的 texel（footpoint 现象）；或者说，采样的频率跟不上信号的频率
-    - 一个很自然的想法是类似之前抗走样所采用的超采样方法，但这里提出另一种 mipmap(image pyramid) 方法：Allowing (fast, approx, square) range queries
-      - 离线预处理（在渲染前生成）每个 footprint 对应纹理区域（不同 level）里的均值
-      - 开销：$1+1/4+dots approx 4/3$，仅仅是额外的 33% 开销
-      - 计算 level：用 pixel 的相邻点投影到 texel 估算 footpoint 大小（近似为正方形）再取对数；然后因为 level 是不连续的，通过三线性插值（两个层内双线性再一个层之间线性）得到连续性，避免突兀
-      - 优化：真实情况屏幕空间上的区域对应的 footprint 并不一定是正方形，导致 overblur，为此提出各向异性滤波(*Anisotropic Filtering*)，开销为 $3$ 倍。进一步，依旧无法解决斜着的区域，用 EWA Filtering
+  - 重心坐标没有投影不变性，所以要在三维中插值后再投影（特殊的如深度，要逆变换回 3D 插值后再变换回来）
+
+=== 纹理过大过小
+- *Texture Mapping is Sampling!*
+  #grid2(
+    fig("/public/assets/courses/cg/2024-11-29-14-00-29.png"),
+    fig("/public/assets/courses/cg/2024-11-29-14-00-52.png"),
+  )
+- *Texture Magnification*：如果纹理过小(minified)，将它放大
+  - 比如一个4K分辨率的墙贴上一个$256*256$的纹理，那么就会出现 uv 坐标非整数的情况
+  - 使用 nearest（四舍五入）, bilinear（双线性插值, $4$）, bicubic（双三次插值, $16$）
+  #fig("/public/assets/courses/cg/2024-11-29-14-08-27.png",width: 70%)
+- *Texture Minification*：如果纹理过大(magnified)，采用低通滤波
+  - 问题：走样、摩尔纹、锯齿等（且越远越严重）。原因在于屏幕上 pixel 越远就对应越大面积的 texel（footprint 现象）；或者说，采样的频率跟不上信号的频率
+  - 一个很自然的想法是类似之前抗走样所采用的超采样方法
+  - 但这里提出另一种 mipmap(image pyramid) 方法：Allowing (fast, approx, square) range queries
+    #fig("/public/assets/courses/cg/2024-11-29-14-26-59.png",width:70%)
+    - 离线预处理（在渲染前生成）每个 footprint 对应纹理区域（不同 level）里的均值。开销：$1+1/4+dots approx 4/3$，仅仅是额外 $33%$
+    - 计算 Mip level $D$:
+      - 一个很自然的想法是直接用深度，但这并不本质，有可能一个很近的物体但由于观察角度问题导致它对应的 footprint 并不小
+      - 更本质的想法是直接用 footprint 大小来衡量：把 pixel 的相邻点投影到 texel，估算 footpoint 大小（近似为正方形）再取对数
+      #fig("/public/assets/courses/cg/2024-11-29-14-27-37.png",width:50%)
+  - Mipmap 优化 1：但因为 level 是不连续的，通过层与层之间的插值得到连续性，避免突兀，这称为 *trilinear filtering*
+  - Mipmap 优化 2：真实情况屏幕空间上的区域对应的 footprint 并不一定是正方形，导致 overblur
+    - 为此提出各向异性滤波(*Anisotropic Filtering*)，开销为 $3$ 倍
+    #fig("/public/assets/courses/cg/2024-11-29-16-04-04.png",width:30%)
+    - 进一步，依旧无法解决斜着的区域，用 Elliptical weighted average(EWA) Filtering
+      - 把任意不规则的形状拆成很多不同的圆形，去覆盖这个形状，多次查询自然可以覆盖，但是耗时大
+
+=== Advanced Texturing (Applications)
 - Environment Map 环境光映射
   - 前面说的纹理可以扩展到其它概念（数据，而非仅仅是图像），比如将某一点四周的环境光（光源、反射 or anything else）也存储在一个贴图上
-  - 这样的做法是一种假设：环境光与物体的位置无关，只与观察方向有关（即环境光不随距离衰减）。然后各个方向的光源可以用一个球体进行存储，即任意一个 3D 方向，都标志着一个 texel
-  - 适用于什么场景呢？比如说一个大屋子里面的小茶壶，它相对整个屋子是很小的，如果假设环境光没有衰减，那它反射的光就只和方向有关
-  - 但是，类比地球仪，展开后把球面信息转换到平面上，从而得到环境 texture，同时存在拉伸和扭曲问题
-  - 解决办法：Cube Map（天空盒），将球面一一映射到立方体的六个面上，这样展开后得到的纹理面就是均匀的
+  - 这样的做法是一种假设：环境光与物体的位置无关，只与观察方向有关（即环境光不随距离衰减）
+    - 然后各个方向的光源可以用一个球体进行存储，即任意一个 3D 方向，都标志着一个 texel
+    - 同样的，这个球体也可以用立方体来表示，这样展开后的纹理就是均匀的
+  - 适用于什么场景呢？比如说一个大屋子里面的小茶壶，它相对整个屋子是很小的，如果假设环境光没有衰减，那它反射的光就只和方向有关。总得来说，是一个非常简单增加真实感的方法
+  #fig("/public/assets/courses/cg/2024-11-29-14-29-32.png",width:60%)
 - Bump Mapping 凹凸贴图
-  - 在不改变物体本身几何形状的情况下，通过纹理来模拟物体表面的凹凸不平
+  - 在不改变物体本身几何形状的情况下，通过纹理来模拟物体表面的凹凸不平（凹凸只是纹理带来的错觉）
+  #fig("/public/assets/courses/cg/2024-11-29-14-33-18.png",width:50%)
 - Displacement Mapping 位移贴图
-  - 与之相对，位移贴图的输入同样是一张纹理图，但它的输出真的对物体的几何形状进行了改变，从而对物体边缘和物体阴影有更好的效果
-  - 这要求建模的三角形足够细到比纹理的采样频率还高。但又引申出一个问题，为什么不直接在建模上体现其位移？因为这样便于修改、特效；另外，DirectX 中的动态曲面细分：开始先用粗糙的三角形，应用 texture 的过程中检测是否需要把三角形拆分的更细
+  - 与之相对，位移贴图的输入同样是一张纹理图，但它真的对几何形状进行了改变，从而对物体边缘和物体阴影有更好的效果
+  #fig("/public/assets/courses/cg/2024-11-29-16-10-35.png",width:50%)
+  - mesh 上的 vertex 根据 texel 的值的大小往 normal 的方向移动一定距离
+  - 这要求建模的三角形足够细到比纹理的采样频率还高
+    - 但又引申出一个问题，为什么不直接在建模上体现其位移？
+    - 因为这样便于修改、特效；另外，DirectX 中的动态曲面细分：开始先用粗糙的三角形，应用 texture 的过程中检测是否需要把三角形拆分的更细
+  - 跟之前 Bump Mapping 的比较
+  #fig("/public/assets/courses/cg/2024-11-29-14-34-51.png",width:50%)
 - 三维纹理
   - 前面说的纹理局限于 2D，但可以扩展到 3D
   - 三维纹理，定义空间中任意一点的纹理：并没有真正生成纹理的图，而是定义一个三维空间的噪声函数经过各种处理，变成需要的样子（如地形生成）
+  - 3D Texture and *Volume Rendering*
 - 阴影纹理
-  - 阴影可以预先计算好，直接写在 texture 里，然后把着色结果乘以阴影纹理的值
-- 3D Texture 和体渲染
-- 图形渲染管线
+  - 渲染高质量的阴影代价不小（后面会讲）。但这里有一个成本低廉但能提高真实感的方法，把阴影预先计算好，直接写在 texture 里，然后把着色结果乘以阴影纹理的值
+  - 预计算一个全向阴影图，跟光照方向没有关系，仅根据 accessibilty 去决定阴影（即凹的地方暗一点，凸的地方亮一点）
+    - 具体来说，会对每个点套一个球，在球上采样很多点，看点和采样点之间遮挡的比例
+  #fig("/public/assets/courses/cg/2024-11-29-16-12-10.png",width:50%)
 - （讲完 Geometry 后回来），阴影映射(Shadow Mapping)
   - 图像空间中计算，生成阴影时不需要场景的几何信息；但会产生走样现象
   - Key idea：不在阴影里则能被光源和摄像机同时看道；在阴影里则能被相机看到，但不能被光源看到
   - 步骤
-    + Step1：在光源处做光栅化，得到深度图（shadow map，二维数组，每个像素存放深度）；
-    + Step2：从摄像机做光栅化，得到光栅图像；
-    + Step3：把摄像机得到图像中的每个像素所对应的世界空间中物体的点投影回光源处，得到该点的深度值，将此数值跟该点到光源的距离做比较（注意用的是世界空间中的坐标，即透视投影之前的）
+    + 在光源处做光栅化，得到深度图（shadow map，二维数组，每个像素存放深度）；
+    + 从摄像机做光栅化，得到光栅图像；
+    + 把摄像机得到图像中的每个像素所对应的世界空间中物体的点投影回光源处，得到该点的深度值，将此数值跟该点到光源的距离做比较（注意用的是世界空间中的坐标，即透视投影之前的）
   - 浮点数精度问题，shadow map 和光栅化的分辨率问题（采样频率）
   - 硬阴影、软阴影（后者的必要条件是光源有一定大小）

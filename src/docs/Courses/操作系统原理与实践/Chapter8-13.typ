@@ -648,7 +648,7 @@
   - 后二者实际上很多时候并不区分，只是在做 coding 的时候我们需要保持清醒（到底能否直接减 `VA_PA_OFFSET`）
   #fig("/public/assets/courses/os/2024-11-27-16-17-27.png",width:60%)
 
-= Mass-Storage Structure
+= Mass-Storage
 - *Magnetic disks* 提供了计算机系统大量的存储空间(secondary storage)，一般来说 hard disk 最主要
 - Disk Structure
   - 可见 #link("https://crd2333.github.io/note/Courses/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E7%90%86%E8%AE%BA/")[DB 笔记]
@@ -706,107 +706,330 @@
 ]
 
 == Other Storage Devices
-- Nonvolatile Memory Devices
+- *Nonvolatile Memory Devices*
   - 但其实上面讲了这么多，都有点过时了，因为现在有了固态硬盘(solid-state disks, SSD)
   - 与磁盘相比，寿命短，容量小，速度快（Bus 慢，需要直接连到 PCIE 上）
   - 没有 arm 也不需要转，因此不存在 seek time 和 rotational latency，所以一般用 FCFS
-- Magnetic Tape 磁带
+- *Magnetic Tape 磁带*
   - 容量很大很便宜
   - 但是很慢。因为需要倒带，一般都做顺序访问而不是随机访问。现在主要用来做备份
 
-== Disk Management & Disk Attachment
-
-
+== Disk Management & Attachment
+- 使用这些介质（磁盘、固态硬盘、磁带）的时候，需要先格式化
+- Physical formatting: 把介质上分好不同的部分
+- Boot block initializes system
+- swap space management
+- Disks can be attached to the computer as:
+  - host-attached storage
+    - hard disk, RAID arrays, CD, DVD, tape...
+    - 通过 I/O bus 直接插到主机上
+  - network-attached storage
+    - 通过网络连接
+  - storage area network
+    - 做成一个阵列，通过局域网连接
+- 都不是很重要
 
 == RAID
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#v(8em)
+- 动机
+  - HDDs 越来越小和便宜，但还是很容易坏
+  - 如果一个系统可以拥有大量磁盘，那么就能改善数据的读写速率（因为可以并行）和可靠性（使用冗余来降低出现错误的期望）
+  - 这样的磁盘组织技术称为*磁盘冗余阵列(Redundant Arrays of Independent Disk, RAID)*技术
+- 几个关键概念
+  - Data Mirroring: 其实就是数据有多个备份
+  - Data Striping: 把数据分成多个部分，分别存储在不同的磁盘上
+  - Error-Code Correcting (ECC) - Parity Bits: 通过奇偶校验位来检测和纠正错误
+- RAID 0
+  - 根据固定的 striped size 把数据分散在不同的磁盘，没有做任何 redundancy
+  - Improves performance, but not reliability
+  - e.g. 5 files of various sizes, 4 disks
+  #fig("/public/assets/courses/os/2024-12-03-14-34-00.png",width:30%)
+- RAID 1
+  - 也被称为 mirroring，存在一个主磁盘，一个备份磁盘。主磁盘写入数据后，备份磁盘进行完全拷贝
+  - A little improves performance（可以从两个读）, but too expensive
+  - e.g. 5 files of various sizes, 4 disks
+  #fig("/public/assets/courses/os/2024-12-03-14-35-48.png",width:30%)
+- RAID 2
+  - stripes data at the bit-level; uses Hamming code(4bit data + 3bit parity)  for error correction
+  - 没有被实际应用，因为粒度太小，现在无法单独读出来一个比特，至少读出一个字节
+  #fig("/public/assets/courses/os/2024-12-03-14-37-07.png",width:30%)
+- RAID 3
+  - Bit-interleaved parity: 纠错码单独存在一个盘里
+- RAID 4, 5, 6
+  - RAID 4: Basically like RAID 3, but interleaving it with strips (blocks)
+    - Block-interleaved parity，纠错码单独存在一个盘里，且用块来做 strip
+  - RAID 5: Like RAID 4, but parity is spread all over the disks as opposed to having just one parity disk
+    - parity bit 被分散地存到了不同的磁盘里。相比于 RAID 4，每个盘的读写比较均衡
+  - RAID 6: extends RAID 5 by adding an additional parity block
+    - 又加了一个 parity bit，也是分散存储
+  #fig("/public/assets/courses/os/2024-12-03-14-42-45.png",width:40%)
+- 注意：RAID 只能 detect/recover from disk failures，但无法 prevent/detect data corruption
+- ZFS adds checksums to all FS data and metadata.
+  - 这样可以检验磁盘是否写错
+
+#note(caption: "Takeaway")[
+  - Disk structure
+  - Disk scheduling
+    - FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK
+  - RAID 0-6
+]
+
+= I/O Systems
+- I/O 设备是 OS 的一个 major 组成部分，比下面左图画的大得多
+  #grid2(
+    fig("/public/assets/courses/os/2024-12-03-14-48-07.png"),
+    fig("/public/assets/courses/os/2024-12-03-14-48-12.png")
+  )
+- Common concepts: signals from I/O devices interface with computer
+  - bus: 用来做设备和 CPU 的互连
+  - port
+  - controller
+- direct I/O instructions & memory-mapped I/O
+  - CISC 包含 dedicated I/O instructions，如 x86 的 `in` 和 `out`
+  - 而 RISC 把 I/O instructions 存在 memory 里，即 memory-mapped I/O
+
+== I/O access
+- I/O access can use *polling or interrupts*
+  - 本章最大的重点就在这
+  - Polling 轮询: CPU 不断地主动询问 I/O 设备是否 ready
+    - Polling requires busy wait，而 busy wait 需要锁，会 sleep
+    - 如果 device 很快那么轮询是合理的，否则会很低效
+  - Interrupts: I/O 设备准备好后发出中断信号，CPU 响应
+    - 当线/进程 $T_1$ 需要等待 device 时，被加入到 device 的 waiting queue 上，然后 scheduling 到别的线/进程 $T_2$ 继续工作（跟 polling 相比，这时它没在 sleep 而在做别的工作）
+    - 收到 interrupt 后，$T_1$ 被加回到 ready queue 上
+    - interrupt 这里也会有一个 interrupt table
+    #fig("/public/assets/courses/os/2024-12-03-15-17-13.png",width:50%)
+    - 所以如果中断发生的频率很高，那么上下文切换会浪费很多 CPU 时间
+- DMA(Direct Memory Access)
+  - 为了减少 CPU 的负担，我们可以让 I/O 设备直接访问内存，而不需要 CPU 介入。于是就把权限下放到 device driver, drive controller, DMA controller, memory controller, bus controller
+  - 所有 driver 在 CPU 上跑，controller 在设备上跑
+  #fig("/public/assets/courses/os/2024-12-03-15-29-14.png",width:70%)
+
+== Application I/O Interface
+- I/O system calls encapsulate device behaviors in generic classes
+  - in Linux, devices can be accessed as *files*; low-level access with `ioctl`
+- Device driver 层对 kernel 隐藏了 I/O  controllers 之间的差异，做了一层抽象（统一借口）
+  #fig("/public/assets/courses/os/2024-12-03-15-40-43.png",width:60%)
+- Devices vary in many dimensions
+  #tbl(
+    columns:3,
+    [aspect],[variation],[example],
+    [data-transfer mode],[block, character],[disk, terminal],
+    [access method],[sequential, random],[modem, CD-ROM],
+    [transfer schedule],[synchronous, asynchronous],[tape,keyboard],
+    [sharing],[dedicated, shared],[tape, keyboard],
+    [device speed],[latency, seek time, transfer rate, delay between operations],
+    [I/O direction],[read-only, write-only, read-write],[CD-ROM, graphics controller, disk],
+  )
+
+== Kernel I/O Subsystem
+- 相当于是在 I/O 侧又做了一遍 OS 那套东西
+  - I/O scheduling
+  - Buffering - store data in memory while transferring between devices.
+  - Caching: hold a copy of data for fast access.
+  - Spooling: A spool is a buffer that holds the output (device’s input) if device can serve only one request at a time.
+  - Device reservation: provides exclusive access to a device.
+  - Error handling
+
+== Between Kernel and I/O
+- I/O Protection
+  - 需要 privilege，OS 去执行 I/O 操作(via syscalls)
+  - Kernel Data Structures #h(1fr)
+    - Kernel keeps state info for I/O components
+    - Some OS uses message passing to implement I/O (e.g. Windows)
+    #fig("/public/assets/courses/os/2024-12-04-16-26-37.png",width:40%)
+      - 所有东西都被抽象成 file，后面我们会讲
+- I/O Requests to Hardware #h(1fr)
+  #fig("/public/assets/courses/os/2024-12-04-16-25-53.png",width:60%)
+- 总之，这里如果细细展开的话也会很复杂（kernel 和 I/O 的数据结构与交互等），但不是重点
+
+== Performance
+- I/O 是计算机系统中的 major 部分，因此也极大影响了 performance
+- Improve Performance
+  - Reduce number of context switches
+  - Reduce data copying
+  - Use smarter hardware devices, such as reducing interrupts by using large transfers, smart controllers, polling
+  - Use DMA
+  - Balance CPU, memory, bus, and I/O performance for highest throughput
+  - Move user-mode processes / daemons to kernel threads
+
+#note(caption: "Takeaway")[
+  - IO hardware
+  - IO access
+    - *polling, interrupt*
+  - Device types
+  - Application I/O Interface
+  - Kernel IO subsystem
+]
+- 注：Mass Storage 和 I/O Systems 两节不算特别重要，把 Takeaway 里的内容看一看就差不多了
+
+= File System Interface
+== File concept
+- 现在我们有了大规模存储介质和 I/O 的概念，但是如何使用？OS 将这一切*抽象*成*文件系统*
+  - Abstract
+    - CPU is abstracted to #underline[Process]
+    - Memory is abstracted to #underline[Address Space]
+    - Storage is abstracted to #underline[File System]
+      - file $->$ track / sector
+  - 核心问题
+    - How to use file system?
+      - How to use file?
+      - How to use directory?
+    - How to implement file system?
+      - How to implement file?
+      - How to implement directory?
+- File is *a contiguous logical space* for storing information
+  - e.g. database, audio, video, web pages...
+  - 有不同类型的 files
+    - data: character, binary, and application-specific
+    - program
+    - special one: proc file system，也就是 linux `/proc` 目录下的那些数字文件夹，使用 file-system interface 来检索系统信息
+- File Attributes
+  - Name – only information kept in human-readable form
+  - Identifier – unique tag (number) identifies file within file system
+  - Type – needed for systems that support different types
+  - Location – pointer to file location on device
+  - Size – current file size
+  - Protection – controls who can do reading, writing, executing
+  - Time, date, and user identification – data for protection, security, and usage monitoring
+  - ...
+  - 这些信息是目录结构(directory structure)的一部分，保存在 `FCB` 数据结构里（联系 process 的元信息存在 `PCB` 里），也存在磁盘上。可能有其他属性，例如 checksum，这些会存到 extended file attributes 里
+  - linux 上使用 `stat`(statistic) 系统调用可以获取这些信息
+- File Operations
+  - *create*:
+    - space in the file system should be found
+    - an entry must be allocated in the directory
+  - *open*: most operations need to file to be opened first
+    - return a handler for other operations
+    - 一些文件系统提供 lock 机制
+      - Two types of locks: shared lock and exclusive lock
+      - Two locking machanisms:
+        - mandatory lock: 一旦进程获取了独占锁，操作系统就阻止任何其他进程访问对应文件
+        - advisory lock: 进程可以自己得知锁的状态然后决定要不要坚持访问
+  - *read/write*: need to maintain a pointer
+    - reposition within file – seek. 将 current-file-position pointer 的位置重新定位到给定值，例如文件开头或结尾。
+  - *close*
+  - *delete*
+    - Release file space
+    - Hardlink: maintain a counter - delete the file until the last link is deleted
+  - *truncate*: 把文件的所有 content 清空，但保留 metadata。
+- File Types
+  - 识别不同的文件类型一般通过：
+    - as part of the file names(file extension): 例如规定只有扩展名是 .com, .exe, .sh 的文件才能执行
+    - magic number of the file
+      - 在文件开始部分放一些 magic number 来表明文件类型
+      - 例如 `7f454c46` 是 ASCII 字符，表示 ELF 文件格式
+- File Structure
+  - 一个文件可以有不同的结构，由 OS 或 program 指定
+    - No structure: a stream of bytes or words
+    - Simple record structure: Lines of records, fixed length or variable length
+    - Complex structures
+- Access Methods
+  - Sequential access
+    - 每次都只能从头开始访问，比如用 tape 实现的文件系统
+  - Direct access
+    - 可以跳到任意的位置访问，也称为随机访问
+    - 在直接访问的方法之上，还有可能提供索引，即先在索引中得知所需访问的内容在哪里，然后去访问。也有可能使用多层索引表
+
+== Directory structure
+- 一开始只有文件，但文件想重名怎么办，就想把它们 subdivided into *partitions*
+  - partitions also known as *minidisks, slices*
+  - 一个文件系统可以有多个 disk，一个 disk 可以有多个 partition，一个 partition 又有自己的文件系统
+  - disk or partition can be used raw(without a file system)，即 partition 也可以不对应一个文件系统
+- Directory
+  - is a collection of nodes containing information about all files
+  - 可以把 directory 当成特殊的 file，其内容是 file 的集合
+  #fig("/public/assets/courses/os/2024-12-04-17-09-17.png",width:50%)
+  - Operations Performed on Directory: Create / delete a file, list a directory, search for a file, traverse the file system
+  - target: 要能快速定位文件；要兼顾效率、便于使用、便于按一些属性聚合
+- Directories implementation
+  #grid(
+    columns: 2,
+    fig("/public/assets/courses/os/2024-12-04-17-15-36.png",width:80%),
+    fig("/public/assets/courses/os/2024-12-04-17-15-43.png",width:80%),
+    fig("/public/assets/courses/os/2024-12-04-17-16-05.png",width:80%),
+    fig("/public/assets/courses/os/2024-12-04-17-16-12.png",width:80%),
+    fig("/public/assets/courses/os/2024-12-04-17-26-41.png",width:80%)
+  )
+  - A single directory for all users
+    - 存在 Naming problems and grouping problems，如果两个用户想用相同的文件名，无法实现
+  - Two-Level Directory
+    - 为每个用户分出单独的 directory，不同用户可以有同样名字的不同 file
+      - Each user has his own user file directory (UFD), it is in the master file directory (MFD)
+    - Efficient to search
+  - Tree-Structured Directories
+    - efficient in searching, can group files, convenient naming
+    - 如果所需目录不在当前目录，那么用户就必须提供一个路径名(path name, absolute or relative)来指定
+    - 不能 share 一个文件（即多个指针指向同一个文件），因为这样就会形成一个图而不是树
+  - Acyclic-Graph Directories
+    - allow links to a directory entry/files for aliasing (no longer a tree)
+    - Dangling pointer problem
+      - e.g., if delete file `/dict/all`, `/dict/w/list` and `/spell/words/list` are dangling pointers 悬垂指针
+      - solution: back pointers/reference counter，如果一个文件被删除，那么它的 reference counter 就会减一，当减到 0 时，才真正删除
+  - General Graph Directory
+    - 更进一步，允许目录中有环
+    - garbage collection: 如果没有外界目录指向一个环，那么就把这个环都回收了
+    - 每次设置一个 new link 的时候都使用 cycle detection algorithm
+
+== Others
+- File System Mounting
+  -
+- File Sharing
+  - shared 文件需要有一定的保护，规定 User IDs, Group IDs 允许某些用户、某些组的用户访问
+  - remote file sharing: 在分布式系统里，文件可以通过网络来共享
+- Protection
+  - 文件的所有者/创建者应该能控制文件可以被谁访问，能被做什么
+  - Access Control List (ACL)
+    - 给每个文件和目录维护一个 ACL，定义三种 users(owner, group, other) 和三种 access(R,W,X)
+    - linux 上使用 `getfacl` 和 `setfacl`，或者 `chmod`, `chgrp` 这些命令
+    - 优点是可以提供细粒度的控制
+    - 缺点是如何构建这个列表，以及如何将这个列表存在目录里
+
+#note(caption: "Takeaway")[
+  - File system
+  - File operations
+    -  Create, open, read/write, close
+  - File type
+  - File structure
+  - File access
+  - Directory structure
+    - Single level, two-level, tree, acyclic-graph, general graph
+  - Protection
+    - ACL
+]
+
+= File System Implementation
+== Layered File System
+
+#wrap-content(
+  align: right,
+  column-gutter: 2em,
+  fig("/public/assets/courses/os/2024-12-04-17-45-28.png",height:25em)
+)[
+  - OS 对文件系统做这样的层次化封装，主要是为了通过接口来隔离不同层，降低每一层的 complexity and redundancy，但是增加了 overhead 和 performance
+    - Logical file system
+      - Keep all the meta-data necessary for the file system
+      - It stores the directory structure
+      - It stores a data structure that stores the file description (File Control Block - FCB)
+      - Input from above: Open/Read/Write filepath
+      - Output to below: Read/Write logical blocks
+    - File-organization module
+      - Knows about logical file blocks (from 0 to N) and corresponding physical file blocks: it performs translation. 把逻辑块映射到物理块。输入是逻辑块号，输出是物理块号
+      - It also manages free space
+    - Basic file system
+      - Allocates/maintains various buffers that contain file-system, directory, and data blocks. 提供 buffer，用于缓存文件系统、目录和数据块。在 Linux 中称为 IO buffer
+    - I/O Control
+      - 将上层的指令转换为 low-level, hardware-specific 的指令来实现相关操作。同时也可以发中断
+  ]
+-
+
+
+
+
+
+
+
+
+#v(80em)
 #pagebreak()
 #v(2em)
 #note(caption: "我们现在学过几种 Table？")[

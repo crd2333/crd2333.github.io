@@ -12,7 +12,7 @@ order: 3
 - 主要是 Games 101 的笔记，然后加入了部分 ZJU 课上的新东西
 
 #quote()[
-  - 首先上来贴几个别人的笔记，#strike[自己少记点]
+  - 首先上来贴几个别人的笔记
     + #link("https://www.bilibili.com/read/readlist/rl709699?spm_id_from=333.999.0.0")[B站笔记]
     + #link("https://iewug.github.io/book/GAMES101.html#01-overview")[博客笔记]
     + #link("https://www.zhihu.com/column/c_1249465121615204352")[知乎笔记]
@@ -371,7 +371,7 @@ order: 3
 
 === 毛发、纤维模型
 - 考虑光线如何跟一根曲线作用
-- Kajiya-Kay Model（不常用，比较简单、不真实）：光线击中细小圆柱，被反射到一个圆锥形的区域中，同时还会进行镜面反射和漫反射。
+- Kajiya-Kay Model（不常用，比较简单、不真实）：光线击中细小圆柱，被反射到一个圆锥形的区域中，同时还会进行镜面反射和漫反射
 - Marschner Model（计算量爆炸，但真实）
   - 把光线与毛发的作用分为三个部分
     + R：在毛发表面反射到一个锥形区域
