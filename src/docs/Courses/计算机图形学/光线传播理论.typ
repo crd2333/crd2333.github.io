@@ -37,7 +37,7 @@ order: 3
 - 为什么要有光线追踪，光栅化不能很好的模拟全局光照效果：难以考虑 glossy reflection（反射性较强的物体）, indirect illuminaiton（间接光照）；不好支持 soft shadow；是一种近似的效果，不准确、不真实
 - 首先定义图形学中的光线：光沿直线传播；光线之间不会相互影响、碰撞；光路可逆(reciprocity)，从光源照射到物体反射进入人眼，反着来变成眼睛发射光线照射物体
 - Recursive (Whitted-Style) Ray Tracing
-  #fig("/public/assets/courses/cg/2024-11-28-22-28-10.png",width:60%)
+  #fig("/public/assets/Courses/CG/2024-11-28-22-28-10.png",width:60%)
   - 两个假设前提：人眼是一个点；场景中的物体，光线打到后都会进行完美的反射/折射；
   - 每发生一次折射或者反射（弹射点）都计算一次着色，前提是该点不在阴影内，如此递归计算
     + 从视点从成像平面发出光线，检测是否与物体碰撞
@@ -66,7 +66,7 @@ order: 3
   - 求交方法一：遍历物体每个三角形，判断与光线是否相交
     + 光线-平面求交
     + 计算交点是否在三角形内
-    #fig("/public/assets/courses/cg/2024-11-28-22-33-57.png",width: 40%)
+    #fig("/public/assets/Courses/CG/2024-11-28-22-33-57.png",width: 40%)
   - 求交方法二：Möller-Trumbore 射线-三角形求交算法（MT 算法）
     - 计算光线是否在三角形内以及与平面交点
     - 核心出发点是用重心坐标表示平面 #h(1fr)
@@ -88,7 +88,7 @@ order: 3
   $ t_"enter"=max{t_min}, t_"exit"=min{t_max} $
   - 算 $t_"enter"$ 和 $t_"exit"$，光线与 box 有交点的判定条件当且仅当 #h(1fr)
     $ t_"enter" < t_"exit" "&&" t_"exit" >= 0 $
-  #fig("/public/assets/courses/cg/2024-11-28-22-45-08.png",width: 60%)
+  #fig("/public/assets/Courses/CG/2024-11-28-22-45-08.png",width: 60%)
 - 包围盒的划分，一般有 Uniform grids，Spatial Partitions 和 Object Partitions 三种
 
 === Uniform Grid
@@ -105,11 +105,11 @@ order: 3
   + BSP-Tree：空间二分的方法，每次选一个方向砍一刀，不是横平竖直（并非 AABB），所以不好求交，维度越高越难算
   + *KD-Tree*：每次划分只沿着某个轴砍一刀，XYZ 交替砍，不一定砍正中间，每次分出两块，类似二叉树结构
     - KD-tree 的缺陷：不好计算三角形与包围盒的相交性（不好初始化）；一个三角形可能属于多个包围盒导致冗余计算
-  #fig("/public/assets/courses/cg/2024-11-28-22-51-25.png",width:50%)
+  #fig("/public/assets/Courses/CG/2024-11-28-22-51-25.png",width:50%)
 
 === Object Partitions
 - 对象划分 Bounding Volume Hierarchy(BVH)
-  #fig("/public/assets/courses/cg/2024-11-28-22-52-20.png",width:50%)
+  #fig("/public/assets/Courses/CG/2024-11-28-22-52-20.png",width:50%)
   - 将一个场景用一个包围盒包住，按照一定划分方案递归地将盒子划分成两组，对两组物体再求一个包围盒（$x y z$ 的最值作为边界），最终划分到叶子节点时每个都只包含少量三角形
   - 这样每个包围盒可能有相交（无伤大雅）但三角形不会有重复（不会出现在多个包围盒中），并且求包围盒的办法省去了三角形与包围盒求交的麻烦
   - 分组方法一般采用启发式
@@ -146,25 +146,44 @@ order: 3
     - Radiance 和 Irradiance, Intensity 的区别在于是否有方向性
     - 把 Irradiance 和 Intensity 联系起来，Irradiance per solid angle 或 Intensity per projected unit area
     - *Irradiance* 与 *Radiance* 之间的关系 #h(1fr)
-      $ E(p)=int_(H^2) L_i (p, omega) cos theta dif omega $
+      $ E(p) = int_(H^2) L_i (p, omega) cos theta dif omega $
 - 双向反射分布函数(Bidirectional Reflectance Distribution Function, BRDF)
   - 是一个 4D function $f(i,o)$（3D 的方向由于用单位向量表示所以少一个自由度，例如球面的 $th, phi$ 表示）
   - 如果固定 $i$，就是描述了入射($omega_i$)光线经过某个表面反射后在各个可能的出射方向($omega_r$)上能量分布（反射率）
-  $ f_r (omega_i -> omega_r)=(dif L_r (omega_r))/(dif E_i (omega_i)) = (dif L_r (omega_r)) / (L_i (omega_i) cos theta_i dif omega_i) ~~~ [1/(s r)] $
+  $ f_r (omega_i -> omega_r) = (dif L_r (omega_r))/(dif E_i (omega_i)) = (dif L_r (omega_r)) / (L_i (omega_i) cos theta_i dif omega_i) ~~~ [1/(s r)] $
 - 用 BRDF 描述的反射方程
-  $ L_r (p, omega_r)=int_(H^2) f_r (p, omega_i -> omega_r) L_i (p, omega_i) cos theta_i dif omega_i $
+  $ L_r (p, omega_r) = int_(H^2) f_r (p, omega_i -> omega_r) L_i (p, omega_i) cos theta_i dif omega_i $
   - 注意，入射光不止来自光源，也可能是其他物体反射的光（递归思想，反射出去的光 $L_r$ 也可被当做其他物体的入射光 $E_i$）
 - 推广为渲染方程（绘制方程）
-  - 物体自发光 + 反射方程，式中 $Om^+$ 表示上半球面，$p$ 是着色点
-  $ L_o (p, omega_o)=L_e (p, omega_o) + int_(Omega^+) f_r (p, omega_i, omega_o) L_i (p, omega_i) (n dot omega_i) dif omega_i $
+  - 物体自发光（用 $L_e$ 表示 emission） + 反射方程，式中 $Om^+$ 表示上半球面，$p$ 是着色点
+  $ L_o (p, omega_o) = L_e (p, omega_o) + int_(Omega^+) f_r (p, omega_i, omega_o) L_i (p, omega_i) (n dot omega_i) dif omega_i $
   - 换一个角度看，把式子通过“算子”概念简写为 $L=E+K L$ #h(1fr)
-    - 然后移项泰勒展开得到 $L=E+K E+K^2 E+...$，如下图
-    - 光栅化实质上是只考虑了前两项（直接光照），这也是为什么我们需要光线追踪
-    - 全局光照 = 直接光照(Direct Light) + 间接光照(Indirect Light)
+    - 然后移项泰勒展开得到 $L = E + K E + K^2 E + ...$，如下图
     #fig("/public/assets/Courses/CG/img-2024-07-31-23-36-46.png", width: 60%)
+    - 即我们考虑 $L_i$ 可以不止来自光源，也能来自其它物体的弹射
+    - 光栅化实质上是只考虑了前两项（直接光照），这也是为什么我们需要光线追踪
+    - *全局光照 = 直接光照(Direct Light) + 间接光照(Indirect Light)*
 
 == 蒙特卡洛路径追踪(Path Tracing)
-- 概率论基础
+- Introduction: *Rendering == Infinite-dimensional integral*
+  - 上面的渲染方程就是一个 2D integral，此外 Antialiasing by Area Sampling 也是 2D integral
+  - Motion Blur 是 3D integral，Real Camera Pixel Exposure 是 5D integral
+  - Curse of Dimensionality：维度越高，计算量越大
+    - e.g. 用 quadrature-based integration 采样不同维度的球体的效率：二维为 $pi/4$，三维为 $pi/6$，$"error" approx 1/n = 1/N^(1/d)$
+    - random sampling error: $"error" = "variance"^(1\/2) = 1/sqrt(N)$，与维度无关，仅取决于样本数量
+  - 到目前位置，蒙特卡洛是唯一能执行 general high dimensional integral 的方法
+- 概率论基础 —— 蒙特卡洛方法
+  - 概念
+    - define target integral #h(1fr)
+      $ int_a^b f(x) dif x $
+    - Uniform random variable
+      $ X_i approx p(x) $
+    - Monte Carlo Estimation
+      $ F_N = 1/N sumiN frac(f(X_i),p(X_i)) $
+  - 好处
+    - 无偏（期望值是真值），证明也很简单 #h(1fr)
+      $ E(F_N) &= E(1/N sumiN frac(f(X_i),p(X_i))) = 1/N sumiN E(f(X_i)/p(X_i)) \ &= 1/N sumiN int_a^b frac(f(x),p(x)) p(x) dif x = 1/N sumiN int_a^b f(x) dif x = int_a^b f(x) dif x $
+    - [ ] 还有其它
 - 回忆 Whitted-styled 光线追踪
   - 摄像机发射光线，打到不透明物体，则认为是漫反射，直接连到光源做阴影判断、着色计算；
   - 打到透明物体，发生折射、反射
@@ -173,16 +192,32 @@ order: 3
     + 难以处理毛面光滑材质
     + 忽略了漫反射物体之间的反射影响
 - 采用蒙特卡洛方法解渲染方程：直接光照；全局光照，采用递归
-  #fig("/public/assets/Courses/CG/img-2024-08-01-22-25-38.png", width: 70%)
+  - Basic Idea
+    $
+    "target" E(p) = int f_r L(p,om) cos th dif om \
+    X_i approx p(om), "where" p(om) = 1/(2 pi) \
+    Y_i = f(X_i) = f_r L(p,om_i) cos th_i \
+    F_N = (2 pi)/N sumiN Y_i
+    $
+  - 写成伪代码就是
+    #fig("/public/assets/Courses/CG/img-2024-08-01-22-25-38.png", width: 60%)
   - 问题一：$"rays"=N^"bounces"$，指数级增长。当 $N=1$ 时，就称为 *path tracing* 算法
     - $N=1$ 时 noise 的问题：在每个像素内使用 $N$ 条 path，将 path 结果做平均（同时也解决了采样频率，解决锯齿问题）
   - 问题二：递归算法的收敛条件。如果设置终止递归条件，与自然界中光线就是弹射无数次相悖。如何不无限递归又不损失能量？
-    - 俄罗斯轮盘赌 RussianRoulette(RR)，以一定的概率停止追踪（类似神经网络的 dropout）
-    - 期望停止次数为 $1/(1-P)$
-    - 而结果的正确性由 $E=P times L_o / P + (1-P) times 0 = L_o$ 保证
+    - 俄罗斯轮盘赌 Russian Roulette(RR)
+      - 以一定的概率停止追踪（类似神经网络的 dropout）
+      - 如果停了要把能量除以继续算的概率(reweighting)
+    - 期望停止次数为 $1/(1-P)$，而结果的正确性由 $E=P times L_o / P + (1-P) times 0 = L_o$ 保证
+    - 不过虽然是无偏，但也是有问题的，会扩大 variance（No Free Lunch: biase 跟 variance 是 trade-off 的关系，物理上叫测不准原理）
   - 问题三：低采样数的情况下噪点太多，而高采样率又费性能（当光源越小，越多的光线被浪费）
-    - _*重要性采样*_：直接采样光源的表面（其它方向概率为 $0$），这样就没有光线被浪费
-    - 蒙特卡洛在（单个像素内）立体角 $omega$ 上采样，在 $omega$ 上积分；现在对光源面采样，就需要把公式写成对光源面的积分 $ L_(o) (x, omega_(o)) & = integral_(Omega^(+)) L_(i) (x, omega_(i)) f_(r) (x, omega_(i), omega_(o)) cos theta dif omega_(i) \ & = integral_(A) L_(i) (x, omega_(i)) f_(r) (x, omega_(i), omega_(o)) (cos theta cos theta') /  norm(x^(prime) - x)^2) dif A $
+    - *重要性采样*：直接采样光源的表面（其它方向概率为 $0$），这样就没有光线被浪费。换句话说，我们希望 $p(x)$ 靠近 $f(x)$ 的分布
+      - 极端一点，如果 $p(x)$ 跟 $f(x)$ 完全相等，我们都不用采样了，一个点就能得到正确结果。这也揭示出蒙特卡洛的本质：多次采样为的是估计 $f(x)$ 跟 $p(x)$ 的差异
+      - 那现在我们把光源外的 $p(x)$ 设为 $0$，相当于引入了一定的先验知识，自然就能大大减少采样次数
+    - 蒙特卡洛在（单个像素内）立体角 $omega$ 上采样，在 $omega$ 上积分；现在对光源面采样，就需要把公式写成对光源面的积分
+      $
+      L_(o) (x, omega_(o)) &= integral_(Omega^(+)) L_(i) (x, omega_(i)) f_(r) (x, omega_(i), omega_(o)) cos theta dif omega_(i) \
+      &= integral_(A) L_(i) (x, omega_(i)) f_(r) (x, omega_(i), omega_(o)) (cos theta cos theta') /  norm(x^(prime) - x)^2) dif A
+      $
     - 这样又只考虑了直接光照，对间接光照依旧按原本方式处理
   - 最终着色计算伪代码为：
     ```
@@ -212,7 +247,8 @@ order: 3
     - 现在：一种 light transport 的广泛方法，包括 (Unidirectional & bidirectional) path tracing, Photon mapping, Metropolis light transport, VCM / UPBP
   - 如何对半球进行均匀采样，更一般地，如何对任意函数进行这样的采样？
   - 随机数的生成(low discrepancy sequences)
-  - multiple importance sampling：把对光源和半球的采样相结合
+  - multiple importance sampling：把对光源和半球的采样相结合(light and BRDF)
+    - 从相机出发、从光源出发，两种方式交叉……
   - 对一个像素的不同 radiance 是直接平均还是加权平均(pixel reconstruction filter)？
   - 算出来的 radiance 还不是最终的颜色（而且并非线性对应），还需要 gamma correction，curves, color space 等
 

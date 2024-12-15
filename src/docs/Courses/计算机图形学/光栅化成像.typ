@@ -216,7 +216,7 @@ order: 1
   - 使用内积计算内点外点
   - 使用*包围盒*(Bounding Box)减小计算量，或者 incremental triangle traversal 等
   - 问题：Jaggies（锯齿）/ Aliasing（走样，混叠）
-  #fig("/public/assets/courses/cg/2024-11-29-14-16-04.png",width:60%)
+  #fig("/public/assets/Courses/CG/2024-11-29-14-16-04.png",width:60%)
 - 需要抗锯齿、抗走样的方法，为此先介绍采样理论：把到达光学元件上的光，产生的信息，离散成了像素，对这些像素采样，形成了照片
 - 采样产生的问题(artifacts)：走样、摩尔纹、车轮效应，本质都是信号变化频率高于采样频率
   - 香农采样定理：采样频率 $>=$ 原始频率的两倍，才能很好地恢复
@@ -349,7 +349,7 @@ order: 1
     - 光栅化的时候，我们从 screen space 的 2D 坐标映射得到 world space 的 3D 坐标
     - 纹理映射的时候，我们从 world space 的 3D 坐标映射得到 texture space 的 2D 坐标 #h(1fr)
     - 简而言之就是对光栅化的屏幕坐标算出它的 $u v$ 坐标（利用三角形顶点重心坐标插值），再利用这个 $u v$ 坐标去查询 texture 上的颜色，把这个颜色信息当作这个 vertex 的颜色，再经过材质和光照模型的计算得到最终的颜色
-    #fig("/public/assets/courses/cg/2024-11-29-13-44-44.png",width:70%)
+    #fig("/public/assets/Courses/CG/2024-11-29-13-44-44.png",width:70%)
     - 虽然 texture space 看起来是个连续的空间 ($u, v in [0,1]$)，但我们往往表示为一个固定分辨率的图片，表示出来是一个个像素（a pixel on texture，简记为 *texel*，纹理元素、纹素），不可以取非整数值
 - 纹理重用 texture reuse
   - 并不是一张纹理一个物体，一个物体可以用多种纹理，一张纹理也可以贴到多个物体上
@@ -359,10 +359,10 @@ order: 1
   #grid(
     columns: 2,
     row-gutter: 4pt,
-    grid.cell(align: bottom, figure(image("/public/assets/courses/cg/2024-11-29-15-41-16.png"),caption: "Parametric Surface")),
-    grid.cell(align: bottom, figure(image("/public/assets/courses/cg/2024-11-29-15-41-37.png"),caption: "Planar Projection")),
-    grid.cell(align: bottom, figure(image("/public/assets/courses/cg/2024-11-29-15-42-08.png"),caption: "Spherical Projection")),
-    grid.cell(align: bottom, figure(image("/public/assets/courses/cg/2024-11-29-15-42-19.png"), caption: "Cubic Projection"))
+    grid.cell(align: bottom, figure(image("/public/assets/Courses/CG/2024-11-29-15-41-16.png"),caption: "Parametric Surface")),
+    grid.cell(align: bottom, figure(image("/public/assets/Courses/CG/2024-11-29-15-41-37.png"),caption: "Planar Projection")),
+    grid.cell(align: bottom, figure(image("/public/assets/Courses/CG/2024-11-29-15-42-08.png"),caption: "Spherical Projection")),
+    grid.cell(align: bottom, figure(image("/public/assets/Courses/CG/2024-11-29-15-42-19.png"), caption: "Cubic Projection"))
   )
   - Idea 1(*Parametric Surface*): 通过参数化曲面的 $(u, v)$ 表示自然得到纹理坐标
   - Idea 2(*Planar Projection*): 比如投影到 $xy$ 平面上，那 $z$ 方向上就会无限拉长，非常假
@@ -374,7 +374,7 @@ order: 1
       - 这是一个很数学的事情，包括怎么切、切的粒度如何、怎么保持测度等
       - 尤其对于 packing 步骤，我们想要最大化利用纹理空间，就要让这些小块尽可能紧凑，增加有效 texel，这就是所谓的 *Texture Atlas*。而且此时需要考虑对无效区域进行填充以保持连续性（但填充多了又会导致有效区域减少）
       - Creating Good Surface Coordinate is Hard!
-      #fig("/public/assets/courses/cg/2024-11-29-15-52-47.png",width:70%)
+      #fig("/public/assets/Courses/CG/2024-11-29-15-52-47.png",width:70%)
   - 下面我们就认为已经知道 3D 物体的每一个三角形顶点对应的纹理 $u, v in [0,1]$ 坐标
 - 三角形内插值: 重心坐标(Barycentric Coordinates)
   - 重心坐标 #h(1fr)
@@ -387,27 +387,27 @@ order: 1
 === 纹理过大过小
 - *Texture Mapping is Sampling!*
   #grid2(
-    fig("/public/assets/courses/cg/2024-11-29-14-00-29.png"),
-    fig("/public/assets/courses/cg/2024-11-29-14-00-52.png"),
+    fig("/public/assets/Courses/CG/2024-11-29-14-00-29.png"),
+    fig("/public/assets/Courses/CG/2024-11-29-14-00-52.png"),
   )
 - *Texture Magnification*：如果纹理过小(minified)，将它放大
   - 比如一个4K分辨率的墙贴上一个$256*256$的纹理，那么就会出现 uv 坐标非整数的情况
   - 使用 nearest（四舍五入）, bilinear（双线性插值, $4$）, bicubic（双三次插值, $16$）
-  #fig("/public/assets/courses/cg/2024-11-29-14-08-27.png",width: 70%)
+  #fig("/public/assets/Courses/CG/2024-11-29-14-08-27.png",width: 70%)
 - *Texture Minification*：如果纹理过大(magnified)，采用低通滤波
   - 问题：走样、摩尔纹、锯齿等（且越远越严重）。原因在于屏幕上 pixel 越远就对应越大面积的 texel（footprint 现象）；或者说，采样的频率跟不上信号的频率
   - 一个很自然的想法是类似之前抗走样所采用的超采样方法
   - 但这里提出另一种 mipmap(image pyramid) 方法：Allowing (fast, approx, square) range queries
-    #fig("/public/assets/courses/cg/2024-11-29-14-26-59.png",width:70%)
+    #fig("/public/assets/Courses/CG/2024-11-29-14-26-59.png",width:70%)
     - 离线预处理（在渲染前生成）每个 footprint 对应纹理区域（不同 level）里的均值。开销：$1+1/4+dots approx 4/3$，仅仅是额外 $33%$
     - 计算 Mip level $D$:
       - 一个很自然的想法是直接用深度，但这并不本质，有可能一个很近的物体但由于观察角度问题导致它对应的 footprint 并不小
       - 更本质的想法是直接用 footprint 大小来衡量：把 pixel 的相邻点投影到 texel，估算 footpoint 大小（近似为正方形）再取对数
-      #fig("/public/assets/courses/cg/2024-11-29-14-27-37.png",width:50%)
+      #fig("/public/assets/Courses/CG/2024-11-29-14-27-37.png",width:50%)
   - Mipmap 优化 1：但因为 level 是不连续的，通过层与层之间的插值得到连续性，避免突兀，这称为 *trilinear filtering*
   - Mipmap 优化 2：真实情况屏幕空间上的区域对应的 footprint 并不一定是正方形，导致 overblur
     - 为此提出各向异性滤波(*Anisotropic Filtering*)，开销为 $3$ 倍
-    #fig("/public/assets/courses/cg/2024-11-29-16-04-04.png",width:30%)
+    #fig("/public/assets/Courses/CG/2024-11-29-16-04-04.png",width:30%)
     - 进一步，依旧无法解决斜着的区域，用 Elliptical weighted average(EWA) Filtering
       - 把任意不规则的形状拆成很多不同的圆形，去覆盖这个形状，多次查询自然可以覆盖，但是耗时大
 
@@ -418,19 +418,19 @@ order: 1
     - 然后各个方向的光源可以用一个球体进行存储，即任意一个 3D 方向，都标志着一个 texel
     - 同样的，这个球体也可以用立方体来表示，这样展开后的纹理就是均匀的
   - 适用于什么场景呢？比如说一个大屋子里面的小茶壶，它相对整个屋子是很小的，如果假设环境光没有衰减，那它反射的光就只和方向有关。总得来说，是一个非常简单增加真实感的方法
-  #fig("/public/assets/courses/cg/2024-11-29-14-29-32.png",width:60%)
+  #fig("/public/assets/Courses/CG/2024-11-29-14-29-32.png",width:60%)
 - Bump Mapping 凹凸贴图
   - 在不改变物体本身几何形状的情况下，通过纹理来模拟物体表面的凹凸不平（凹凸只是纹理带来的错觉）
-  #fig("/public/assets/courses/cg/2024-11-29-14-33-18.png",width:50%)
+  #fig("/public/assets/Courses/CG/2024-11-29-14-33-18.png",width:50%)
 - Displacement Mapping 位移贴图
   - 与之相对，位移贴图的输入同样是一张纹理图，但它真的对几何形状进行了改变，从而对物体边缘和物体阴影有更好的效果
-  #fig("/public/assets/courses/cg/2024-11-29-16-10-35.png",width:50%)
+  #fig("/public/assets/Courses/CG/2024-11-29-16-10-35.png",width:50%)
   - mesh 上的 vertex 根据 texel 的值的大小往 normal 的方向移动一定距离
   - 这要求建模的三角形足够细到比纹理的采样频率还高
     - 但又引申出一个问题，为什么不直接在建模上体现其位移？
     - 因为这样便于修改、特效；另外，DirectX 中的动态曲面细分：开始先用粗糙的三角形，应用 texture 的过程中检测是否需要把三角形拆分的更细
   - 跟之前 Bump Mapping 的比较
-  #fig("/public/assets/courses/cg/2024-11-29-14-34-51.png",width:50%)
+  #fig("/public/assets/Courses/CG/2024-11-29-14-34-51.png",width:50%)
 - 三维纹理
   - 前面说的纹理局限于 2D，但可以扩展到 3D
   - 三维纹理，定义空间中任意一点的纹理：并没有真正生成纹理的图，而是定义一个三维空间的噪声函数经过各种处理，变成需要的样子（如地形生成）
@@ -439,7 +439,7 @@ order: 1
   - 渲染高质量的阴影代价不小（后面会讲）。但这里有一个成本低廉但能提高真实感的方法，把阴影预先计算好，直接写在 texture 里，然后把着色结果乘以阴影纹理的值
   - 预计算一个全向阴影图，跟光照方向没有关系，仅根据 accessibilty 去决定阴影（即凹的地方暗一点，凸的地方亮一点）
     - 具体来说，会对每个点套一个球，在球上采样很多点，看点和采样点之间遮挡的比例
-  #fig("/public/assets/courses/cg/2024-11-29-16-12-10.png",width:50%)
+  #fig("/public/assets/Courses/CG/2024-11-29-16-12-10.png",width:50%)
 - （讲完 Geometry 后回来），阴影映射(Shadow Mapping)
   - 图像空间中计算，生成阴影时不需要场景的几何信息；但会产生走样现象
   - Key idea：不在阴影里则能被光源和摄像机同时看道；在阴影里则能被相机看到，但不能被光源看到

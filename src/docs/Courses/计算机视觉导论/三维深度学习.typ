@@ -35,7 +35,7 @@ order: 3
 - CRF(Conditional random field)
   - U-Net 输出之后，我们会再加一步条件随机场优化能量函数
   $ E(x)= sumi th_i (x_i) + sum_(i,j) th_(i,j) (x_i,x_j) $
-  #fig("/public/assets/courses/cv/2024-11-21-10-20-09.png",width:60%)
+  #fig("/public/assets/Courses/CV/2024-11-21-10-20-09.png",width:60%)
 
 === Evaluation metric
 - 评估语义分割结果，我们使用 per-pixel 的 Intersection-over-union(IoU)
@@ -125,6 +125,8 @@ order: 3
 - 如何找 SOTA？#link("https://paperswithcode.com/sota")[Papers with code]
 
 = 3D Deep Learning
+- 都是介绍内容，基本不会考
+
 == 3D reconstruction
 === Feature matching
 - Recap: SfM, colmap
@@ -137,10 +139,10 @@ order: 3
   - handcrafted features: Geometry only, no semantics, cannot handle poor texture
   - 并且 Not robust to: viewpoint change, illumination change, motion blur
 - SuperPoint #h(1fr)
-  #fig("/public/assets/courses/cv/2024-11-21-11-44-42.png",width:70%)
+  #fig("/public/assets/Courses/CV/2024-11-21-11-44-42.png",width:70%)
 - CNN-based detectors
   - 怎么训练？监督哪来？一般是用合成数据，生成 heatmap #h(1fr)
-    #fig("/public/assets/courses/cv/2024-11-21-11-51-06.png",width:50%)
+    #fig("/public/assets/Courses/CV/2024-11-21-11-51-06.png",width:50%)
   - 数据增强，确保对仿射变换鲁棒性
     $ min_f 1/n sumin norm(f(g(I)) - g(f(I)))^2 $
 - CNN-based descriptors
@@ -223,7 +225,7 @@ order: 3
 - Deep learning on *volumetric data*
   - volumetric data: Voxel + occupancy
   - *3D ConvNets*: 使用 3D 卷积核处理体素数据 #h(1fr)
-    #fig("/public/assets/courses/cv/2024-11-28-11-29-47.png",width:50%)
+    #fig("/public/assets/Courses/CV/2024-11-28-11-29-47.png",width:50%)
     - Challenge: High space/time complexity of high resolution voxels: $O(N^3)$
   - *Sparse ConvNets*: 使用 3D shapes 的稀疏性
     - Store the sparse surface signals (Octree)
@@ -239,12 +241,12 @@ order: 3
     + 输出应该跟 rigid transformation of points 无关
   - *PointNet*: A point cloud processing architecture for multiple tasks(classification, detection, segmentation, registration, etc)
     - 以 Classification and Segmentation Architecture 为例
-      #fig("/public/assets/courses/cv/2024-11-28-11-38-10.png")
+      #fig("/public/assets/Courses/CV/2024-11-28-11-38-10.png")
     - Challenge 1: 不能用卷积，那就用 MLP（隐患：No *local context* for each point）
     - Challenge 2: 对 MLP 输出的特征，使用 max pooling 消除 order 信息
     #grid2(
-      fig("/public/assets/courses/cv/2024-11-28-11-42-19.png",width:60%),
-      fig("/public/assets/courses/cv/2024-11-28-11-44-00.png",width:60%)
+      fig("/public/assets/Courses/CV/2024-11-28-11-42-19.png",width:60%),
+      fig("/public/assets/Courses/CV/2024-11-28-11-44-00.png",width:60%)
     )
     - Challenge 3: 使用另一个网络 T-Net 来估计 transformation
   - *PointNet++*: Hierarchical structure for point cloud processing
@@ -253,7 +255,7 @@ order: 3
       + Sampling: Sample anchor points by Farthest Point Sampling (FPS)
       + Grouping: Find neighbourhood of anchor points
       + Apply PointNet in each neighborhood to mimic convolution
-      #fig("/public/assets/courses/cv/2024-11-28-11-50-31.png",width:50%)
+      #fig("/public/assets/Courses/CV/2024-11-28-11-50-31.png",width:50%)
 - Deep learning on *meshes*
   - 基本上是渲染成图片，用 Multi-view 的方式处理
 - Deep learning on *RGBD images or Depth images*
@@ -273,7 +275,7 @@ order: 3
   - 回忆 2D Object Detection 中: $(x,y,w,h)$
   - 3D bouding box: $(x,y,z,w,h,l,r,p,y)$ #h(1fr)
     - $x,y,z$ 就是中心，然后还多了欧拉角 roll, pitch, yaw 的描述
-  #fig("/public/assets/courses/cv/2024-11-28-11-57-04.png",width:40%)
+  #fig("/public/assets/Courses/CV/2024-11-28-11-57-04.png",width:40%)
   - Simplified bbox: no roll & pitch
   - 可以看到比 2D 难得多
 - The first attempt: classify sliding windows
@@ -282,11 +284,11 @@ order: 3
 - PointRCNN: RCNN for point cloud
   - 但是 3D 目标检测比 2D 好的一个点在于，它几乎不会重叠（可能会挨着，但是分离的）
   - 基本思想是，把前景和背景分开，前景的 points 用聚类的方式生成好多 proposal，然后再用 PointNet++ 之类做细粒度的预测
-  #fig("/public/assets/courses/cv/2024-11-28-12-00-30.png",width:80%)
+  #fig("/public/assets/Courses/CV/2024-11-28-12-00-30.png",width:80%)
 - Frustum PointNets: Using 2D detectors to generate 3D proposals
   - 很多时候数据不止点云，还连带着 2D 图像（比如无人驾驶，除了重建出的点云之外，相机拍摄的原始 RGB 图像就可以拿来利用）
   - 然后利用 2D 的 proposal 生成方式，在 3D 里就对应一个视锥，这样也生成了一种 proposal 来减少候选框
-  #fig("/public/assets/courses/cv/2024-11-28-12-00-00.png",width:50%)
+  #fig("/public/assets/Courses/CV/2024-11-28-12-00-00.png",width:50%)
 
 === 3D Instance Segmentation
 - Input: 3D point cloud
@@ -313,3 +315,50 @@ order: 3
   - KITTI: LiDAR data, labeled by 3D bboxes
   - Semantic KITTI: LiDAR data, labeled per point
   - Waymo Open Dataset: LiDAR data, labeled by 3D b.boxes
+
+
+#hline()
+#note(caption: "考试范围")[
+  + Introduction
+  + Image Formation
+  + Image Processing
+  + Model Fitting and Optimization
+  + Image Matching and Motion Estimation
+  + Image stitching（东西不太多）
+    - 大致的过程
+    - 求解各种变换最少需要几个点？
+    - 有 outliers 的处理，用 RANSAC
+    - 全景图
+  + Structure from Motion（最难最常考）
+    - 三维下的成像模型、相机模型（变换、内外参矩阵）
+      - 尽量记一下公式
+    - 相机标定以及视觉定位
+      - 需要知道大概的流程
+    - SfM 对极几何
+      - 也是大概的流程，然后要知道几个自由度、要几个点
+    - SfM 三角测量
+    - 多帧的 SfM
+      - 需要知道 BA 是个什么东西
+  + Depth estimation and 3D reconstruction
+    - 深度传感器的分类
+    - 深度估计的算法：双目立体匹配
+      - line equation 怎么写？
+      - 水平线情况、任意情况（需要矫正）
+      - 整个流程如何？
+    -  多视图立体匹配 MVS
+      - 知道 basic idea 即可，plane-sweep 不考，patch-match 知道用处就行
+    - 三维重建的几种表示
+    - 三维表面重建的流程
+      - 需要知道 poisson reconstruction 和 marching cubes 的基本思想，具体的可以不用记
+      - Neural Scene Representation 不考（失望）
+  + Deep Learning
+    - 就考一些最基本的概念，比如激活函数的作用，MLP、CNN 的公式表示，卷积核尺寸的计算
+  + Recognition
+    - 每个任务的输入输出，以及我们讲过的代表性方法（至少记个名字，最好记个思想，但细节比如网络结构没必要）
+  + 3D Deep Learning
+    - 3D understanding 一节的任务输入输出
+  + Computational Photography
+    - HDR 比较简单
+    - deblurring，怎么描述，怎么去模糊
+    - 图像上色、GAN 等不好出题
+]

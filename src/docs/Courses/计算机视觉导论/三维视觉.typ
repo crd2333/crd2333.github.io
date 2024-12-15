@@ -203,7 +203,7 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
 - 需要解决的几个关键问题
   - 相机是如何将三维坐标点映射到图像平面上的？(camera model)
   - 如何计算相机在世界坐标系下的位置和方向?(camera calibration and pose estimation)
-  - 如何从图像中重建出不知道的三维结构？(structure from motion)
+  - 如何从图像中重建出未知的三维结构？(structure from motion)
 #q[这一章节可以部分参考我的 #link("https://crd2333.github.io/note/AI/SLAM/index/")[SLAM 笔记]，以及 SLAM 视觉十四讲]
 
 == Camera Model
@@ -281,7 +281,7 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
   + Find 3D position of scene points
 
 === Epipolar Geometry 对极几何
-- 描述同一个 3D 点，在不同视角的两张图片特征点之间的对应集合关系(2D-2D)
+- 描述同一个 3D 点，在不同视角的两张图片特征点之间的对应集合关系(2D-2D)（也就是上面步骤中的第二步）
 #fig("/public/assets/Courses/CV/2024-10-31-11-09-07.png", width: 70%)
 - 在正式开始之前先描述一些术语
   - 基线：两个相机中心的连线，$O_l O_r$
@@ -301,7 +301,7 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
   + Extract $R$ and $bt$ from $E$
 
 === Triangulation 三角测量
-- 有了对应的二维特征点，相机参数以及两个相机坐标系的相对位置关系，下一步就是计算出场景点的实际三维坐标
+- 有了对应的二维特征点，相机参数以及两个相机坐标系的相对位置关系，下一步就是计算出场景点的实际三维坐标（也就是上面步骤中的第三步）
 - 左右两个相机的投影矩阵分别可以得到一个 3D-2D 的对应关系
   $
   bu_l = K_l mat(R, bt; b0, 1) bx_r, ~~~~~~ bu_r = K_r bx_r
@@ -479,7 +479,7 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
 - 这个做法其实很直观，就是寻找体素中有 $0$ 和 $1$ 转化的地方，提取中点，生成三角面片。下图很直观地展示二维和三维的情况
 #fig("/public/assets/Courses/CV/2024-11-07-12-13-38.png", width: 60%)
 #fig("/public/assets/Courses/CV/2024-11-07-12-09-18.png", width: 60%)
-- [ ] 这里比较粗略（
+- [ ] 这里比较粗略，复习的时候可能会补充一下（
 
 #v(1em)
 

@@ -337,7 +337,7 @@
     #fig("/public/assets/Courses/OS/2024-11-13-16-25-55.png")
     - 这样，右图的 user stack 就处在连续的虚拟地址下，但它们经页表映射后的帧并不连续，而且不一定都在内存中
   ],
-  fig("/public/assets/courses/os/2024-11-19-14-27-31.png", width:50%)
+  fig("/public/assets/courses/OS/2024-11-19-14-27-31.png", width:50%)
 )
 
 == Demand Paging
@@ -999,7 +999,6 @@
 
 = File System Implementation
 == Layered File System
-
 #wrap-content(
   align: right,
   column-gutter: 2em,
@@ -1020,18 +1019,46 @@
     - I/O Control
       - 将上层的指令转换为 low-level, hardware-specific 的指令来实现相关操作。同时也可以发中断
   ]
--
 
+== File System Data Structures
+- On-disk structures
+  - 可持久化的(persisitant)
+  - An optional *boot control block*
+  - A *volume control block*
+  - A *directory*
+  - A *per-file File Control Block (FCB)*
+- In-memory structures
+  - 易失的(volatile)
+  - A *mount table* with one entry per mounted volume
+  - A *directory cache* for fast path translation (performance)
+  - A *global open-file table*
+  - A *per-process open-file table*
+  - Various *buffers* holding disk blocks “in transit” (performance)
+- File Control Block
+  - FCB 之于文件系统就像 PCB 之于进程，是非常重要的
+  - 在 UNIX 中，FCB 被称为 inode；在 NTFS 中，每个 FCB 是一个叫 master file table 的结构的一行
+  - 左图为典型的 FCB 结构所包含的信息
+  - 右图为 `ext2_inode` 的结构，前面的是 metadata，后面存有数据块的指针
+  #grid2(
+    fig("/public/assets/Courses/OS/2024-12-10-14-22-22.png",width:60%),
+    fig("/public/assets/Courses/OS/2024-12-10-14-22-30.png")
+  )
 
+== File Creation & Open & Close
+- *File Creation*
+  - 逻辑文件系统为这个新的文件分配一个新的 FCB（与文件一对一映射），随后把它放到一个目录里，将对应的 directory 读到内存，并用 filename 和 FCB 更新 directory
+- *File Open*
+  - 系统调用 `open()` 将文件名传给 logical file system，后者搜索 *system-wide(global) open-file table* 以确定该文件是否正在被其他进程使用。
+    - 如果有，则直接在当前进程的 per-process open-file table 中新建一个 entry，指向 system-wide open-file table 中的对应项即可，并且 increment the *open count*
+    - 否则，需要在 directory 中找到这个 file name，将其 FCB 从磁盘加载到内存中，并将其放在 system-wide open-file table 中。然后，在当前进程的 per-process open-file table 中新建一个 entry，指向 system-wide open-file table 中的对应项
+    - （这里的 index 就是 file descriptor
+  #fig("/public/assets/Courses/OS/2024-12-10-14-28-23.png",width:70%)
+- *File Close*
+  - 至于关闭，就是 Open 的逆过程
+  - per-process open-file table 中对应 entry 将被删除，system-wide open-file table 中的 counter 将被 $-1$
+  - 如果该 counter 清零，则更新的 metadata 将被写会磁盘上的 directory structure 中，system-wide open-file table 的对应 entry 将被删除
+- 在 Unix(UFS) 里面 System-Wide Open-File Table 会放设备、网络，所以我们的设备也是用文件来表示的，读写文件相当于读写设备
 
-
-
-
-
-
-#v(80em)
-#pagebreak()
-#v(2em)
 #note(caption: "我们现在学过几种 Table？")[
   + Segment Table
   + Page Table
@@ -1041,4 +1068,181 @@
   + Syscall Table
   + File Table
   - 思考：每个 table 长什么样（包含什么）？它们的 number 代表什么含义？
+]
+
+== Virtual File Systems
+- 操作系统可以同时支持多种类型的文件系统
+  - e.g. FAT32, NTFS, Ext2/3/4
+  - but how？
+    - 一个叫 David Wheeler 说过: All problems in computer science can be solved by another level of indirection#strike[, except for the problem of too many layers of indirection]
+    - 也就是分层抽象，我们加一层 virtual file system (VFS)
+  #fig("/public/assets/Courses/OS/2024-12-10-14-34-36.png",width:50%)
+- VFS provides an *object-oriented way* of implementing file systems
+  - 操作系统为 FS 定义一套 common interface，所有 FSEs 需要实现它们
+  - Syscall 基于 common interface 实现
+- VFS Implementation
+  - e.g.: Write syscall $->$ `vfs_write` $->$ indirect call $->$ `ext4_file_write_iter`
+  #fig("/public/assets/Courses/OS/2024-12-10-14-43-43.png",width:70%)
+  - 在需要调用某个函数时，去对应 FS 的函数表的约定位置找到函数指针就可以访问了。这和 C++ 中多态的虚函数表是类似的
+  - 在创建这个文件的时候，`file->f_op` 就被设为了对应的函数表的地址（`f_op` 是指针）
+  - `struct file` 里存了文件的 `file_operations`，但没有存文件的 type，因为我们有知道操作对应 fs 的文件，就不需要知道文件的类型了
+
+== Directory Implementation
+- 在 Linux 上，Directory 就是一个 special file，存储 file name 到 inode 的映射
+  - L: Directory == File; W: Directory != File
+  - Linux 这样的优点是接口相同，不用额外设计一套；缺点是容易搞混。这跟 Process V.S. Thread 类似，windows 把它们分开，而 linux 都用 `task_struct` 描述
+- 我们这里讲的是 linux 实现
+  - 它的数据块有自己的名字（目录项 `dir_entry`），每一个目录项有一个 inode 号、目录项长度、名字长度
+    - 目录项 $4$ 对齐是为了重用，比如删除了 `a` 又创建 `bb`，可以直接重用
+    - 之所以要存“目录项长度”，是为了加速搜索，典型的用空间换时间
+  #fig("/public/assets/Courses/OS/2024-12-10-14-51-24.png",width:70%)
+  - e.g. `/home/stu/a, bb, ccc, test`，对 `/home/stu` 这个目录的数据块：
+    - How many entries? $4$ 个
+    - What's the structure? 比如对 `a` 这个目录项，inode 号占 $4$ 个 bytes，目录项长度占 $2$ 个 bytes，长度为 $9=4+2+2+1 -> 12$（$4$ 对齐），文件名长度占 $2$ 个 bytes，长度为 $1$，文件名为 `a` 占 $1$ 个 byte
+    - How to open `a`? 先去 `/` 对应的数据块里找 `home` 的文件名，拿出这个目录项的 inode；然后去 inode 指向的数据块里继续……
+- 遍历
+  - 最简单的实现方式是 linear list，即维护 `dir_entry[]`，这种方案的缺点是查找文件很费时
+  - 使用有序数据结构（有序表、平衡树、B+ 树等）能够优化这一问题
+  - 或者使用 hash table，尤其有利于那种经常访问小碎片文件的情况
+- 创建
+  - Consider directory and FCB
+  - 先分配一个新的 inode，然后找到当前目录的 inode，在其指向的数据块里加上一个目录项
+
+== Disk Block Allocation
+- Files need to be allocated with disk blocks to store data，这里介绍 3 种不同的 policy
+
+=== Allocation Policies
+#wrap-content(
+  align: right,
+  [
+    #fig("/public/assets/Courses/OS/2024-12-10-15-15-40.png",width:70%)
+    #fig("/public/assets/Courses/OS/2024-12-10-15-29-27.png",width:70%)
+    #fig("/public/assets/Courses/OS/2024-12-10-15-29-14.png",width:70%)
+  ],
+  [
+    - *Contiguous Allocation*
+      - Each file is in a set of contiguous blocks
+      - Can be difficult to find free space: Best Fit, First Fit, .etc
+      - 优点是顺序访问很快，同时目录也只需要维护文件的起始 block 及其长度；
+      - 缺点跟之前类似，会带来 external（但不同的是，这里磁盘通常够大，我们可能不在意这个问题）；另外文件可能会增大，需要重新分配空间（这是数组的问题，那就自然引出 linked list）
+    - *Linked Allocation*
+      - Linked allocation: each file is a linked list of disk blocks
+      - 优点：允许块分布在磁盘上的任何地方，只需要维护每个块的下一个块的地址即可。这样就没有外部碎片了
+      - 缺点是定位某个块需要遍历链表，需要很多 IO；而且 reliablity 也不好，如果某个块的指针坏掉，后面的块就都访问不到了；而且这种实现方式不支持 random access
+    - *Indexed Allocation*
+      - Indexed allocation: each file has its own index blocks of pointers to its data blocks
+      - 用一个块只做 index，里面存放指向数据块的指针
+      - 优点是这样可以支持 random access
+      - 缺点是 reliability 不好，如果 index 块坏了，文件就访问不到了；并且浪费空间（需要一个块做 index）
+      - 需要一个方法分配 index block 的大小（太大会浪费，太小那么指向的空间小）。我们可以把 index block 链接起来，用多级索引
+    - *Multi-level Indexed Allocation* (combined scheme, like Page Table)
+      - 我们之前说的 inode 实际上就是这里的 index block
+      - direct block 最快，indirect blocks 需要更高的 seek time（做了个权衡）
+      - 需要会算它在不同 Page Size 下能 index 的大小
+      #fig("/public/assets/Courses/OS/2024-12-10-15-23-17.png",width:90%)
+    ]
+  )
+
+=== Free-Space Management
+#wrap-content(
+  align: right,
+  [
+    #fig("/public/assets/Courses/OS/2024-12-10-15-48-44.png",width:80%)
+  ],
+  [
+    - *Bitmap*
+      - 每一个 block 都用一个比特记录分配状态
+      - 容易找到连续的空闲空间，但是占用额外空间
+      - 额外空间占用计算
+      #fig("/public/assets/Courses/OS/2024-12-10-15-30-36.png",width:50%)
+      - Clutster 优化：如果每 $4$ 个 block 用一个 bit 表示，能稍微少一些
+    - *Linked Free Space*
+      - Keep free blocks in linked list
+      - 好处是不会浪费空间
+      - 缺点是不能快速找到连续的空闲空间，效率低；以及 reliability 不好，断一个后续都无法访问
+  ]
+)
+- *Group*
+  - Use indexes to group free blocks. Store address of n-1 free blocks in the first free block, plus a pointer to the next index block
+  - 跟 bitmap 一样，加大粒度。维护若干个 block 形成的链表，每个 block 保存若干空闲块的地址
+- *Counting*
+  - a link of clusters (starting block + the number of contiguous blocks)
+  - 维护的是连续的空闲块的链表，即链表的每个结点是连续的空闲块的首块指针和连续空虚块的数量
+
+== File System Performance and Reliability
+- To improve file system performance
+  - Keeping data and metadata *close together*
+  - Use *cache*
+    - *asynchronous writes*，也是写到 cache 里，然后异步写到磁盘
+    - *Free-behind and read-ahead*: read-ahead 把后面的 block 也读到 cache 里
+    - 一个异常现象 —— Reads slower than write，这是因为 read 通常是对新文件，而 write 可以直接写到 cache 里
+    - Page Cache
+- Recovery
+  - *Log Structured File Systems*
+
+#takeaway[
+  - File system layers
+  - File system implementation
+    - On-disk structure, in-memory structure
+    - *inode*
+  - File `creation()`, `open()`
+  - *VFS*
+  - Directory Implementation
+  - *Allocation Methods*
+    - Contiguous, linked, indexed
+  - Free-Space Management
+]
+
+== File System Implementation --- In Practice
+- Two key Abstraction
+  - *File*
+    - A linear array of bytes
+    - External name (visible to user) must be symbolic
+    - Internal name (low-level names): inode number in UNIX
+  - *Directory*
+    - translation from external name to internal name
+    - 每个 entry 要么存储 pointer to file，要么是其它 directory
+- File Descriptor
+  - 每个进程有自己的 file descriptor table，file descriptor 是其中的索引
+  - 每个 file descriptor entry 包含一个 file object（即一个打开的文件），指向一个 inode
+  - 简单来说，就是一个用来索引已打开文件的数字
+  #fig("/public/assets/Courses/OS/2024-12-11-20-37-18.png",width:40%)
+- Getting information about files
+  - linux 的 file information 存储在 `struct stat` 中
+  - 通过同名 `stat` 命令进行查看
+- Link (hard V.S. soft)
+  - 当我们在 `remove` or `delete` 一个文件时，如果用 `strace` 会发现它使用的是 `unlinkat` 系统调用
+  - 一个文件可能被多个目录以多个名字引用，这就是 link，有 hard 和 soft 两种
+  - A *hard link* is a *directory entry* that associates with a file
+    - 比如 `.` 是 directory 本身的 hard link，`..` 是 parent directory 的 hard link
+    - `ln file link` 创建一个 hard link，实际上就是在 directory 的数据块里面加了一个 inode 一样但 file name 不一样的目录项
+      - 这个 `link` 可以跟 `file` 一样被执行
+      - 因此当我们 `rm file` 时，只是删除了一个目录项，由于 hard link 的存在，文件并不会真正删除而只是计数减一
+  - A *soft link* is a *file* containing *the path name of another file*
+    - soft link 也叫 symbolic link or symlink
+    - 比如，`ln -s file link` 创建一个 soft link，它的 inode 跟 `file` 不同，它作为一个文件存储了 `file` 的路径
+      - 因此当我们 `rm file` 时，soft link 还存在但会失效，对它进行操作会爆 `No such file or directory` 错误
+  - soft link 可能指向 directories，但是 hard link 不行；而且 soft link 可能 cross filesystem boundaries；两种 link 比起来，hard link 更经济但没 soft link 灵活
+- 实际的 File System Organization 例子
+  - 需要存储 data block, inode, bitmap, superblock
+  - data block 最大，给它分配 $56$
+  - 假设每个 inode 占 $256 bytes$，$4KB$ 可以放 $16$ 个 inode，那么 $5$ blocks 即可 hold $80>64$ 个 inode
+  - 剩下三个 block，一个放 bitmap for free inodes，一个放 bitmap for data region，一个放 superblock
+  - 要 read No. 32 inode，去找 $20KB$ 对应的块
+  #grid2(
+    column-gutter: 4pt,
+    fig("/public/assets/Courses/OS/2024-12-11-20-33-13.png"),
+    fig("/public/assets/Courses/OS/2024-12-11-20-33-31.png")
+  )
+- 一个实际的例子 read or write `/foo/bar`，尝试说出每一步是在 read/write 哪一部分的什么数据
+  #grid2(
+    column-gutter: 4pt,
+    fig("/public/assets/Courses/OS/2024-12-11-20-35-04.png"),
+    fig("/public/assets/Courses/OS/2024-12-11-20-35-20.png")
+  )
+
+#takeaway[
+  - File Descriptor
+  - Link (hard and soft)
+  - File System Organization
 ]

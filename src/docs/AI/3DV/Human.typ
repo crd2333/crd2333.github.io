@@ -60,7 +60,7 @@ draft: true
   + Skeleton binding：在工具的帮助下创建一个跟 mesh 匹配的 skeleton，绑定上跟 game play 相关的 joint
   + skinning：在工具的帮助下通过权重绘制，将骨骼和 mesh 结合起来
   + Animation creation：做关键帧，之后插值出中间动画
-  #fig("/public/assets/AI/human/2024-11-02-19-54-23.png", width: 50%)
+  #fig("/public/assets/AI/Human/2024-11-02-19-54-23.png", width: 50%)
 - 这里额外拓展一下做动画的其它方法（从 GAMES104 看来的）。实际上业界做动画的几种方式里面，骨骼动画是最基础最广泛的一种，但绝不是唯一（主要是想讲一下 blend shape 方法，因为后面会提到）
   + 对于动作比较小又追求高精度的地方（典型的比如人体面部表情），骨骼动画就不那么适用了，这时候就需要 *Morph 动画*，每个关键帧都存储了 Mesh 所有顶点对应时刻的位置
     - 这样精度是上去了，但内存占用也变得不可接受。很自然地我们会想，能不能只存储从中性形状 Mesh 到目标形状 Mesh 的 offset，用插值来确定这个形变的强弱，并且用少量这种基础形状的组合(blend)来产生动画呢？

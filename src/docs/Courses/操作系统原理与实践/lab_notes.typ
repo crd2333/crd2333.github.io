@@ -231,6 +231,18 @@
     - 而对于一个单纯的 S-Mode 线程，规定 `sscratch=0`
 
 = Lab5
+== `do_page_fault()` 拷贝逻辑
+- 通过 `stval` 获得 bad_addr，`find_vma()` 查找是否有对应的 `vm_area_struct`。如果没有或者有但是权限不对就报错，否则它是一个 valid page fault
+- 为此，申请一个 page，然后不论是 anonymous 还是 file-backed，都创建这个 page 的映射
+- 而如果是 file-backed，还需要从 elf 文件中读取 segment 来填充它，这里的对齐情况比较复杂，如图
+  #fig("/public/assets/Courses/OS/2024-12-16-00-35-01.png", width:90%)
+  + case 1: `vm_start                  <= stval < PGROUNDUP(vm_start)`
+  + case 2: `PGROUNDUP(vm_start)       <= stval < PGROUNDDOWN(vm_seperator)`
+  + case 3: `PGROUNDDOWN(vm_seperator) <= stval < vm_seperator`
+  + case 4: `vm_seperator              <= stval < PGROUNDUP(vm_seperator)`
+  + case 5: `PGROUNDUP(vm_seperator)   <= stval < PGROUNDDOWN(vm_end)`
+  + case 6: `PGROUNDDOWN(vm_end)       <= stval < vm_end`
+
 == 进程返回逻辑
 === 父进程
 - 父进程的逻辑相对简单，它的过程是：
@@ -243,7 +255,7 @@
 === 子进程
 - 每个内核页的低地址为 `task_struct`，高地址为内核栈（其中存储了 `pt_regs`）。我们把父进程内核页基地址记为 `F`，子进程创建的基地址记为 `C`，并从 `F ~ F + PGSIZE` 处拷贝内容。拷贝来的内容大多不用变，但部分涉及到地址的值有错位
 - `do_fork` 函数的参数 `regs` 和返回值都是基于父进程的；而对子进程来说，它的返回值和信息都存在 `C ~ C + PGSIZE` 部分的 `task_struct` 和 `pt_regs` 里
-#fig("assets/lab5/kernel_page.png",caption: "the two kernel pages")
+#fig("/public/assets/Courses/OS/2024-12-16-00-33-08.png", width:90%)
 - 基于这两个思想，`do_fork` 中子进程的几个乱七八糟的指针设置如下：
   - 设置子进程的 `task->thread.sp` 为子进程 `pt_regs` 的指针
     - `pt_regs` 的指针对父进程和子进程是不同的，但在页内的偏移量相同
