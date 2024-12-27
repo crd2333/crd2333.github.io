@@ -46,10 +46,11 @@
 
 = Introduction
 - 复习计组的东西
+  - 略
 - UNIX family tree
   - NUIX, BSD, Solaris, Linux...
   - Ubuntu = Linux Core + GNU
-- Kernel 的工作是抽象封装和资源管理
+- Kernel 的工作是抽象封装和资源管理 —— abstraction and allocation
 - 对 OS 的一个最常见误区是“一个 running program”，事实上 OS 在启动后一般是闲置的，并且要求内存占用小
   - It's code that resides in memory and is ready to be executed at any moment
   - It can be executed on behalf of a job(or process in modern terms, a process is a running job)
@@ -109,7 +110,7 @@
   [
     - ELF binary basics
       - ELF: Executable and Linkable Format
-      - `.text`: code, `.rodata`: initialized read-only data, `.data`: initialized data, `.bss`: block started by symbol
+      - `.text`: code, `.rodata`: initialized read-only data, `.data`: initialized data, `.bss`: block started by symbol(initialized data)
     - Linking
       - Static linking
         - 把所有需要的代码都 link 到一个 large binary 中，移植性好
@@ -175,8 +176,9 @@
 
 = Processes
 == Process concept
+- 什么是 process？#underline[Resource Allocation and Protection] Unit
 - Process memory layout
-  - 一般来说 stack 会比 heap 快得多，因为大多数时候里 cache 里
+  - 一般来说 stack 会比 heap 快得多，因为大多数时候会在 cache 里
   - 当 stack meets heap 时，会发生著名的 stack overflow（常见于错误递归的情况）
   #fig("/public/assets/Courses/OS/2024-10-08-13-40-04.png", width: 80%)
 - Stack Frame (Activation Record)
@@ -184,7 +186,7 @@
     - 这里讲课用的是 arm64 的寄存器规定
   #fig("/public/assets/Courses/OS/2024-10-08-13-54-25.png", width: 80%)
 - Process Control Block (PCB)
-  - 一个进程的所有信息都在 PCB 里，linux 里面叫 `task_struct`
+  - 一个进程的所有信息都在 PCB 里，linux 里面叫 `task_struct`（严格来说它是 for thread 的，但 linux 并不区分二者）
   - 会有一个链表把所有 PCB 串起来
   - 一般至少有以下信息：
     + Process state: running, waiting, etc
@@ -234,7 +236,8 @@
   - `waitpid()` 等待指定 child process 结束
   - 但对于非正常结束的进程，需要用 `signal` 来处理
 - signal
-  - *signal* 是一个 asynchronous event，程序必须以某种形式对它做出反应，可以把它想象成 software interrupt
+  - *signal* 是一个 asynchronous event，程序必须以某种形式对它做出反应
+    - 可以把它想象成 software interrupt（但不是一回事，二者没有关系，一个是底层的、一个是应用层的，只是个类比）
   - `signal()` 允许程序指定如何处理 signal
     ```c
     signal(SIGINT, SIG_IGN);    // ignore signal
@@ -262,13 +265,16 @@
 - Context Switch
   #fig("/public/assets/Courses/OS/2024-10-30-17-25-36.png", width: 60%)
   - 这里的 context 指的就是 registers，因为它们只有一份，所以需要保存
-  - context switch 一定得是在 Kernel Mode，即 privileged，因为它涉及到系统资源、能改 pc
+  - context switch 一定得是在 Kernel Mode，即 privileged，因为它涉及到系统资源（决定了 CPU 的使用）、能改 pc
   + 如果 switch 发生在 kernel mode，就跟实验 2 里做的一样。在 `cpu_switch_to` 把 context 存到相应 PCB 里
-  #fig("/public/assets/Courses/OS/2024-10-30-17-32-21.png", width: 80%)
+    #fig("/public/assets/Courses/OS/2024-10-30-17-32-21.png", width: 80%)
   + 如果 switch 发生在 user mode，还牵涉到 per-thread kernel stack，更确切地说是 pt_regs(user context been saved)。在 `kernel_entry` 时把 context 存到 `pt_regs`，切换到 kernel stack，然后在 `kernel_exit` 时恢复
-  #fig("/public/assets/Courses/OS/2024-10-09-17-44-58.png", width: 80%)
-  - 这里可以思考一下 user stack 和 kernel stack 有什么不同？1. user space 的栈空间无限，而 kernel space 有限；2. kernel space 在栈开始的地方多了个 `pt_regs`（kernel stack 里面有两个 pc，context 里面的是 kernel 的 pc，`pt_regs` 里面的是 user 的 pc）
+    #fig("/public/assets/Courses/OS/2024-10-09-17-44-58.png", width: 80%)
+  - 这里可以思考一下 user stack 和 kernel stack 有什么不同？
+    + user space 的栈空间无限，而 kernel space 有限；
+    + kernel space 在栈开始的地方多了个 `pt_regs`（kernel stack 里面有两个 pc，context 里面的是 kernel 的 pc，`pt_regs` 里面的是 user 的 pc）
   #fig("/public/assets/Courses/OS/2024-10-30-17-37-34.png", width: 50%)
+  #align(center)[#text(fill: gray.darken(40%), [老师所谓的神图])]
   - 思考 `fork()` 为什么能返回两个值(Return new_pid to parent and zero to child)？
     - 其实是有两套 user space context
     + 对 parent process，`fork()` 就是一个 syscall，返回值存在 `pt_regs` 里
@@ -367,14 +373,14 @@
 
 = Threads
 == Thread Concept
-- 回顾，process = code(text) section + data section + pc + registers + stack + heap
+- 回顾：Process = code(text) section + data section + pc + registers + stack + heap
 - How can we make a process faster?
   - Multiple execution units with a process
   #fig("/public/assets/Courses/OS/2024-10-16-19-42-10.png", width: 80%)
 - Thread's definition: a basic unit of execution within a process
   - 当我们提出 thread 概念后，不分线程的单个进程就视为 single threaded process
   #fig("/public/assets/Courses/OS/2024-10-16-19-42-26.png", width: 60%)
-  - 每个 thread 有：
+  - 每个 thread 有自己的：
     + thread ID
     + program counter
     + register set
@@ -544,7 +550,9 @@
 + Priority Scheduling
 + Multilevel Queue Scheduling
 + Multilevel Feedback Queue Scheduling
-- 一般用 *Waiting Time*, *Turnaround Time* 来比较，要学会画 Gantt 图和计算（多个 examples）
+- 一般用 *Average Waiting Time*, *Average Turnaround Time* 来比较，要学会画 Gantt 图和计算（多个 examples）
+  - Waiting time = start time – arrival time
+  - Turnaround time = finish time – arrival time
 - FCFS: First-Come, First-Served Scheduling 字面意思理解
 - SJF
   - 分两种，Preemptive 和 Non-preemptive
@@ -630,7 +638,7 @@
   - Multiple-processor: preventing interrupts are not feasible (depending on if kernel is preemptive or non-preemptive)
     - Preemptive – allows preemption of process when running in kernel mode
     - Non-preemptive – runs until exits kernel mode, blocks, or voluntarily yields CPU
-- Solution to Critical-Section: Three Requirements
+- Solution to Critical-Section: *Three Requirements*
   - Mutual Exclusion（互斥访问）
     -在同一时刻，最多只有一个线程可以执行临界区
   - Progress（空闲让进）
@@ -672,6 +680,7 @@
   + Only works for two processes case
   + It assumes that LOAD and STORE are atomic
   + Instruction reorder: 指令会乱序执行
+  - 虽然不现实，但它很小、简单，且能满足上述三个要求，可以给一些启发
 
 == Hardware Support for Synchronization
 - 既然软件上实现有困难，那就硬件上解决。Many systems provide hardware support for critical section code
@@ -776,7 +785,7 @@
 
 == Mutex Lock
 - Mutex Locks 支持 `acquire()`（获得这个锁）和 `release()`（释放这个锁）。它们是原子的
-- This solution requires busy waiting, This lock therefore called a spinlock
+- This solution requires busy waiting, This lock therefore called a *spinlock*（在我们课上 mutex lock == spinlock）
   ```c
   bool locked = false;
   acquire() {
@@ -809,7 +818,7 @@
   ```
   - 利用 Semaphore
     - 现在 critical section 不再是 busy waiting 了
-    - 但注意 wait, signal 是需要 atomic 的，所以我们需要用 mutex lock 来保护这两个操作，这里还是 busy waiting 的
+    - 但注意 wait, signal 是需要 atomic 的，所以我们需要用 spinlock 来保护这两个操作，这里还是 busy waiting 的
     ```c
     Semaphore sem; // initialized to 1
     do {

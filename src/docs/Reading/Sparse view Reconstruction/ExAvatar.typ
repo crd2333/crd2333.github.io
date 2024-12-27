@@ -56,23 +56,23 @@ draft: true
 - 所谓 short monocular video，假定是在 in-the-wild(one person in natural background)环境下拍摄的 30s 的 frames
 - 在训练 ExAvatar 之前，需要做前处理也就是用 SMPL-X regressor 粗估计每一帧的 SMPL-X 参数，即
   $ "poses" th in RR^(55 times 3), ~~ "shape" beta in RR^100, ~~ "facial code" psi in RR^50, "translation" t in RR^3 $
-  - 其中 shape 参数对所有帧是共享的，而另外二者是 per-frame 的
+  - 其中 shape 参数对所有帧是共享的，而另外几个是 per-frame 的
   - 然后额外解释一下，pose 跟之前一样是关节点的位置，hand 归入 shape 里面，（facial code 独立出来，是 FLAME 的 face identity code），translation 是全局平移即整个人体的位置
 - whole-body avatar 跟一般 avatar 所不同的独特挑战在于，它需要准确地同时优化 face, body, hands
-  - 但事实是，由于 SMPL-X 终究还是不够 expressive，在 body registration accuracy 比较差的情况下会对 face 和 hands 造成负面影响（我理解这里的意思应该是，当人体重建地一团糟的时候，脸部和手部可能压根都没有方向、没法优化）
-  - 为了解决这个问题，作者为引入了两个 optimizable offsets。它们初始化为零，在所有帧之间共享，并且与 pose, shape, face 独立，依赖于 identity(ID) 也就是每个人，因此，它们在执行 LBS 之前被直接加到 SMPL-X 的 T-pose 模板上
+  - 但事实是，由于 SMPL-X 终究还是不够 expressive，在 body registration accuracy 比较差的情况下会对 face 和 hands 造成负面影响（我理解这里的意思应该是，当人体重建得一团糟的时候，脸部和手部可能压根都没有方向、没法优化）
+  - 为了解决这个问题，作者为引入了两个 optimizable offsets。它们初始化为零，在所有帧之间共享，并且与 pose, shape, face 参数独立，依赖于 identity(ID) 也就是每个人，因此，它们在执行 LBS 之前被直接加到 SMPL-X 的 T-pose 模板上
     $ De bJ "for joints", ~~ "and" De bV_"face" "for face" $
     - $De bJ$ 被加到关节点上，这对 fit hands perfectly 非常重要，因为 SMPL-X 的 shape 参数对手部骨架表现力有限，具体怎么做呢？
-      - *SMPLX registration*. 从 Hybrid-X 输出的 SMPL-X 参数，进一步优化对齐到 2D keypoints（来自 mmpose 这个 off-the-shelf 工具的估计），并且同时也会对齐到 FLAME 参数（$De bJ$ 跟 $De bV_"face"$ 其实是一起优化的），见下面
+      - *SMPLX registration*。从 Hybrid-X 输出的 SMPL-X 参数，进一步优化对齐到 2D keypoints（来自 mmpose 这个 off-the-shelf 工具的估计），并且同时也会对齐到 FLAME 参数（$De bJ$ 跟 $De bV_"face"$ 其实是一起优化的），见下面
     - $De bV_"face"$ 被加到 SMPL-X T-pose mesh 脸部区域的顶点上。具体怎么做呢？
-      - *FLAME registration*. 首先 FLAME 是一个 3D face-only model 的参数化表示，用一个叫做 DECA 的方法回归它（得到 FLAME 参数，也就是 face shape parameter, facial expression code, and jaw pose）。然后进一步优化这些参数对齐到 2D poses（2D keypoints，也是来自 mmpose），最小化这个损失
+      - *FLAME registration*。首先 FLAME 是一个 3D face-only model 的参数化表示，用一个叫做 DECA 的方法回归它（得到 FLAME 参数，也就是 face shape parameter, facial expression code, and jaw pose）。然后进一步优化这些参数对齐到 2D poses（2D keypoints，也是来自 mmpose），最小化这个损失
         $ L_"FLAME" = L_"kpt" + 0.1 L_"init" $
         - 从而 DECA 回归出的 FLAME 参数跟图像进行了 pixel-aligned 对齐，并且正则化保证不会偏离太远
         - 之后 SMPL-X 的 facial expression space 直接替换为 FLAME 的，其可行性来自于它们共享同一个 facial expression space
-      - *SMPLX registration*. 从 Hybrid-X 输出的 SMPL-X 参数，对齐到 2D keypoints 并且融合脸部的 FLAME 参数表示。T-pose 的关节点加上 $De bJ$，脸部区域 vertices 加上 $De bV_"face"$，优化它们最小化这个损失
+      - *SMPLX registration*。从 Hybrid-X 输出的 SMPL-X 参数，对齐到 2D keypoints 并且融合脸部的 FLAME 参数表示。T-pose 的关节点加上 $De bJ$，脸部区域 vertices 加上 $De bV_"face"$，优化它们最小化这个损失
         $ L_"SMPLX" = L_"kpt" + 0.1 L_"init" + L_"face" + L_"reg" $
         - 再具体就不写了，太太太细节了（
-      - 这里之所以要这种两阶段优化的策略，主要有两个考虑：一是 FLAME 这种 face-only model 的 space 比 SMPL-X 这种 whole-body model 更具有表现力；二是 face-only model 并不受 body registration 的影响
+      - 这里之所以要这种两阶段优化（先脸部再全身）的策略，主要有两个考虑：一是 FLAME 这种 face-only model 的 space 比 SMPL-X 这种 whole-body model 更具有表现力；二是 face-only model 并不受 body registration 的影响
     - 从结果上来看，论文的 Fig 2 和 Fig 3 指出二者的效果很显著（虽然我没看出来x），而且那个两阶段的方案之前方法从来没提过
 
 === Architecture
@@ -177,7 +177,7 @@ draft: true
     + 最开始的 canonical mesh $oV$ 的 Laplacian
     - 可以看到这跟 $oV_tri = oV + De V_tri + De V_"expr", ~~ oV_pose = oV + De V_tri + De V_pose + De V_"expr"$ 是恰恰相反的，这就是正则化，它限制了这个 offset 是局部小范围的而不能到处乱飘
     - 拉普拉斯是什么意思？是指*拉普拉斯微分算子*，用来描述一个图的局部性质，即论文 introduction 部分说的 connectivity 信息（但不知道为什么这里反而没展开讲）
-  - 这种 connectivitybased regularizer 比广泛使用的 L2 regularizer(e.g. GaussianAvatar)更有效，因为能利用 mesh 的 topology 信息。而本文的 hybrid 表示使这种正则项的引入非常自然且容易
+  - 这种 connectivity-based regularizer 比广泛使用的 L2 regularizer(e.g. GaussianAvatar)更有效，因为能利用 mesh 的 topology 信息。而本文的 hybrid 表示使这种正则项的引入非常自然且容易
   - 除了正则化 3D Gaussian 的位置，还会计算它们的 scales 和 RGBs，具体需要看 supplementary material
 
 == 实验
@@ -186,7 +186,9 @@ draft: true
   - X-Humans 提供了实验室内采集的包含 3D scans 和 RGBD 数据的 multiple subjects videos。跟 NeuMan 相比，它提供了更多样的 facial expressions 和 hand poses。这个数据集只跟 X-Avatar 做了比较，它使用了额外的 depth maps，而本文不使用
 - *Comparison to SOTA methods*
   - Table 1, Table 2 在 NeuMan 的测试集上进行，跟多种方法对比。二者分别是有没有考虑 backgrounds 时的指标计算
-    - 我们知道 ExAvatar 是个基于优化而非学习的方法，那这个训练测试是什么意思呢？对 NeuMan，就是对同一个视频，用训练真来训练 @loss 说的那些参数；然后在测试集上，冻结那些参数（除了 SMPL-X 参数要优化，因为至少需要它的 pose parameters $th$ 才能动起来，另外俩 $beta, psi$ 有没有冻结不知道）
+    - 我们知道 ExAvatar 是个基于优化而非学习的方法，那这个训练测试是什么意思呢？
+      - 理论上来说应该是直接用前面估计出来的 smplx_smoothed 和 avatar 训练出来的东西直接 lbs。
+      - 但是先前的工作有点偷鸡，这里为了公平起见也这样做了。具体来说，在测试图片上根据 loss 进一步进行 optimizing SMPL-X parameters 和 fixing the pre-trained avatars（代码 readme 里这样说，但论文里说 freezing all other parameters？）
   - Fig 8 可视化展示了 NeuMan 上 novel views and poses 下渲染结果的对比。一方面可以明显看到衣服上的印花变得 sharper and clearer，另一方面可以看到由于本文建模了 whole-body，在脸部和手部有更强的 controllibility，纹理也更尖锐，不像之前工作一样只能嵌入模糊的纹理
   - Table 3 和 Fig 9 在 X-Humans 上进行，跟 X-Avatar 对比，在缺失 3D 观察的情况下甚至结果更好
     - 这里的测试跟 X-Avatar 一样，对测试帧直接用了给定标值且没有进一步优化它

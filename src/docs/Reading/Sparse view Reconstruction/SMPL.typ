@@ -68,6 +68,8 @@ order: 1
   - 然而，人类裸体形状还比较符合低维假设，但各式衣物的形状归属于极其高维的空问，难以参数化为低维表示。这就使得参数化人体的方法难以推广到穿衣人体之上
 - 后续的工作中对 SMPL 有各种各样的叫法，mesh-based, explicit, prior, template, parametric, statistical, body mesh, human pose and shape estimation(HPS) 实际上很多都是指 SMPL 及其衍生模型
 - 以及，后续还有对 SMPL 的直接扩展 —— SMPL-X，对 hand 和 face 也做了参数化表示
+- 对标 SMPL 身体模型，还有 FLAME 脸部模型，加上了 Blendshape(Morph target animation) 的思想
+  - 参考 #link("https://zhuanlan.zhihu.com/p/591136896")[基于FLAME的三维人脸重建技术总结]
 
 == HPS
 - 在 Sparse View Reconstruction of Human 的领域，我们希望从一张图中重建出穿衣人体的 3D 模型，甚至还希望它能动。先不考虑穿衣和动画的问题，我们知道 SMPL 是从一系列 mesh 中学出模型参数 $Phi = {bT, cW, cS, cJ , cP}$，然后通过手调 shape 和 pose 参数来控制人体。很自然地，我们会考虑能不能继承 SMPL 的 $Phi$（当然也可以不继承），然后*从单张 RGB 图像中*回归出 shape 和 pose 参数，从而重建出一个 body mesh（不带衣服），进而给后续穿衣、动画提供先验、模板呢？这就是 (single image) monocular Human Pose and Shape Estimation(HPS)
@@ -99,7 +101,7 @@ order: 1
 - 从另外一个思路出发，SMPL 的那个 template mesh $bT$ 就是一个刨除 pose 影响下的静息姿态，我们称为在 canonical space 下；当调整了 pose 后，通过 SMPL 的蒙皮权重，我们可以将这个 template mesh 用 LBS 转换到 pose space 下
 - 后续的一个思路是通过 Pose Space 与 Canonical Space 之间的转换，实现广义的“归一化”，从而方便后续的处理，容易改变人体的姿态（从一个规整的姿势去变换而不是从五花八门的姿势去变换）
 - 从 HPS 得到 $beta, th$，通过 SMPL 的蒙皮权重(skinning weights)可以从 canonical space 下的 rest pose template $T$ 转化到 pose space；至于逆过来也简单，把那个算 $G'_k (th, J(beta)) = G_k (th, J(beta)) G_k (th^*, J(beta))^(-1)$ 的 $th,th^*$ 位置换一换
-  - HumanNeRF 和 SHERF 就是这么做的，只不过 HumanNeRF 特殊一点，转化成了可学习的 volume 表达，而 SHERF 就直接用估计出来写死的权重去做了（因为前者是 Optimization-based，而后者是 Learning-based 的、要泛化的），具体看 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/SHERF")[我的笔记]
+  - HumanNeRF 和 SHERF 就是这么做的，只不过 HumanNeRF 特殊一点，转化成了可学习的 volume 表达，而 SHERF 就直接用估计出来写死的权重去做了（因为前者是 Optimization-based，而后者是 Learning-based 的、要泛化的），具体看 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/SHERF")[SHERF 笔记]
 
 #v(2em)
 

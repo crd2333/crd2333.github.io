@@ -82,13 +82,15 @@ $
   + Near foreground & Far Background，使人物落入景深而背景不在景深内
 
 == Geometric image formation
-- 透视投影
-#fig("/public/assets/Courses/CV/2024-09-20-17-00-54.png", width: 70%)
+- 透视投影 #h(1fr)
+  #fig("/public/assets/Courses/CV/2024-09-20-17-00-54.png", width: 60%)
+  - 这里没说的一点是，一般图像平面的原点我们选在左上角或是左下角（较少），而不会选在中心
+  - 于是我们需要加上这个中心点的偏移量，即 $x = x' + w/2, y = y' + h/2$。这个加上的值即为所谓的*主点*(principal point)
 - 引入齐次坐标，将投影表示为线性变换
 $
 mat(f,0,0,0;0,f,0,0;0,0,1,0) vec(x,y,z,1) = vec(f x,f y,z) #sym.tilde.equiv vec(f x/z, f y/z, 1)
 $
-#fig("/public/assets/Courses/CV/2024-09-19-11-41-05.png", width: 70%)
+#fig("/public/assets/Courses/CV/2024-09-19-11-41-05.png", width: 60%)
 - 在透视投影中，直线仍然是直的，但长度和角度丢失了。深度信息部分丢失，虽然近大远小，但同一个图像对应无穷多三维形状
 - Vanishing points & Vanishing lines
   - 铁路汇聚的尽头就是消失点；两个消失点的连线就是消失线

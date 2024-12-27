@@ -37,8 +37,8 @@
   } else {fig}
 }
 // 类 markdown 表格，使用 tablem 实现
-#let tblm(alignment: center, automath: false, ..args) = {
-  let fig = align(alignment, tablem(..args))
+#let tblm(alignment: center, align_content: center + horizon, automath: false, ..args) = {
+  let fig = align(alignment, tablem(align: align_content, ..args))
   if automath {
     show table.cell: automath_rule
     fig

@@ -19,7 +19,7 @@
   // 导入 show 规则
   show: checklist.with(fill: luma(95%), stroke: blue, radius: .2em)
   show: shorthand // 导入 math shorthand
-  show: thmrules.with(qed-symbol: square)  // 导入 theorem 环境
+  show: thmrules.with(qed-symbol: $square$)  // 导入 theorem 环境
   show: codly-init.with()
   // 行间公式、原始文本与文字之间的自动空格
   show raw.where(block: false): it => h(0.25em, weak: true) + it + h(0.25em, weak: true)

@@ -393,9 +393,27 @@ order: 3
   - 在 BDPT 的基础上，如果光源的子路径和摄像机的子路径最后交点非常接近但又不可能反射折射到对方，那么就把光源子路径认为是发射光子的路径，从而把这种情况也利用起来
 - 实时辐射度算法(Instant Radiosity, IR)
   - 有时也叫 many-light approaches
-  - 关键思想： 把光源照亮的点（经过 $1$ 次或多次弹射）当做一堆新的点光源(Vritual Point Light) (VPL)，用它们照亮着色点。然后用普通的光线追踪算法计算
+  - 关键思想： 把光源照亮的点（经过 $1$ 次或多次弹射）当做一堆新的点光源(Vritual Point Light, VPL)，用它们照亮着色点。然后用普通的光线追踪算法计算
   - 从相机发射光线击中的每个着色点，都连接到这些光源计算光照。对于那些 VPL，是从真正光源发射后经过弹射形成，某种意义上也是一种双向路径追踪。宏观上看，这个方法实现了用直接光照的计算方法得到的间接光照的结果
   - 优点是计算速度快，通常在漫反射场景会有很好的表现；缺点是不能处理 Glossy 材质，以及当光源离着色点特别近时会出现异常亮点（因为渲染方程中有 $1/r^2$ 项）
+
+== ZJU CG Advanced Rendering
+- 动机：Efficient computation of the Rendering Equation
+- Precomputed Radiance Transfer
+  - 通过预计算的方式，把光照信息存储在纹理中，然后在运行时直接读取，从而减少计算量
+  - Refection Equation
+    $ L_r (o;p) = int_H^2 f_r (i,o;p) L_i (i;p) V(i;p) (n,i) dif i $
+    - Dynamic ?
+    - Static Scene
+    - Lambertian Materials
+  - 最后 Reflection Equation 变成
+    $ L_r (o;p) = frac(rho_d, pi) int_H^2 L_i (i) V'(i) dif i $
+  - Gaussian Mixtures
+    - Extension3: Deformable Geometry
+- Screen-Space Ambient Occlusion (SSAO)
+  - 通过屏幕空间的深度信息，计算出每个像素的遮蔽信息，从而模拟阴影效果
+  - 通过 SSAO 可以在不增加光源的情况下，增加场景的真实感
+  - 但是 SSAO 也有一些问题，比如在边缘处会产生阴影，而且计算量也比较大
 
 == 非表面模型(Non-Surface Models)
 === 参与介质(Participating Media)或散射介质

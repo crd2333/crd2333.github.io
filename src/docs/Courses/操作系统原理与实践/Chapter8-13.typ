@@ -39,6 +39,7 @@
     - *Limit* checked on all memory references 每次访问时检查是否超过了 Limit，如果是就说明越界了
     - Loaded by OS at each *context switch*
     - 每个进程有自己的 base 和 limit 寄存器，每次进程切换时，OS 都会将 base 和 limit 寄存器的值更新为当前进程的值（线程不需要，因为线程是共享的地址空间）
+    - Partition 怎么做权限管理？跟后面 segment 类似，有个 table 填 `rwx`
     #grid2(
       fig("/public/assets/Courses/OS/2024-11-05-14-38-15.png", width: 70%),
       fig("/public/assets/Courses/OS/2024-11-05-14-42-54.png")
@@ -539,11 +540,13 @@
   #fig("/public/assets/courses/os/2024-11-19-15-37-44.png",width:40%)
 
 == Thrashing
-- 如果我们的进程一直在换进换出页，那么 CPU 使用率反而会降低。进程越多，可能发生一个进程的页刚加载进来又被另一个进程换出去，最后大部分进程都在 sleep
+- 简单解释
+  - 如果我们的进程一直在换进换出页，那么 CPU 使用率会降低
+  - 因为进程越多，可能发生一个进程的页刚加载进来又被另一个进程换出去，最后大部分进程都在 sleep
   #fig("/public/assets/courses/os/2024-11-19-15-40-04.png",width:40%)
-- 为什么会这样呢？
+- 更本质的解释
   - demand paging 之所以起效就是因为 *locality*
-  - 所以当进程过多，total size of locality > total memory size，即 locality 没有被 load 到 frames 里，导致频繁换进换出，自然就发生了 thrashing
+  - 所以当进程过多，*total size of locality > total memory size*，即 locality 没有被 load 到 frames 里，导致频繁换进换出，自然就发生了 thrashing
 - 如何解决 thrashing
   - Option I: 使用 local page replacement
   - Option II: 根据进程的需要分配 locality，使用*工作集模型 (working set model)*来描述
@@ -632,7 +635,8 @@
       - 这块可以复用的部分称为 kernel Virtual Address（也叫 `vmalloc()` area）
     #fig("/public/assets/Courses/OS/2024-11-28-20-34-26.png",width:60%)
   - 但是对于 $64 bits$ 架构，就没有上述问题，比如 $39 bits$ 可以 handle 足足 $512GB$ 的内存
-    - [ ] 对 $64 bits$ 架构而言，`vmalloc()` area 区域还是用页表映射管理的，为什么不直接用 linear map 控制整个 RAM 呢？
+    - 对 $64 bits$ 架构而言，`vmalloc()` area 区域还是用页表映射管理的，为什么不直接用 linear map 控制整个 RAM 呢？
+      - [ ] ？
 - *Multi-Process*
   - 我们知道 process 有自己各自的页表，对应 User Space 的虚拟地址到物理地址映射，那负责 handle 整个 RAM 的 kernel 怎么办呢？
   - 对 arm 而言比较好理解，如上图，它每个进程有两个 TTBR(PTBR in arm)，切换的是 TTBR0，而 kernel 一直用 TTBR1 不变
@@ -768,7 +772,7 @@
 
 #note(caption: "Takeaway")[
   - Disk structure
-  - Disk scheduling
+  - *Disk scheduling*
     - FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK
   - RAID 0-6
 ]
@@ -1222,7 +1226,7 @@
     - soft link 也叫 symbolic link or symlink
     - 比如，`ln -s file link` 创建一个 soft link，它的 inode 跟 `file` 不同，它作为一个文件存储了 `file` 的路径
       - 因此当我们 `rm file` 时，soft link 还存在但会失效，对它进行操作会爆 `No such file or directory` 错误
-  - soft link 可能指向 directories，但是 hard link 不行；而且 soft link 可能 cross filesystem boundaries；两种 link 比起来，hard link 更经济但没 soft link 灵活
+  - soft link 可能指向 directories，但是 hard link 不行；而且 soft link 能够 cross filesystem boundaries（因为不是靠 inode 访问而是靠 path name）；两种 link 比起来，hard link 更经济但没 soft link 灵活
 - 实际的 File System Organization 例子
   - 需要存储 data block, inode, bitmap, superblock
   - data block 最大，给它分配 $56$
@@ -1245,4 +1249,99 @@
   - File Descriptor
   - Link (hard and soft)
   - File System Organization
+]
+
+= Security and Protection
+== Security evaluation criteria
+- Trusted Computer System Evaluation Criteria(TCSEC)
+  - 当前的 OS 如 windows, linux, mac 都是 C2 级别
+  - 更高的是 B1, B2, B3, A1，目前没有达到的（Multics 尝试 B2 但失败了）
+- ITSEC, CC, GB17859，其它几个标准
+
+== Common concepts
+- 可信基(Trusted Computing Base)
+  - 为实现计算机系统安全保护的所有安全保护机制的集合，即为了做操作你需要信任的部分（比如输密码时相信键盘、程序、操作系统、CPU 等），包括软件、硬件和固件（硬件上的软件）
+  - TCB in layered systems，上层依赖于下层
+    #tbl(
+      [Application], [Operating system], [BIOS], [Hardware/Architecture]
+    )
+- 攻击面(Attacking Surface)
+  - 一个组件被其他组件攻击的所有方法的集合，可能来自上层、同层和底层
+  - 可信基属于攻击面的一部分，比如 OS 的 Attacking Surface 包括 BIOS 和 Hardware/Architecture
+- 防御纵深(Defense in-depth)
+  - 为系统设置多道防线，为防御增加冗余，以进一步提高攻击难度
+  - 例如，不仅仅依赖于密码，还可以加上双因素认证
+
+== Protection - Access Control
+- Authentication 认证
+  - 证明用户的身份
+  - 进程与用户之间如何绑定？
+    - 每个进程的 PCB/cred 中均包含了 uid 字段
+    - 每个进程都来自于父进程，继承了父进程的 uid
+    - 用户在登录后运行的第一个进程(shell)，初始化 uid 字段
+    - 在 Windows 下，窗口管理器会扮演类似 shell 的角色
+- Authorization 授权
+  - 决定用户能做什么
+  - 如何实现？使用 Access Control Matrix (Access Control Lists, ACL)
+    #tbl(
+      columns: 4,
+      [], [Alice], [Bob], [Carl],
+      [/etc], [Read], [Read], [Read, Write],
+      [/homes], [Read, Write], [Read, Write], [Read, write],
+      [/usr], [None], [None], [None]
+    )
+  - 用户过多或文件过多时，matrix 大到不可接受。将用户（人）与角色解耦的访问控制方法: Role-Based Access Control
+  - POSIX 的文件权限：分成 owner, group, other 三类，每类有 read, write, execute 三种权限
+    - 即 `rwxrwxrwx`
+  - 最小特权级原则：setuid 机制
+    - 问题：passwd 命令如何工作？用户有权限使用 passwd 命令修改自己的密码，但保存在 `/etc/shadow` 中，用户无权访问（本质上是以文件为单位的权限管理粒度过粗）
+    - 解决方法：运行 passwd 时使用 root 身份（RBAC 的思想）。在 passwd 的 inode 中增加一个 SUID 位，使得用户仅在执行该程序时才会被提权，执行完后恢复，从而将进程提权的时间降至最小
+    - setuid 在 Linux 下通常用于以 root 身份运行，拥有的权限远超过必要（必要权限：读写 `/etc/passwd` 文件中的某一行；实际权限：访问整个 `/etc/passwd` 文件，且（短暂地）拥有 root 用户的权限），具有安全隐患
+  - 权限控制的另一种思路 —— Capability
+    - 提供细粒度控制进程的权限（初衷：解决 root 用户权限过高的问题）
+    - 基本的思想是把 root 的能力拆分，分为几十个小的能力，称为 capability
+    - 预先由内核定义，而不允许用户进程自定义。不允许传递，而是在创建进程的时候，与该进程相绑定，每个进程可以拥有一组能力
+    - 理想美好，但实际上使用混乱
+- Auditing 审计
+  - 用来记录用户的操作，以便追踪和审查
+- Reference monitor
+  - 是实现访问控制的一种方式，主体必须通过 reference 的方式间接访问对象，Reference monitor 位于主体和对象之间进行检查
+  #fig("/public/assets/Courses/OS/2024-12-24-15-21-07.png", width: 50%)
+  - 引用监视器机制必须保证其不可被绕过(Non-bypassable)，即设计者必须充分考虑应用访问对象的所有可能路径，并保证所有路径都必须通过引用才能进行
+  - Linux 中，应用必须通过文件描述符来访问文件，而无法直接访问磁盘上的数据或通过 inode 号来访问文件数据。文件系统此时就是引用监视器，文件描述符就是引用
+
+== Security
+- Attacks and defenses
+  - Evolution #h(1fr)
+    + Code injection attack
+    + Code reuse attack
+    + Non-control-data attack
+  #fig("/public/assets/Courses/OS/2024-12-24-15-26-09.png", width: 80%)
+- 代码注入攻击
+  + 通过内核漏洞：篡改已有代码、注入新的代码、或者跳到用户代码
+    - 内核代码注入防护：硬件支持杜绝注入、通过内核页表设置相应保护位
+  + 通过内核页表来实现攻击：篡改页表去掉保护，进而篡改代码
+    - 通过隔离环境保护内核页表，避免内核漏洞影响
+    - 硬件支持可信执行环境
+    - 实现了纵深防御
+- 代码重用攻击
+  - 不能注入新代码了，但可以重用已有代码(Existing code snippet, called gadget)，比如改变控制流把 gadget 串起来
+    - Return-oriented programming (ROP)：通过修改栈上的返回地址，使程序跳转到已有的代码片段，从而实现攻击
+    - Jump-oriented programming (JOP)：通过修改函数指针，泄露 SP
+  - 防护：保护返回地址、保护函数指针（相应的硬件支持）
+- 非控制数据攻击
+  - 控制数据被保护后，攻击者提出非控制数据攻击，修改返回地址和函数指针以外的数据
+  - 种类繁杂，难以实行统一有效保护。目前主流操作系统均*缺乏*对数据攻击的有效防护
+- 总结
+  #fig("/public/assets/Courses/OS/2024-12-24-15-49-51.png",width: 80%)
+
+#takeaway[
+  - Security evaluation criteria
+    - TCSEC, ITSEC, CC, GB17859
+  - Common concepts
+    - Trusted computing base
+    - Attack surface
+    - Defense in-depth
+  - Access Control
+  - Attacks and defenses
 ]
