@@ -36,7 +36,8 @@
   // 设置 bullet list 和 enum 的 marker，相比默认更像 markdown，另外刻意调大了一点（适合老年人
   set list(marker: ([●], [○], [■], [□], [►]), tight: false, spacing: .8em)
   set enum(numbering: numbly("{1}.", "{2:a}.", "{3:i}."), full: true, tight: false, spacing: .8em)
-  // show list.item: set block(width: 100%)
+  // 将 list and enum 用 block 撑开 (for math.equation and figures)
+  show: align_list_enum
   // show: align-list-marker-with-baseline
   // show: align-enum-marker-with-baseline
 

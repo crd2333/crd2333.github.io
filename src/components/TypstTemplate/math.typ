@@ -1,4 +1,4 @@
-#import "@preview/quick-maths:0.1.0": shorthands
+#import "@preview/quick-maths:0.2.0": shorthands
 #import "@preview/mitex:0.2.4": *
 
 #let dcases(..args) = math.cases(..args.pos().map(math.display)) // cases with display style
@@ -10,20 +10,27 @@
 #let argmin = math.op("argmin", limits: true)
 #let avg = math.op("avg", limits: true)
 #let diag = math.op("diag", limits: true)
+#let sign = math.op("sign", limits: true)
+#let var = math.op("var", limits: true)
+#let cov = math.op("cov", limits: true)
+#let corr = math.op("corr", limits: true)
+#let rank = math.op("rank", limits: true)
 
 // ---------- 符号缩写 ----------
 #let shorthand = shorthands.with(
   ($+-$, $plus.minus$),
   ($|-$, math.tack),
   ($=<$, $<=$),                // =< becomes '≤'
-  ($<==$, math.arrow.l.double), // Replaces '≤'，似乎需要某一边有东西才能正常工作，原因未知
-  ($~$, $med med$),
+  ($<=$, math.arrow.l.double), // Replaces '≤'，似乎需要某一边有东西才能正常工作，原因未知
+  ($~$, $#h(0.44em)$),  // two med's width
+  ($!$, $#h(-0.44em)$)  // inverse of '~'
 )
 
 // ---------- 文本缩写和杂项 ----------
 #let Or = $slash.big$ // 'or' as union, use 'Or' for big slash instead
 #let le = $<=$
 #let ge = $>=$
+#let oPi = $Pi$     // backup original Pi as 'oPi'
 #let Pi = $product$ // big pi as product
 #let infty = $infinity$
 #let int = $integral$
@@ -47,12 +54,13 @@
 #let sumi = $sum_i$
 #let sumij = $sum_(i j)$
 #let sumin = $sum_(i=1)^n$
-#let sumjn = $sum_(j=1)^n$
 #let sumim = $sum_(i=1)^m$
-#let sumjm = $sum_(j=1)^m$
 #let sumiN = $sum_(i=1)^N$
-#let sumjN = $sum_(j=1)^N$
 #let sumiM = $sum_(i=1)^M$
+#let sumiK = $sum_(i=1)^K$
+#let sumjn = $sum_(j=1)^n$
+#let sumjm = $sum_(j=1)^m$
+#let sumjN = $sum_(j=1)^N$
 #let sumjM = $sum_(j=1)^M$
 #let sumkK = $sum_(k=1)^K$
 #let summM = $sum_(m=1)^M$
@@ -68,6 +76,9 @@
 #let PimM = $product_(m=1)^M$
 #let PinN = $product_(n=1)^N$
 #let PitT = $product_(t=1)^T$
+#let first = $1^"st"$
+#let second = $2^"nd"$
+#let third = $3^"rd"$
 // AI specific
 #let MLP = math.text("MLP")
 #let CNN = math.text("CNN")
@@ -114,9 +125,12 @@
 #let dm = math.text("dm")
 #let km = math.text("km")
 
-// ---------- 防铸币操作 ----------
+// ---------- 防铸币操作与常用简写 ----------
 #let dx = $dif x$
 #let exist = $exists$
+#let st = $#h(0.44em)s.t.#h(0.44em)$ // such that
+#let is = math.text("is")
+#let iff = math.bold("iff")
 
 // ---------- 希腊字母 (siplified to 2 letters) ----------
 #let rh  = $rho$
@@ -325,7 +339,7 @@
 #let pik = $pi_k$
 #let pim = $pi_m$
 #let piM = $pi_M$
-#let pin = $pi_n$
+// #let pin = $pi_n$ // 'pin' is a keyword for pinit package
 #let piN = $pi_N$
 
 // ---------- bold, cal, hat, tilde, arrow, overline letters ----------

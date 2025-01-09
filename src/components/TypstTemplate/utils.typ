@@ -7,25 +7,27 @@
 // 树、图文包裹、图标、真值表
 #import "@preview/syntree:0.2.0": syntree, tree
 #import "@preview/treet:0.1.1": tree-list
-#import "@preview/wrap-it:0.1.0": wrap-content, wrap-top-bottom
-#import "@preview/cheq:0.2.0": checklist
+#import "@preview/wrap-it:0.1.1": wrap-content, wrap-top-bottom
+#import "@preview/cheq:0.2.2": checklist
 #import "@preview/pinit:0.2.2": *
 #import "@preview/indenta:0.0.3": fix-indent
 #import "@preview/numbly:0.1.0": numbly
-#import "@preview/drafting:0.2.0": *
 #import "@preview/oxifmt:0.2.1": strfmt
+#import "@preview/drafting:0.2.1": *
 
 // 假段落
 #let fake_par = context{let b=par(box());b;v(-measure(b+b).height)}
 
 // 中文缩进
 #let indent = h(2em)
+#let unindent = h(-2em)
 #let noindent(body) = {
   set par(first-line-indent: 0em)
   body
 }
-#let tab = indent // alias
-#let notab = noindent // alias
+#let tab = indent     // alias
+#let untab = unindent
+#let notab = noindent
 
 // list, enum 的修复，来自 @OrangeX4(https://github.com/OrangeX4) 的解决方案
 // 解决编号与基线不对齐的问题，同时也恢复了 block width 和 list, enum 的间隔问题
@@ -186,8 +188,11 @@ font: 字体.宋体,
 ))
 
 // pinit 的公式高亮指针
-#let pinit-highlight-equation-from(height: 2em, pos: bottom, fill: rgb(0, 180, 255), highlight-pins, point-pin, body) = {
-  pinit-highlight(..highlight-pins, dy: -0.6em, fill: rgb(..fill.components().slice(0, -1), 40))
+#let pinit-highlight-equation-from(
+  height: 2em, pos: bottom, fill: rgb(0, 180, 255), size: 7pt,
+  highlight-pins, point-pin, body
+) = {
+  pinit-highlight(..highlight-pins, dy: -0.9em, fill: rgb(..fill.components().slice(0, -1), 40))
   pinit-point-from(
     fill: fill, pin-dx: -0.6em, pin-dy: if pos == bottom { 0.8em } else { -0.6em }, body-dx: 0pt, body-dy: if pos == bottom { -1.7em } else { -1.6em }, offset-dx: -0.6em, offset-dy: if pos == bottom { 0.8em + height } else { -0.6em - height },
     point-pin,
@@ -195,11 +200,40 @@ font: 字体.宋体,
       inset: 0.5em,
       stroke: (bottom: 0.12em + fill),
       {
-        set text(fill: fill)
+        set text(fill: fill, size: size)
         body
       }
     )
   )
+}
+
+// align center math.equation and figure(image, table) in list and enum
+#let align_list_enum(doc) = {
+  show list: it => {
+    show math.equation.where(block: true): eq => {
+      block(width: 100%, inset: 0pt, align(center, eq))
+    }
+    show figure.where(kind: "image"): it => {
+      block(width: 100%, inset: 0pt, align(center, it))
+    }
+    show figure.where(kind: "table"): it => {
+      block(width: 100%, inset: 0pt, align(center, it))
+    }
+    it
+  }
+  show enum: it => {
+    show math.equation.where(block: true): eq => {
+      block(width: 100%, inset: 0pt, align(center, eq))
+    }
+    show figure.where(kind: "image"): it => {
+      block(width: 100%, inset: 0pt, align(center, it))
+    }
+    show figure.where(kind: "table"): it => {
+      block(width: 100%, inset: 0pt, align(center, it))
+    }
+    it
+  }
+  doc
 }
 
 #let end_of_note(
