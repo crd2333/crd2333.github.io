@@ -97,7 +97,7 @@ draft: true
       - 同时也解答了我在 GTA 那里，觉得 Global-correlated 3D-decoupling Transformer 部分没有用 SMPL 先验的问题
     - 具体做法还是很像，正面自己做 self-attention，三个侧面(left, right, back)做 cross-attention
 - *Hybrid Prior Fusion Strategy*
-  - 这里跟 GTA 几乎差不多，首先把四个视图的信息融合起来(pixel-aligned) #h(1fr)
+  - 这里跟 GTA 几乎差不多，首先把四个视图的信息融合起来(pixel-aligned)
     $ F^S (bx) = F^S_f plus.circle "avg"(F^S_l (bx),F^S_l (bx),F^S_b (bx),F^S_r (bx)) $
   - 加上 SMPL 的信息(point-level)
     $ F^P (bx) = u F^S (bv_0) + v F^S (bv_0) + w F^S (bv_0) $

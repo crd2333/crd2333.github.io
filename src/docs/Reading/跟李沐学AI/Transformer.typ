@@ -95,6 +95,10 @@ $
 - 关于 BN 和 LN 以及它们的代码可以参考 #link("https://zhuanlan.zhihu.com/p/656647661")[对比pytorch中的BatchNorm和LayerNorm层]
 文本中的 LayerNorm 本质上是一种 InstanceNorm
 
+#note(caption: "Group Norm")[
+  实际上还有一个更新、更强大的 Group Norm，是恺明大佬提出的，可以参考 #link("https://zhuanlan.zhihu.com/p/35005794")[这篇文章]
+]
+
 == （李沐版）代码实现的一些细节
 - 论文里没有代码，不过有开源，但不看那个，看得是李沐的版本
 

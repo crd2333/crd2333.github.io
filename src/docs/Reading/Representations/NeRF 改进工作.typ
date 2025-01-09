@@ -111,7 +111,7 @@
   - NeRF 需要沿着光线方向采样，无法处理无边界的场景
   - NeRF 用 MLP 提取（压缩）了场景的辐射场信息，可以想见这个场景不能太大，否则 MLP 难以学习
 - 解决方法
-  - 一种想法就是类似 MegaNeRF 这样 #h(1fr)
+  - 一种想法就是类似 MegaNeRF 这样
     #fig("/public/assets/Reading/Representations/Improved_NeRF/2024-12-12-11-37-46.png",width:40%)
     - 将大场景划分为一组区域，每个场景用一个 MLP network 表示
   - 另一种想法，我们希望在采样时用非线性变换考虑尺度信息
@@ -369,7 +369,7 @@ $ int_ba^bb f(bx) dif x_i = Phi_th (bb) - Phi_th (ba) $
   - 更进一步，同一个场景随时间不同纹理图案的变化（比如涂鸦、墙纸）等，也可以视为某种程度的“光照”
 - *NeRF in the Wild: Neural Radiance Fields for Unconstrained Photo Collections*
   - 非常暴力，在 NeRF 输入中加入可学习的外观编码，以建模外观变化
-  - 在此基础上可以改变光照 #h(1fr)
+  - 在此基础上可以改变光照
   #fig("/public/assets/Reading/Representations/Improved_NeRF/2024-12-12-11-28-46.png",width:40%)
 
 #hline()

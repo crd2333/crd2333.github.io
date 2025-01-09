@@ -5,7 +5,8 @@
   lang: "zh",
 )
 
-#let DL = math.text("DL")
+#let KL = math.text("KL")
+
 = 信息论
 - 在学习《统计学习方法》和《机器学习》（周志华）时，经常遇到信息论的一些概念
   - 1948 年，香农将热力学的熵，引入到信息论，因此它又被称为香农熵(Shannon entropy)
@@ -41,14 +42,14 @@
 - #link("https://zh.wikipedia.org/wiki/%E7%9B%B8%E5%AF%B9%E7%86%B5")[相对熵]\(relative entropy)
   - 或者叫 KL 散度(Kullback-Leibler divergence)
   $
-  DL(p||q) = sum_(x in X) p(x) log p(x) / q(x) \
-  DL(p||q) = int p(x) log p(x) / q(x) dif x
+  KL(p||q) = sum_(x in X) p(x) log p(x) / q(x) \
+  KL(p||q) = int p(x) log p(x) / q(x) dif x
   $
   - 两个概率分布 $p$ 和 $q$ 之间的差异
   - 具有不对称性，非负性
 - #link("https://zh.wikipedia.org/wiki/%E4%BA%A4%E5%8F%89%E7%86%B5")[交叉熵]\(cross entropy)
   $
-  H(p, q) = DL(p||q) + H(p) \
+  H(p, q) = KL(p||q) + H(p) \
   H(p, q) = - sum_(x in X) p(x) log q(x) \
   H(p, q) = - int p(x) log q(x) dif x
   $
@@ -56,7 +57,7 @@
   - 具有不对称性，非负性
 - #link("https://zh.wikipedia.org/wiki/%E4%BA%92%E4%BF%A1%E6%81%AF")[互信息]\(mutual Information)
   $
-  I(X; Y) = H(X) + H(Y) - H(X, Y) = H(X) - H(X|Y) = H(Y) - H(Y|X) = DL(p(x, y)||p(x)p(y)) \
+  I(X; Y) = H(X) + H(Y) - H(X, Y) = H(X) - H(X|Y) = H(Y) - H(Y|X) = KL(p(x, y)||p(x)p(y)) \
   I(X; Y) = sum_(y in Y) sum_(x in X) p(x, y) log frac(p(x, y), p(x) p(y)) \
   I(X; Y) = int p(x, y) log frac(p(x, y), p(x) p(y)) dif x dif y
   $

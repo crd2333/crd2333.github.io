@@ -9,6 +9,7 @@ order: 2
   lang: "zh",
 )
 
+#let epg = $epsilon"-greedy"$
 
 = 价值学习
 == 价值估计
@@ -19,7 +20,7 @@ order: 2
 
 - 目标：从策略 $pi$ 采样的历史经验中估计 $V^pi$
 - 累计奖励(return)是总折扣奖励 $G_t = R_(t+1) + gamma R_(t+2) + dots + gamma^(T-1)R_T$
-- 值函数(value function)是期望累计奖励 $V^pi(s) = E[R(s_0)+gamma R(s_1) +dots |s_0=s,pi] = E[G_t|S_0 = s,pi] approx 1/N sum_(i=1)^N G_t^i$
+- 值函数(value function)是期望累计奖励 $V^pi (s) = E[R(s_0)+gamma R(s_1) +dots |s_0=s,pi] = E[G_t|S_0 = s,pi] approx 1/N sum_(i=1)^N G_t^i$
 
 #note(caption: "总结")[
   + 直接从经验回合进行学习，不需要模拟/搜索
@@ -29,8 +30,8 @@ order: 2
 ]
 
 === 时序差分方法
-$ G_t = R_(t+1) + gamma R_(t+2) + dots + gamma^(T-1)R_T = R_(t+1) + gamma G_(t+1)\
-V(s_t) = V(s_t) + alpha [G_t - V(s_t)] = V(s_t) + alpha [R_(t+1) + gamma V(s_(t+1)) - V(s_t)]
+$ G_t = R_(t+1) + gamma R_(t+2) + dots + gamma^(T-1)R_T = R_(t+1) + gamma V_(t+1)\
+V(s_t) = V(s_t) + alpha [G_t - V(s_t)] = V(s_t) + alpha [underbrace(R_(t+1), "观测值") + underbrace(gamma V(s_(t+1)), "未来猜测") - V(s_t)]
 $
 - 时序差分方法（Temporal Difference methods，简称 TD）能够直接使用经验回合学习，同样也是模型无关的
 - 与蒙特卡洛方法不同，时序差分方法结合了自举(bootstrapping)，能从不完整的回合中学习
@@ -40,19 +41,28 @@ $
   - 时序差分方法能够在每一步之后进行在线学习，蒙特卡洛方法必须等待回合终止，直到累计奖励已知
   - 时序差分方法能够从不完整的序列中学习，蒙特卡洛方法只能从完整序列中学习
   - 时序差分方法能够应用于无限长度的马尔可夫决策过程，蒙特卡洛方法只适用于有限长度
-  #set grid.cell(align: center+horizon)
-  #grid(columns: (1fr, 1fr),row-gutter: 8pt,
-    [时序差分方法],[蒙特卡洛方法],
-    [$ V(s_t) <- V(s_t) +\ alpha(R_(t+1)+gamma V(s_(t+1))-V(s_t)) $],[$ V(s_t)<-V(s_t)+alpha(G_t - V(s_t)) $],
-    [- 低方差，有偏差
-      - 更高效
-      - 最终收敛到 $V^pi$
-      - 对初始值更敏感
+  #grid(
+    columns: (1fr, 1fr, 1fr),
+    row-gutter: 8pt,
+    grid.cell(align:center)[蒙特卡洛方法],
+    grid.cell(align:horizon, rowspan: 3)[
+      #fig("/public/assets/AI/AI_RL/2025-01-04-14-07-08.png")
+      #fig("/public/assets/AI/AI_RL/2025-01-04-14-15-54.png")
     ],
-    [- 高方差，无偏差
-      - 良好收敛性
-      - 对初始值不敏感
-      - 易于理解和使用
+    grid.cell(align:center)[时序差分方法],
+    grid.cell(align:horizon)[$ V(s_t)<-V(s_t)+alpha(G_t - V(s_t)) $],
+    grid.cell(align:horizon)[$ V(s_t) <- V(s_t) +\ alpha(R_(t+1)+gamma V(s_(t+1))-V(s_t)) $],
+    grid.cell(align:center+horizon)[
+      - 高方差，无偏差
+        - 良好收敛性
+        - 对初始值不敏感
+        - 易于理解和使用
+    ],
+    grid.cell(align:center+horizon)[
+      - 低方差，有偏差
+        - 更高效
+        - 最终收敛到 $V^pi$
+        - 对初始值更敏感
     ],
   )
 ]
@@ -61,7 +71,7 @@ $
 - 为了实现方差与偏差的平衡，一种可行的方案是将蒙特卡洛方法与时序差分方法融合，实现*多步时序差分*，介于时序差分方法和蒙特卡洛方法（等效于无限步时序差分）之间。在此基础上提出*资格迹方法*，而 TD-$lambda$ 是一种比较常见的资格迹方法
 - $n$ 步时序差分学习
 $
-"定义 " n " 步累计奖励" ~~~ G_t^n = R_(t+1) + gamma R(t+2) + dots + gamma^(n-1) R_(t+n) + gamma^n V(s_(t+n))\
+"定义 " n " 步累计奖励" ~~~ G_t^n = R_(t+1) + gamma R_(t+2) + dots + gamma^(n-1) R_(t+n) + gamma^n V(s_(t+n))\
 V(s_t) <- V(s_t) + alpha(G_t^n - V(s_t))
 $
 - 资格迹方法(TD-$lambda$方法)通常使用一个超参数$lambda in [0, 1]$控制值估计蒙特卡罗还是时序差分
@@ -73,41 +83,80 @@ G_t^lambda = (1-lambda)sum_(n=1)^infty lambda^(n-1)G_t^n
 $
 - TD-$lambda$ 的两种视角
 #grid2(
-  fig("/public/assets/AI/AI_RL/img-2024-07-10-14-21-56.png"),
-  fig("/public/assets/AI/AI_RL/img-2024-07-10-14-22-17.png")
+  fig("/public/assets/AI/AI_RL/img-2024-07-10-14-21-56.png", width: 80%),
+  fig("/public/assets/AI/AI_RL/img-2024-07-10-14-22-17.png", width: 80%)
 )
 
 == SARSA & Q-learning
-- SARSA是一种针对表格环境中的*时序差分*方法，其得名于表格中的内容（状态-动作-奖励-状态-动作）
-- SARSA的策略评估为更新状态-动作值函数$ Q(s_t,a_t)<-Q(s_t,a_t)+alpha(R_(t+1)+gamma Q(s_(t+1),a_(t+1))-Q(s_t,a_t)) $
-- SARSA的策略改进为 $epsilon-"greedy"$
-- 在线策略时序差分控制(on-policy TD control)使用当前策略进行动作采样，即SARSA算法中的两个动作“A”都是由当前策略选择的
+=== SARSA
+- 学习状态动作值函数 $Q(s, a) in RR$，是一种针对表格环境中的*时序差分*方法，其得名于表格中的内容（状态-动作-奖励-状态-动作）
+- 策略评估为更新状态-动作值函数
+  - 在不知道奖励函数和状态转移函数的情况下，直接基于时序差分方法进行策略评估
+    $ Q(s_t,a_t) = Q(s_t,a_t) + alpha(R_(t+1) + gamma Q(s_(t+1),a_(t+1)) - Q(s_t,a_t)) $
+  - 也可以改成基于多步时序差分方法，即多步 SARSA 算法（$n$ 步）
+    $ Q(s_t,a_t) = Q(s_t,a_t) + alpha(R_(t+1) + ga R_(t+2) + dots + ga^n Q(s_(t+n),a_(t+b)) - Q(s_t,a_t)) $
+- 策略改进为 $epg$
+  $ pi(a|s) = cases(ep/abs(cA)+1-ep\, ~~~ &"if" a = argmax_(a' in A) Q(s,a'), ep/abs(cA)\, &"other actions") $
+- SARSA 属于在线策略时序差分控制 (on-policy TD control)
+  - 使用当前策略进行动作采样，即 SARSA 算法中的两个动作 $A$ 都是由当前策略选择的（都是 $epg$ 策略）
 
-- Q-learning学习状态动作值函数 $Q(s, a) in RR$，是一种离线策略(off-policy)方法
-$
-Q(s_t, a_t)=sum_(t=0)^T gamma^t R(s_t,a_t), ~~~ a_t wave mu(s_t)
-$
-- 为什么使用离线策略学习
-  - 平衡探索（exploration）和利用（exploitation）
-  - 通过观察人类或其他智能体学习策略
-  - 重用旧策略所产生的经验
-  - 遵循一个策略时学习多个策略
+=== Q-learning
+- 也是学习状态动作值函数，也是针对表格环境中的*时序差分*方法，但属于*离线策略 (off-policy)* 方法
 - 具体实现
-  - 使用行为策略$mu(dot|s_t)$选择动作$a_t$
-  - 使用当前策略$pi(dot|s_(t+1))$选择后续动作$a'_(t+1)$，计算目标 $Q'(s_t, a_t) = R_t + gamma Q(s_(t+1),a'_(t+1))$
+  - 使用行为策略  $mu(dot|s_t)$ 选择动作 $a_t$（关于 $Q(s,a)$ 的 $epg$ 策略）
+  - 使用当前策略 $pi(dot|s_(t+1))$ 选择后续动作（关于 $Q(s,a)$ 的贪心策略）
+    $
+    a'_(t+1) = argmax_a Q(s_(t+1), a) \
+    "即目标函数为" Q'(s_t,a_t) = R_t + ga max_a' Q(s_(t+1),a'_(t+1))
+    $
+  - 策略评估：使用时序差分更新 $Q(s_t, a_t)$ 的值以拟合目标状态动作值函数
+    $ Q(s_t,a_t) = Q(s_t,a_t) + al (R_t + ga Q'(s_(t+1), #pin(1)a'_(t+1)#pin(2)) - Q(s_t,a_t)) $
+    #pinit-highlight-equation-from((1,2), (1,2), pos: upper, height: 1em)[动作来自当前策略 $pi(dot|s_(t+1))$]
 
-#hline()
-- 总结：SARSA 中新的 $Q(s,a)$ 通过当前策略得到，而 Q-Learning 通过 $max_a Q(s,a)$ 选取，除此之外代码上非常类似
+=== On-Policy v.s. Off-Policy
+- 我们称采样数据的策略为*行为策略* (behavior policy)，称用这些数据来更新的策略为*目标策略* (target policy)
+- *在线策略 (on-policy)* 算法表示行为策略和目标策略是同一策略；而*离线策略 (off-policy)* 算法表示行为策略和目标策略不是同一策略
+  - 也叫*同策略 (on-policy)* 和*异策略 (off-policy)*：指策略评估（对应目标策略）和策略改进（对应行为策略）时所用策略是否相同
+  - 事实上，简单如 $epg$ 策略也可以看作是一种离线策略，因为行为策略是根据 $ep$ 概率随机选择动作，而目标策略则是纯贪心策略
+  - 可以通过*重要性采样*利用异策略样本进行策略评估
+    - 疑问，为什么 Q-Learning 中没有做重要性采样的概率修正？
+    - 参考 #link("https://www.cnblogs.com/xyz/p/16948169.html")[这篇博客]、#link("https://blog.csdn.net/hehedadaq/article/details/112424851")[这篇博客]，还是没太明白（
+  - off-policy
+    - 使用目标策略 $pi(a_t|s_t)$ 进行值函数评估 ($V^pi (s_t)$ or $Q^pi (s_t,a_t)$)
+      $ Q(s_t, a_t) = sum_(t=0)^T gamma^t R(s_t,a_t), ~~~ a_t wave !!!!!!!! underbrace(mu(s_t), "行为策略（可以不同于当前策略）") $
+    - 使用行为策略 $mu(a_t|s_t)$ 进行采样（收集数据）
+    - 迭代式（策略提升）
+      $ Q(s_t,a_t) = R(s_t,a_t) + ga Q(s_(t+1),a_(t+1)) $
+- SARSA 中新的 $Q(s,a)$ 通过当前策略得到，而 Q-Learning 通过 $max_a Q(s,a)$ 选取（行为策略），除此之外代码上非常类似
+  #fig("/public/assets/AI/AI_RL/2025-01-04-15-05-19.png",width: 30%)
+- 为什么使用离线策略学习
+  - 平衡探索 (exploration) 和利用 (exploitation)
+  - 通过观察人类或其他智能体学习策略
+  - 重用旧策略所产生的经验（重复使用过往训练样本，往往具有更小的样本复杂度）
+  - 遵循一个策略时学习多个策略
 
 == DQN
 === 经典 DQN
 - 回顾表格式 Q-Learning
-#mitex(`Q(s,a)\leftarrow Q(s,a)+\alpha(r+\gamma ~ max\limits_{a^{\prime}\in A} Q(s^{\prime},a^{\prime})-Q(s,a))`)
-- 如果我们将表格式的$Q(s, a)$的取值用神经网络代替，且该网络以“状态+行为作为输入，该状态行为价值作为输出”（或者，“状态作为输入，该状态的所有行为空间作为输出然后取最大值”），那么 Q-learning 算法就可以直接扩展为 DQN 学习
+  #mitex(`Q(s,a)\leftarrow Q(s,a)+\alpha(r+\gamma ~ max\limits_{a^{\prime}\in A} Q(s^{\prime},a^{\prime})-Q(s,a))`)
+  - 如果状态是无法枚举的怎么做（例如连续空间）？
+    - 一种方式可以是离散化连续空间，将连续空间归纳为多个区间，然后转换为表格式的区间-行为价值计算 $->$ 需要太多的先验离散化知识
+    - 在西瓜书《机器学习 —— 周志华》中提到另一个方法：*值函数近似*
+      - 将值函数表达为状态的线性函数，通过引入核方法实现非线性值函数近似
+      - 用最小二乘误差来度量学到的值函数与真实的值函数 $V^pi$ 之间的近似程度
+      - 用梯度下降法更新参数向量，求解优化问题
+      - 实际上，这就是下面要介绍的直接用神经网络取代值函数的方法（只不过更进一步，抛弃了机器学习这种统计成分居多的方法而完全投身于神经网络的黑盒）
+- 如果我们将
+  + 表格式的 $Q(s, a)$ 的取值用神经网络代替
+  + 该网络以“状态+行为作为输入，该状态行为价值作为输出”（或者，“状态作为输入，该状态的所有行为空间作为输出然后取最大值”）
+  - 那么 Q-learning 算法就可以直接扩展为 DQN 学习
+- 形式化描述
   - 状态价值网络：$Q_omega (s,a)$
   - 时序差分目标：$r + gamma display(max_a') Q_omega (s',a')$
-  - 给定一组状态转移数据：${(s_i,a_i,r_i,s'_i)}$，DQN 的损失函数构造为均方误差形式：#mitex(`\omega^{*}=\operatorname{argmin}\limits_{\omega}\frac{1}{2N}\sum_{i=1}^{N}\left[Q_{\omega}(s_{i},a_{i})-\left(r_{i}+\gamma\operatorname*{max}_{a^{\prime}} Q_{\omega}(s_{i}^{\prime},a^{\prime})\right)\right]^{2}`)
+  - 给定一组状态转移数据：${(s_i,a_i,r_i,s'_i)}$，DQN 的损失函数构造为均方误差形式：
+    #mitex(`\omega^{*}=\operatorname{argmin}\limits_{\omega}\frac{1}{2N}\sum_{i=1}^{N}\left[Q_{\omega}(s_{i},a_{i})-\left(r_{i}+\gamma\operatorname*{max}_{a^{\prime}} Q_{\omega}(s_{i}^{\prime},a^{\prime})\right)\right]^{2}`)
 - 训练时，有两种方法：*fitted Q 值迭代*和*在线 Q 值迭代算法*
+  #fig("/public/assets/AI/AI_RL/2025-01-04-16-03-39.png", width:40%)
   - 两种方法都有一些问题
     + 神经网络训练需要独立同分布数据，但是状态转移数据强相关；
     + 更新神经网络参数并不是梯度下降，$y_i$的计算也更新梯度（target 和神经网络双向奔赴）；
@@ -115,12 +164,13 @@ $
   - 第一个通过并行 Q-learning（同步或异步）解决，但更好的策略是*经验回放缓存*
   - 第二第三个通过*目标网络*解决
 - 最后得到经典 DQN 网络
-#fig("/public/assets/AI/AI_RL/img-2024-07-04-16-11-51.png")
+#fig("/public/assets/AI/AI_RL/img-2024-07-04-16-11-51.png", width:50%)
 
 === Double DQN
 - 经典 DQN 的问题：过高估计 Q 值（原因，噪声导致最大值的期望大于期望的最大值）
-- 引出 Double DQN，使用两个网络减少随机噪声的影响，恰巧，我们就有*目标网络*($omega^-$)和*当前策略网络*($omega$)这两个网络，分别用于计算TD目标值、选择行为
-  #fig("/public/assets/AI/AI_RL/img-2024-07-04-16-20-27.png")
+- 引出 Double DQN，使用两个网络减少随机噪声的影响
+  - 恰巧，我们就有*目标网络*($omega^-$)和*当前策略网络*($omega$)这两个网络，分别用于计算TD目标值、选择行为
+  #fig("/public/assets/AI/AI_RL/img-2024-07-04-16-20-27.png", width: 50%)
 - 其算法流程
 #algo(title: [*Algorithm:* DDQN])[
   - 算法输入：迭代轮数$T$，状态特征维度$n$，动作集$A$,步长$alpha$，衰减因子$gamma$，探索率$epsilon$，当前网络$Q$，目标网络$Q'$，批量梯度下降的样本数$m$,目标网络参数更新频率$C$
@@ -147,11 +197,11 @@ $
   - 一般来说：$Q(s,a) = V(s) + A(s, a)$
   - 这两个网络可以设计成完全独立，也可以共用一大部分，最后用全连接层区分。如下左图，假设状态输入为图像，用 CNN 做前置处理，然后分别全连接得到 $V$ 和 $A$
   #grid2(
-    fig("/public/assets/AI/AI_RL/img-2024-07-04-16-31-52.png"),
-    fig("/public/assets/AI/AI_RL/img-2024-07-04-16-34-33.png")
+    fig("/public/assets/AI/AI_RL/img-2024-07-04-16-31-52.png", width: 80%),
+    fig("/public/assets/AI/AI_RL/img-2024-07-04-16-34-33.png", width: 60%)
   )
   - 为什么要这样拆呢？分辨当前的价值是由状态价值提供还是行为价值提供，进而有针对性的更新，增加样本利用率。如上右图中，当前方有车时，不同$a$应有不同的优势价值$A_theta (s,a)$；而$V(s)$则更关注远方的目标
-  #fig("/public/assets/AI/AI_RL/img-2024-07-04-16-47-05.png")
+  #fig("/public/assets/AI/AI_RL/img-2024-07-04-16-47-05.png", width: 50%)
   - 最后这个实际使用时的替代没什么理论依据，纯粹是实证效果好
 
 === 优先经验回放池PER

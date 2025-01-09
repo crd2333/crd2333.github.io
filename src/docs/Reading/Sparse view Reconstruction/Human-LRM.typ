@@ -54,13 +54,13 @@ draft: true
 
 === Single-view Triplane Decoder
 - 这里看起来跟 GTA 挺像的，不过作者说是基于 LRM 搭建的，有时间去看一下后者
-- 对输入图像 $I_1 in RR^(H times W times 3)$，先训练一个 ViT encoder $bold(ep)$，把图像编码成 patch-wise feature tokens ${bh_i in RR^768}_(i=1)^n$ #h(1fr)
+- 对输入图像 $I_1 in RR^(H times W times 3)$，先训练一个 ViT encoder $bold(ep)$，把图像编码成 patch-wise feature tokens ${bh_i in RR^768}_(i=1)^n$
   $ {bh_i}_(i=1)^n = bold(ep) (I_1) $
 - 基于这些 tokens 和 camera features $bc$，训练一个 decoder $cD$ 得到三平面表示
   $ bT_(X Y),bT_(Y Z),bT_(X Z) = cD({bh_i}_(i=1)^n,bc) $
 
 === Triplane NeRF
-- 相比传统 NeRF 预测 density + color，这里预测 SDF + color（类似 NeuS），如图里两个 SDF MLP 和 RGB MLP #h(1fr)
+- 相比传统 NeRF 预测 density + color，这里预测 SDF + color（类似 NeuS），如图里两个 SDF MLP 和 RGB MLP
   $
   (bh_p,SDF) = MLP_SDF (bT_(X Y),bT_(Y Z),bT_(X Z)) \
   RGB = MLP_RGB (bT_(X Y),bT_(Y Z),bT_(X Z), bh_p, hat(n)_p)

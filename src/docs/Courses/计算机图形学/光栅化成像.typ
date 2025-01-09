@@ -140,7 +140,7 @@ order: 1
 
 == 画线算法
 - DDA(Digital Differential Analyzer)：数字微分分析器，用来画直线，但受限于浮点数精度
-- Breseham's Line Drawing Algorithm：更高效的画线算法，只需要整数运算 #h(1fr)
+- Breseham's Line Drawing Algorithm：更高效的画线算法，只需要整数运算
   - 注意到每次 $x$ 加一，$y$ 的变化不会超过 $1$
   #fig("/public/assets/Courses/CG/2024-09-18-09-19-46.png", width: 80%)
 - 画圆算法
@@ -265,7 +265,7 @@ order: 1
   - 大多数命令以两个字符结尾，用于确定预期参数的数据类型
 - OpenGL 是 Event Driven Programming
   - 通过注册回调函数(callbacks)来处理事件
-  - 事件包括键盘、鼠标、窗口大小变化等 #h(1fr)
+  - 事件包括键盘、鼠标、窗口大小变化等
   #fig("/public/assets/Courses/CG/2024-09-22-16-45-55.png", width: 50%)
 - Double buffering
   - 隐藏绘制过程，避免闪烁
@@ -301,13 +301,13 @@ order: 1
     + 颜色取决于波长，亮度取决于光子数量
     + 光的波谱
 - Lambertian(Diffuse) Term 漫反射
-  - 在某一 shading point，有 #h(1fr)
+  - 在某一 shading point，有
     $ L_d = k_d (I_d \/ r^2) max(0, n dot l) $
   - $k_d$ 是漫反射系数，$I_d$ 是光源强度，$n$ 是法向量，$l$ 是光线方向，$r$ 是光源到点的距离
   - 也可以用半球积分来推导
 - Specular Term 高光
   $ L_s = k_s (I_s \/ r^2) max(0, n dot h)^p $
-  - 亮度也取决于观察角度，用一个 trick 转化计算：半程向量(half vector) #h(1fr)
+  - 亮度也取决于观察角度，用一个 trick 转化计算：半程向量(half vector)
     $ h = (v + l) / norm(v + l) $
   - 注意简化掉了光通量项，以及 $p$ 是高光系数，$v$ 是观察方向
 - Ambient Term 环境
@@ -347,7 +347,7 @@ order: 1
   - 类似于把壁纸(wallpaper)贴到墙(wall)上，或者把地球的平面地图映射到球上恢复成地球
   - 具体来说，涉及到三个 space 的变化
     - 光栅化的时候，我们从 screen space 的 2D 坐标映射得到 world space 的 3D 坐标
-    - 纹理映射的时候，我们从 world space 的 3D 坐标映射得到 texture space 的 2D 坐标 #h(1fr)
+    - 纹理映射的时候，我们从 world space 的 3D 坐标映射得到 texture space 的 2D 坐标
     - 简而言之就是对光栅化的屏幕坐标算出它的 $u v$ 坐标（利用三角形顶点重心坐标插值），再利用这个 $u v$ 坐标去查询 texture 上的颜色，把这个颜色信息当作这个 vertex 的颜色，再经过材质和光照模型的计算得到最终的颜色
     #fig("/public/assets/Courses/CG/2024-11-29-13-44-44.png",width:70%)
     - 虽然 texture space 看起来是个连续的空间 ($u, v in [0,1]$)，但我们往往表示为一个固定分辨率的图片，表示出来是一个个像素（a pixel on texture，简记为 *texel*，纹理元素、纹素），不可以取非整数值
@@ -377,7 +377,7 @@ order: 1
       #fig("/public/assets/Courses/CG/2024-11-29-15-52-47.png",width:70%)
   - 下面我们就认为已经知道 3D 物体的每一个三角形顶点对应的纹理 $u, v in [0,1]$ 坐标
 - 三角形内插值: 重心坐标(Barycentric Coordinates)
-  - 重心坐标 #h(1fr)
+  - 重心坐标
     $ (x,y)=al A + beta B + ga C ~~~ (al + beta + ga = 1) $
     - 通过 $al, beta, ga >= 0$ 可以任意表示三角形内的点，且与三个顶点所在坐标系无关
     - 这个重心坐标跟三角形重心不是一回事，三角形重心的重心坐标为 $(1/3, 1/3, 1/3)$

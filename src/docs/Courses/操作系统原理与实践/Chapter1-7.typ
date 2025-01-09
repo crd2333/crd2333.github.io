@@ -7,7 +7,7 @@
 
 #info()[
   - 感觉 #link("https://note.hobbitqia.cc/OS/")[hobbitqia 的笔记] 比较好
-  - 还有 #link("https://note.isshikih.top/cour_note/D3QD_OperatingSystem/")[修佬的笔记]，虽然老师不一样
+  - 还有 #link("https://note.isshikih.top/cour_note/D3QD_OperatingSystem/")[修佬的笔记]，虽然老师不一样，具体内容上也有一定差别
 ]
 
 #note(caption: "Mid-Term Review")[
@@ -52,10 +52,10 @@
   - Ubuntu = Linux Core + GNU
 - Kernel 的工作是抽象封装和资源管理 —— abstraction and allocation
 - 对 OS 的一个最常见误区是“一个 running program”，事实上 OS 在启动后一般是闲置的，并且要求内存占用小
-  - It's code that resides in memory and is ready to be executed at any moment
+  - It is code that resides in memory and is ready to be executed at any moment
   - It can be executed on behalf of a job(or process in modern terms, a process is a running job)
 - 为了实现 APP $->$ OS $->$ HardWare 的层级，需要把访问硬件的指令分类(privileged / unprivileged)，即至少支持两个 Mode
-  - arm64 有 4 个 Mode，RISC-V 有 3 个 Mode（有一个没抄完因此叫 reserved）
+  - arm64 有 4 个 Mode，RISC-V 有 3 个 Mode（有一个没抄完因此叫 reserved，好像快抄完了）
   #grid2(
     fig("/public/assets/Courses/OS/2024-09-24-13-33-05.png"),
     fig("/public/assets/Courses/OS/2024-09-24-13-33-26.png")
@@ -80,12 +80,13 @@
   + Protection and Security
 
 = Structures
+== Operating System Services
 - 操作系统的定义
   - 狭义上来说，只有与硬件资源直接沟通的内核才叫 OS
   - 但这样 Android（底层是 linux）、鸿蒙等就不算了，因此从广义上来说，一些运行在 user mode 上的 system services 也算 OS（比如，GUI、batch、command line）
+  #fig("/public/assets/Courses/OS/2024-09-24-16-04-00.png", width: 70%)
 
 == System Calls and Services
-  #fig("/public/assets/Courses/OS/2024-09-24-16-04-00.png", width: 70%)
 - system call 是 kernel 提供给 user 的 API，做 privileged 的操作
 - system call 非常常见，只是我们可能意识不到
   - 比如 C 语言的 `printf` 就是一个 `write` system call 的 wrapper
@@ -106,11 +107,16 @@
   - Loader: 把可执行文件 load 到内存中，准备执行
   - Linker 和 Loader 之间的区别在于：Linker 是在 compile time，Loader 是在 run time
 #grid(
-  columns: 2,
+  columns: (65%, 30%),
+  column-gutter: 8pt,
   [
     - ELF binary basics
       - ELF: Executable and Linkable Format
-      - `.text`: code, `.rodata`: initialized read-only data, `.data`: initialized data, `.bss`: block started by symbol(initialized data)
+      + `.text`: `r-x` code
+      + `.rodata`: `r--` initialized read-only data，如 static const
+      + `.data`: `rw-` initialized data，如 static variables 和 const variables
+      + `.bss`: `rw-` block started by symbol (uninitialized data)，给一个全局变量不给值，早期编译器记录它在 .bss 段里，但没有实际空间，映射到内存时就初始化为 $0$
+      - `readelf` 命令
     - Linking
       - Static linking
         - 把所有需要的代码都 link 到一个 large binary 中，移植性好
@@ -118,21 +124,25 @@
         - 重用 libraries 来减少 binary 的大小
         - 谁来解析？loader will resolve lib calls
   ],
-  fig("/public/assets/Courses/OS/2024-10-30-17-13-17.png", width: 50%)
+  fig("/public/assets/Courses/OS/2024-10-30-17-13-17.png")
 )
 - running a binary
+  - 运行时的内存布局，ELF section 被映射到内存中不同 segmentaion
   #fig("/public/assets/Courses/OS/2024-09-24-16-07-49.png")
-  - Who setups ELF file mapping? Kernel, or to be more specific --- exec syscall
-  - Who setups stack and heap? Kernel, or to be more specific --- exec syscall
+  - Who setups ELF file mapping? Kernel，或者更具体地说是 exec syscall
+  - Who setups stack and heap? Kernel，或者更具体地说是 exec syscall
   - Who setups libraries? loader, ld-xxx
 - Running statically-linked ELF
-  - Where to start? `_start`(entry point address, or elf_entry), `_start` is executed after evecve system call，并且这是运行在 user mode 的
+  - 系统如何知道我们要执行的程序从哪一行开始执行？通过 entry point address `_start`(or `elf_entry`)！`_start` 在 `evecve` system call 后执行，并且这是运行在 user mode 的
+  - `load_elf_binary` 函数会从 ELF header 读取 `elf_entry`，以此作为 `pc`，然后调用 `start_thread` 函数
   - `_start` 里面调用 `_libc_start_main`，这个函数会调用 `main` 函数并设置参数
   #fig("/public/assets/Courses/OS/2024-09-25-16-38-09.png", width:70%)
+  - `cat /proc/$pid/maps` 里可以看到进程的内存映射。static 的条目更少，因为需要的东西已经打包到 `a.static` 内了，不需要外部的库。而 dynamic 需要外部的库
 - Running dynamically-linked ELF
   - 在源码的 `load_elf_binary` 里，会有个 `if (elf_interpreter)`，如果是则为 dynamical，然后去调 interpreter
-  - 它做了什么呢？比方说 main 里面调了 `printf`，实际上用的是 `puts`，那这个地址在哪呢（如果没设置好的话就会 segmentation fault）？这就是 loader 的工作
+  - 它做了什么呢？比方说 main 里面调了 `printf`，实际上用的是 `puts`，那这个地址在哪呢？（如果没设置好的话就会 segmentation fault）这就是 loader 的工作
   #fig("/public/assets/Courses/OS/2024-09-25-16-44-28.png")
+  - 多出来的系统调用是为了先把 loader 加载进来，loader 再把 libc 加载。内存布局里多映射的条目也是为了给 loader 使用
 
 == Operating System Design
 - Why Applications are Operating System Specific
@@ -151,7 +161,7 @@
     + Simple structure – MS-DOS
     + Monolithic – Unix, Linux
     + Layered – an abstraction
-    + Microkernel – Mach，
+    + Microkernel – Mach
   #grid(
     columns: 2,
     fig("/public/assets/Courses/OS/2024-09-25-17-20-23.png"),
@@ -177,14 +187,19 @@
 = Processes
 == Process concept
 - 什么是 process？#underline[Resource Allocation and Protection] Unit
+  - process 是一个在执行的 program（ELF 文件），跑起来后要分配资源（CPU、内存、IO），就成为了一个进程
+  - 一个 program 可以运行多次，每次运行都产生一个新的进程
 - Process memory layout
   - 一般来说 stack 会比 heap 快得多，因为大多数时候会在 cache 里
+  - 临时变量在 stack 上，`malloc` 在 heap 上
   - 当 stack meets heap 时，会发生著名的 stack overflow（常见于错误递归的情况）
-  #fig("/public/assets/Courses/OS/2024-10-08-13-40-04.png", width: 80%)
+  #fig("/public/assets/Courses/OS/2024-12-29-23-46-16.png", width: 80%)
+  #align(center)[#text(fill: gray.darken(40%), [老师所谓的神图之一])]
 - Stack Frame (Activation Record)
   - 栈帧，每次调用新函数的时候，`sp` 指向新的位置，`fp` 指向原本 `sp` 的位置，它们之间的空间就是这个函数的内存布局
     - 这里讲课用的是 arm64 的寄存器规定
-  #fig("/public/assets/Courses/OS/2024-10-08-13-54-25.png", width: 80%)
+    #fig("/public/assets/Courses/OS/2024-10-30-17-37-34.png", width: 70%)
+    #align(center)[#text(fill: gray.darken(40%), [老师所谓的神图之二])]
 - Process Control Block (PCB)
   - 一个进程的所有信息都在 PCB 里，linux 里面叫 `task_struct`（严格来说它是 for thread 的，但 linux 并不区分二者）
   - 会有一个链表把所有 PCB 串起来
@@ -198,14 +213,14 @@
     + I/O status information: I/O devices allocated to process,list of open files
 
 == Process State
-- 要记住这张图
-  #fig("/public/assets/Courses/OS/2024-10-08-14-05-49.png", width: 80%)
+- 进程状态间的切换，要记住这张图（但反正能抄 A4 纸x）
+  #fig("/public/assets/Courses/OS/2024-12-29-23-44-41.png", width: 70%)
 - 下面我们先讲 new 和 terminated，然后再讲 running, ready, waiting
 
 === 进程创建(new)
 - 进程创建就像一棵树，每个 process 拥有唯一 `pid` 和指向它的父节点的 `ppid`
 - 名字带 `d` 的表示它是一个 daemon 进程（守护进程），不会与 user 交互，默默地在后台跑
-  #fig("/public/assets/Courses/OS/2024-10-08-14-43-53.png", width: 80%)
+  #fig("/public/assets/Courses/OS/2024-12-29-23-45-30.png", width: 80%)
 - 父进程在创建子进程时，他可以选择等待子进程结束，也可以不等待；子进程可以是父进程的 `fork()`，也可以是新的程序
   - `fork()`
   - `create_process()` in Windows
@@ -220,6 +235,7 @@
       fork();
   }
   ```
+  - 一共创建了 $12$ 个进程
 - `exec*()` family
   - `exec()` 会把 process 的那一块内存清空，然后把新的程序加载进去
     - 如果新的程序内存要求比原本的大，会“往下扩”（其实是虚拟内存机制）
@@ -228,7 +244,7 @@
     + command-line arguments to be passed to the executable
     + possibly a set of environment variables
   - `ls` 的例子（可以 `strace` 用 syscall 查看进程创建的情况，但是不会显示 `fork`）
-  #fig("/public/assets/Courses/OS/2024-10-08-14-50-55.png", width: 80%)
+  #fig("/public/assets/Courses/OS/2024-12-29-23-47-34.png", width: 80%)
 
 === 进程结束(terminated)
 - 像上图那样，parent 需要等待 child 结束
@@ -247,9 +263,9 @@
     ```
 - zombie
   - 当 child 进程 terminate 了，这个 child 就成了 *zombie*
-  - 直到 OS collect garbage 或者 parent 调用 OS 来处理
+  - 直到parent 调用 OS 来处理或者 OS collect garbage
   - parent 进程可以调用 `wait()` 或 `waitpid()` 来获取它的 exit code 并回收
-    - 为什么一定要 OS 回收？因为 child 进程可以回收基本所有东西，但维度 PCB 没有办法 deallocate
+    - 为什么一定要 OS 回收？因为 child 进程可以回收基本所有东西，但唯独 PCB 没有办法 deallocate
     - 为什么不立即回收？因为 zombie 不会实际消耗 CPU 资源，而只是略微占用一点内存
   - 比如：当 parent 陷入无限循环，而且没有设置 handler 时，child `exit()`，却没有被处理，它就成了 zombie
 - orphan
@@ -273,8 +289,7 @@
   - 这里可以思考一下 user stack 和 kernel stack 有什么不同？
     + user space 的栈空间无限，而 kernel space 有限；
     + kernel space 在栈开始的地方多了个 `pt_regs`（kernel stack 里面有两个 pc，context 里面的是 kernel 的 pc，`pt_regs` 里面的是 user 的 pc）
-  #fig("/public/assets/Courses/OS/2024-10-30-17-37-34.png", width: 50%)
-  #align(center)[#text(fill: gray.darken(40%), [老师所谓的神图])]
+  #fig("/public/assets/Courses/OS/2024-10-30-17-37-34.png", width: 70%)
   - 思考 `fork()` 为什么能返回两个值(Return new_pid to parent and zero to child)？
     - 其实是有两套 user space context
     + 对 parent process，`fork()` 就是一个 syscall，返回值存在 `pt_regs` 里
@@ -289,7 +304,7 @@
 - 与之对应的 intra-process 表示进程内部
 - 前面我们把进程介绍为独立的单元，互相之间只有 switch，保护得太好了。但实际上进程之间因为 Information sharing, Computation speedup, Modularity, Convenience 等原因需要进行通信
 - Multiprocess Architecture example – Chrome Browser
-  - 谷歌浏览器实际上是 3 中多线程 —— Browser, Render, Plugin，分别负责用户交互、渲染、插件
+  - 谷歌浏览器实际上是三种多线程 —— Browser, Render, Plugin，分别负责用户交互、渲染、插件
 - Models of IPC
   + *Shared memory*
   + *Message passing*
@@ -297,32 +312,33 @@
   + Pipe
   + Client-Server Communication: Socket, RPCs, Java RMI
   #fig("/public/assets/Courses/OS/2024-10-16-16-38-32.png", width: 50%)
-- Message-passing
-  + 高开销，每次操作都要 syscall
-  + 有时对用户来说很麻烦，因为代码中到处都是send/recv操作
-  + 相对来说 OS 上容易实现
-- Shared memory
+
+=== Shared memory
+- 优缺点
   + 低开销，只需要初始化时少量的 syscall；对交换大量数据很有用
-  + 对用户来说更方便，因为我们习惯于简单地从RAM读/写
+  + 对用户来说更方便，因为我们习惯于简单地从 RAM 读/写
   + 相对来说 OS 上更难实现
 - 进程需要建立共享内存区域
   - 每个进程创建自己共享内存段，然后其它进程可以将其 attach 到自己的地址空间
     - 注意，这与多线程的核心内存保护理念背道而驰
-  - 进程通过读/写共享内存区域进行通信，他们自己负责“不踩到对方的脚趾”，操作系统根本不参与
-  - e.g. POSIX Shared Memory
-  - 存在问题：不安全。任何人拿到 share_id 都可以把共享内存 attach 到自己进程上，可以观察到其他进程的数据、甚至做 DOS 攻击
+  - 进程通过读/写共享内存区域进行通信，自己负责“不踩到对方的脚趾”，操作系统根本不参与
+- 存在问题：
+  - 不安全。任何人拿到 share_id 都可以把共享内存 attach 到自己进程上，可以观察到其他进程的数据、甚至做 DOS 攻击
   - 而且很 cubersome，会发生各种 error 需要处理，现在使用不多
+- e.g. POSIX Shared Memory
 
 === Message Passing
-- Two fundamental operations:
-  - send: to send a message (i.e., some bytes)
-  - recv: to receive a message
-- If processes P and Q wish to communicate they
-  - establish a communication “link” between them
-  - This “link” is an abstraction that can be implemented in many ways (even with shared memory!!)
-  - place calls to send() and recv()
-  - optionally shutdown the communication “link”
-- Implementation of communication link
+- 优缺点
+  + 高开销，每次操作都要 syscall
+  + 有时对用户来说很麻烦，因为代码中到处都是 send/recv 操作
+  + 相对来说 OS 上容易实现
+- 两个基础操作：`send`, `recv`
+- 如果两个进程 `P, Q` 之间要通信，需要：
+  - 建立二者之间的 communication "link"
+    - 这个 link 是个抽象说法，可以有很多方式实现 (even with shared memory)
+  - place calls to `send()` and `recv()`
+  - 可选地关闭 communication link
+- 如何实现 communication link
   - Physical:
     + Shared memory
     + Hardware bus
@@ -334,12 +350,10 @@
     + Synchronous or asynchronous
       - Synchronous: 发信息时，如果接收者没收到信息，就堵塞着不走；收信息时，如果发送者没有发送信息，就堵塞着不走
       - Asynchronous: Non-blocking is considered asynchronous
-      - 异步效率更高，同步时效性更高。
-        - Automatic or explicit buffering
+      - 异步效率更高，同步时效性更高
     + Automatic or explicit buffering
-      - Zero capacity - no messages are queued on a link. Sender must wait for receiver
-      - Bounded capacity - finite length of n messages. Sender must wait if link full.X
-      - Unbounded capacity - infinite length. Sender never waits
+      - Zero capacity, Bounded capacity, Unbounded capacity
+      - 考虑 capacity 性质，决定 sender 是否需要 wait
 
 === Signals
 - 略
@@ -434,7 +448,7 @@
 - Many-to-Many Model（左下）
   - $m$ to $n$ 线程，折中上面两者的优缺点。但是实现复杂
 - Two-Level Model（右下）
-  - 大多数时候 many to many，但对特别重要的那种用 one to one #h(1fr)
+  - 大多数时候 many to many，但对特别重要的那种用 one to one
 
 == Thread Libraries
 - In C/C++: pthreads and Win32 threads
@@ -522,7 +536,7 @@
   - CPU-bound process: 主要是等 CPU
 - CPU scheduler 有两种类型
   + Non-preemptive: 一个进程想跑多久就多久
-  + Preemptive: 当一个进程被另一个进程抢占时，被抢占的进程会被放回 ready queue
+  + Preemptive: 一个进程还能继续跑但被别的进程抢占
   #note()[
     + A process goes from RUNNING to WAITING
       - e.g. waiting for I/O to complete
@@ -561,15 +575,16 @@
 - RR
   - 每个进程都有一个时间片(quantum)，时间片用完了就换下一个
   - 优点是简单，缺点是可能会有很多 context switch
-  - 时间片的大小是一个 trade-off，太小会导致频繁的 context switch，太大会导致总 dispatch latency 不可接受
+  - 时间片的大小是一个 trade-off，太小会导致频繁的 context switch，太大会导致 poor response / interactivity
 - Priority
   - 一个 Problem 是 *Starvation*，即低优先级的进程永远得不到 CPU
   - 可以用 *priority aging* 来解决，把时间也算到优先级里
   - Priority 可以与 RR 结合
+    - 优先跑最高优先级进程，优先级相同的采用 RR
 - Multilevel Queue Scheduling
   #fig("/public/assets/Courses/OS/2024-10-16-16-26-11.png", width: 60%)
 - Multilevel Feedback Queue Scheduling
-  - 根据反馈来调整队列，比如给一个 quantum，如果你用完了，把你往下降（优先级降低），降到最后就完全不看 priority 而是 FCFS
+  - 根据反馈来调整队列，比如给一个 quantum，如果你用完了，把你往下降（优先级降低），降到最后完全不看 quantum 而是 FCFS
   #fig("/public/assets/Courses/OS/2024-10-15-14-55-52.png", width: 60%)
 - 怎么样算是 Good Scheduling Algorithm
   - Few *analytical/theoretical* results are available
@@ -622,9 +637,11 @@
 == Race Condition
 - 多个进程并行地写数据，结果取决于写的先后顺序，这就是 Race Condition
   - 比如课件中的 counter++ 例子
-  - 又比如，如果不加保护，两个进程同时 `fork()`，子进程可能拿到一样的 pid
+  - 又比如，如果不加保护，两个进程同时 `fork()`，子进程可能拿到（父进程返回）一样的 pid
 - critical section
-  - 修改共同变量的区域称为 critical section；共同区域之前叫 entry section，之后叫 exit section
+  - 修改共同变量的区域称为 critical section，同时刻只能有一个进程处于这里；
+  - 共同区域之前叫 entry section，其它进程需在此询问能否进入；
+  - 共同区域之后叫 exit section，critical section 中进程结束后施放许可
   ```
   while (true) {
       [entry section]
@@ -640,7 +657,7 @@
     - Non-preemptive – runs until exits kernel mode, blocks, or voluntarily yields CPU
 - Solution to Critical-Section: *Three Requirements*
   - Mutual Exclusion（互斥访问）
-    -在同一时刻，最多只有一个线程可以执行临界区
+    - 在同一时刻，最多只有一个线程可以执行临界区
   - Progress（空闲让进）
     - 当没有线程在执行临界区代码时，必须在申请进入临界区的线程中选择一个线程，允许其执行临界区代码，保证程序执行的进展
   - Bounded waiting（有限等待）
@@ -718,20 +735,20 @@
   } while (TRUE);
   ```
   - mutual exclusion & progress: 显然满足
-  - bounded-waiting : 不一定，改造一下使它满足
+  - bounded-waiting : 不一定（三个以上进程可能有一个一直轮不到），改造一下使它满足
   ```c
   do {
       waiting[i] = TRUE;
-      while (waiting[i] && test_and_set(&lock));
+      while (waiting[i] && test_and_set(&lock)); // busy waiting
       waiting[i] = FALSE;
       /* critical section */
       j = (i + 1) % n;
-      while ((j != i) && !waiting[j])
+      while ((j != i) && !waiting[j]) // find the next waiting process (but cannot set lock)
           j = (j + 1) % n;
       if (j == i)
           lock = FALSE;
       else
-          waiting[j] = FALSE;
+          waiting[j] = FALSE; // give it a chance by setting waiting[j] = false
       /* remainder section */
   } while (TRUE);
   ```
@@ -747,12 +764,11 @@
   ```
   - Shared integer lock initialized to 0
   ```c
-  while (true)
-  {
+  while (true) {
       while (compare_and_swap(&lock, 0, 1) != 0); /* do nothing */
-      critical section
+      /* critical section */
       lock = 0;
-      remainder section
+      /* remainder section */
   }
   ```
   - intel x86 中实现了 `cmpxchg`，就是这个指令；ARM64 使用下面这种方式实现
@@ -799,23 +815,24 @@
 - 解决：利用 Semaphore，即线程拿不到锁的时候，就不要在 ready queue 了，yield $->$ moving from running to sleeping
 
 == Semaphore
-- Implementation with waiting queue
+- 基于 spinlock 可以进一步实现 semaphore，解决忙等待的问题，用一个 waiting queue 实现
   ```c
   wait(semaphore *S) {
-      S->value--;
-      if (S->value < 0) {
+      S->value--; // 信号量的绝对值代表等待该信号量的进程数
+      if (S->value < 0) { // 初始值为 1，如果没人就减一后直接拿来用
           add this process to S->list;
           block(); // 把当前的进程 sleep，放到 waiting queue 里面
       }
   }
   signal(semaphore *S) {
       S->value++;
-      if (S->value <= 0) { // 队列里面有人在睡觉
+      if (S->value <= 0) { // 之前为负，队列里面有人在睡觉
           remove a proc.P from S->list;
-          wakeup(P); // 从 waiting queue 里面拿出一个进程，放到 ready queue 里面
+          wakeup(P); // 从 waiting queue 里拿出一个进程，放到 ready queue
       }
   }
   ```
+  - 信号统计量 `value` 为 $1$ 代表资源空闲，为 $0$ 代表有人在用，为负数代表有人在 sleep 等待（绝对值代表等待的人数）
   - 利用 Semaphore
     - 现在 critical section 不再是 busy waiting 了
     - 但注意 wait, signal 是需要 atomic 的，所以我们需要用 spinlock 来保护这两个操作，这里还是 busy waiting 的
@@ -891,10 +908,18 @@
       signal(full-slots); // signal that the buffer is full
   } while (TRUE);
   ```
-  - `wait(empty-slots)` 和 `wait(mutex)` 不能调换，否则导致“带着锁睡觉”
+  - `wait(empty-slots)` 和 `wait(mutex)` 不能调换，否则可能导致“带着锁睡觉”(`mutex`)
   - `wait(empty-slots)` 和 `signal(full-slots)` 也不能调换，否则。。。。
 - The Consumer process
   ```c
+  do {
+      wait(full-slots);
+      wait(mutex);
+      // remove an item from buffer
+      signal(mutex);
+      signal(empty-slots);
+      // consume the item
+  } while (TRUE);
   ```
 - 注意 `full-slots`, `empty-slots` 是多值 semaphore，而 `mutex` 是 binary semaphore
   - 既然 `mutex` 是二值的，那为什么不能用 spin lock 来设计它而要用 semaphore 呢？
@@ -930,7 +955,7 @@
       if (readcount == 1) // 如果是第一个 reader
           wait(write);    // 就把 write 锁住
       signal(mutex)
-      reading data // 这里 readers 之间不会卡住
+      // reading data // 这里 readers 之间不会卡住
       wait(mutex);
       readcount--;
       if (readcount == 0) // 如果是 last reader
@@ -938,8 +963,8 @@
       signal(mutex);
   } while(TRUE);
   ```
-  - mutex 用来保护 readcount，这里如果 count 是 1，就获得 write 的锁来保护这个 read
-  - 假设 writer 拿到了锁，来了 3 个 reader，那么第一个会 sleep 在 `write` 上，剩下 2 个 reader 会 sleep 在 `mutex` 上
+  - `mutex` 用来保护 `readcount`，这里如果 count 是 1，就获得 `write` 的锁来保护这个 read
+  - 假设 writer 拿到了锁，来了三个 reader，那么第一个会 sleep 在 `write` 上，剩下两个 reader 会 sleep 在 `mutex` 上
 - Variations of readers-writers problem
   - 现在这种写法是 Reader first：如果有 reader holds data，writer 永远拿不到锁，要等所有的 reader 结束。比如 RA, WA, RB，那么 WA 会一直等 RB 结束
   - Writer first：如果 write ready 了，他就会尽可能早地进行写操作。如果有 reader hold data，那么需要等待 ready writer 结束后再读
@@ -961,10 +986,10 @@
   do {
     wait(chopstick[i]);
     wait(chopstick[(i+1)%5]);
-    eat
+    // eat
     signal(chopstick[i]);
     signal(chopstick[(i+1)%5]);
-    think
+    // think
   } while (TRUE);
   ```
   - 每个人都先拿自己左边的筷子，再准备拿右边的筷子，会导致卡死 (deadlock)
@@ -979,10 +1004,10 @@
         wait(chopstick[(i+1)%5]);
         wait(chopstick[i]);
     }
-    eat
+    // eat
     signal(chopstick[i]);
     signal(chopstick[(i+1)%5]);
-    think
+    // think
   } while (TRUE);
   ```
 
@@ -1018,7 +1043,7 @@
   - *Mutual exclusion*: 互斥，资源在一个时间只能被一个进程使用
   - *Hold and wait*: 已经有了一些资源，同时想要更多资源
   - *No preemption*: 已经获得的资源不能被抢占，只能由自己释放
-  - *Circular wait*
+  - *Circular wait*: 进程之间形成环路等待
 
 == Resource-Allocation Graph
 - Two types of nodes
@@ -1079,16 +1104,7 @@
 
 - Deadlock Avoidance Algorithms
   - Single instance of each resource type $=>$ use resource-allocation graph
-    - 新增一种 edge: *claim edge* $P_i -> R_j$，用虚线表示，表示进程想要这个资源，但还没 request
-    - Transitions
-      + 当进程 request 资源时，claim edge 变成 request edge
-      + 当资源被分配给进程时，request edge 变成 assignment edge
-      + 当进程释放资源时，assignment edge 变成 claim edge
-    - Algorithm: Suppose that $P_i$ requests $R_j$, the request can be granted only if:
-      - converting the request edge to an assignment edge does not result in the formation of a cycle.
-      - no cycle $-->$ safe state
-      #fig("/public/assets/Courses/OS/2024-11-28-19-40-52.png",width:70%)
-    - 用图描述好像挺复杂，但表格来看，就是这样，然后做小学数学题
+    - 用表格来看，就是做小学数学题
       - Resources 一共是 $12$，当前 Available 为 $2$
       #tbl(
         columns: 4,
@@ -1097,6 +1113,16 @@
         [P1],[4],[2],[2],
         [P2],[9],[3],[6],
       )
+    - 检测算法
+      - 新增一种 edge: *claim edge* $P_i -> R_j$，用虚线表示，表示进程想要这个资源，但还没 request
+      - Transitions
+        + 当进程 request 资源时，claim edge 变成 request edge
+        + 当资源被分配给进程时，request edge 变成 assignment edge
+        + 当进程释放资源时，assignment edge 变成 claim edge
+      - Algorithm
+        - 假设进程 $P_i$ 申请资源 $R_j$，只有在 request $P_i –> R_j$ 变成 assignment $R_j -> P_i$ 而*不会导致形成环*时，才允许申请
+        - no cycle $-->$ safe state
+        #fig("/public/assets/Courses/OS/2024-11-28-19-40-52.png",width:40%)
   - Multiple instances of a resource type $=>$ use the *banker's algorithm*
     - 通过四个矩阵刻画一个时间内各个进程对各种资源的持有和需求情况
       - available: 当前还没有被分配的空闲资源
@@ -1107,13 +1133,13 @@
     - 例如
       #tbl(
         columns:10,
-        [],table.cell(colspan:3)[allocation],table.cell(colspan:3)[max],table.cell(colspan:3)[available],
-        [],[A],[B],[C],[A],[B],[C],[A],[B],[C],
+        table.cell(rowspan: 2)[],table.cell(colspan:3)[allocation],table.cell(colspan:3)[max],table.cell(colspan:3)[available],
+        [A],[B],[C],[A],[B],[C],[A],[B],[C],
         [P0],[0],[1],[0],[7],[5],[3],[3],[3],[2],
-        [P1],[2],[0],[0],[3],[2],[2],[],[],[],
-        [P2],[3],[0],[2],[9],[0],[2],[],[],[],
-        [P3],[2],[1],[1],[2],[2],[2],[],[],[],
-        [P4],[0],[0],[2],[4],[3],[3],[],[],[],
+        [P1],[2],[0],[0],[3],[2],[2],table.cell(colspan: 3, rowspan: 4)[],
+        [P2],[3],[0],[2],[9],[0],[2],
+        [P3],[2],[1],[1],[2],[2],[2],
+        [P4],[0],[0],[2],[4],[3],[3],
       )
 
 === Deadlock Detection
@@ -1136,10 +1162,9 @@
     + how many processes will need to be terminated
     + is process interactive or batch?
 - Options II: Resource preemption
-  - Select a victim
-  - Rollback
-  - Starvation
-    - How could you ensure that the resources do not preempt from the same process?
+  - Select a victim: 代价最小化
+  - Rollback: 回退到安全状态但是很难，一般需要完全终止进程重新执行
+  - Starvation: 保证资源不总是从同一个进程中被抢占，常见方法为代价因素加上回滚次数
 
 #note(caption: "Takeaways")[
   - Deadlock occurs in which condition?

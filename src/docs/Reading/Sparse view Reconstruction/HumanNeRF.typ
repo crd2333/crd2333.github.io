@@ -24,7 +24,7 @@ draft: true
   $ F_o (bx,bp) = F_c (T(bx,bp)) $
   - 注：observation space 和 canonical space 下的点本身是一一对应，但实际上，NeRF 的一个像素对应空间中多个采样点，这就做不到一一对应了（回忆之前的 MipNeRF 等工作就是在缓解这件事情）。Anyway，虽然这是固有缺陷，但至少大方向上能用
 - motion field 如何实现？
-  - 第一，把 motion field 解耦成骨骼驱动的变形(Skeletal motion)和在其上的偏置(Non-rigid motion) #h(1fr)
+  - 第一，把 motion field 解耦成骨骼驱动的变形(Skeletal motion)和在其上的偏置(Non-rigid motion)
     $ T(bx,bp) = T_skel (bx,bp) + T_NR (T_skel (bx,bp),bp) $
     - 其中，$p = (J,Omega)$ 指 $K$ 个关节点的位置和局部关节旋转矩阵
   - 第二，参照 Vid2Actor 把 SMPL 写死的蒙皮权重改成 volume 的（与空间相关的）$w_o^i (bx)$，学习一个逆变换
@@ -35,7 +35,7 @@ draft: true
     De_Om (bp) = "MLP"_(th_pose) (Omega) \
     P_pose (bp) = (J, De_Om (bp) times.circle Omega)
     $
-  + *Skeletal Motion*: 逆线性混合蒙皮，把 observation space 的点映射到 canonical space，怎么实现逆变换？ #h(1fr)
+  + *Skeletal Motion*: 逆线性混合蒙皮，把 observation space 的点映射到 canonical space，怎么实现逆变换？
     $
     "Given" p=(J,Om): J={j_i}, Om={om_i}, ~~ "and predefined canonical pose" bp_c=(J^c,Om^c) \
     T_skel (bx,bp) = sum_(i=1)^K w_o^i (bx) (R_i bx + bt_i) \

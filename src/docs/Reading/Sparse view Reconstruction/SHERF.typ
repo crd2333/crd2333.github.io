@@ -51,9 +51,9 @@ draft: true
 
 == Preliminary
 - 在看 SHERF 之前，我们先来简单看一下它的前置技术（都看过了，这里不展开，仅列一下核心公式）
-  + 一是 NeRF（#link("http://crd2333.github.io/note/Reading/Representations/NeRF")[我的 NeRF 笔记]） #h(1fr)
+  + 一是 NeRF（#link("http://crd2333.github.io/note/Reading/Representations/NeRF")[我的 NeRF 笔记]）
     $ hC(br) = int_(t_n)^(t_f) T(t) si (br(t)) bc(br(t),bd) dif t $
-  + 二是 SMPL（#link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/SMPL")[我的 SMPL 笔记]） #h(1fr)
+  + 二是 SMPL（#link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/SMPL")[我的 SMPL 笔记]）
     $ bx^o = sumkK w_k bG(bth,bJ) bx^c $
 - 不过这里我们可以看一看非 generalizable 的普通 Human NeRF 是怎么做的
   - 把 NeRF 用到人体重建的想法非常自然，所以归类于 Human NeRF 的方法也不少，SHERF 在 related works 里列了很多，不过比较有代表性和影响力的是 #link("https://arxiv.org/abs/2201.04127")[HumanNeRF: Free-viewpoint Rendering of Moving People from Monocular Video] (CVPR2022 oral)，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/HumanNeRF")[HumanNeRF 笔记]

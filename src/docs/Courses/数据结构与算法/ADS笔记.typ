@@ -75,7 +75,7 @@ order: 3
   - 根据键值排除一些路径
   - 兄弟之间的“互推''（小 trick，不一定要实现）
   - 分裂操作，可以看 PPT 的动画
-    #algo(caption: "B+ tree insert")[
+    #algo(title: "B+ tree insert")[
     ```
     Btree Insert (ElementType X, Btree T)
     {
@@ -114,7 +114,7 @@ order: 3
   - 之所以叫倒排，是因为之前是 doc 里存 text，现在是从 text 索引 doc
     #fig("/public/assets/Courses/ADS/ads笔记/img-2024-03-11-10-59-10.png", width:80%)
   - 存 frequency 的好处，取交集时从频率小的开始取
-    #algo(caption: "倒排表伪代码实现")[
+    #algo(title: "倒排表伪代码实现")[
         ```
         while (read a document D) {
             while (read a term T in D) {
@@ -136,7 +136,7 @@ order: 3
   - solution1: Search trees(B- trees *(?)* , B+ trees, Tries *(?)*)
   - solution2: Hashing
 - While not having enough memory
-    #algo(caption: "倒排表考虑 memory")[
+    #algo(title: "倒排表考虑 memory")[
         ```c
         BlockCnt = 0;
         while (read a document D) {
@@ -1081,7 +1081,7 @@ ConfigType State_flipping()
 === The summation problem
 - 输入 $N$ 个数字，输出它们的和
 #fig("/public/assets/Courses/ADS/ads笔记/img-2024-05-27-10-15-31.png")
-#algo(caption: "PRAM model")[
+#algo(title: "PRAM model")[
   ```typ
   for Pi , 1 ≤ i ≤ n pardo
       B(0, i) := A( i )

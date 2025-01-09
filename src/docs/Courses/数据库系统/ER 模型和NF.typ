@@ -294,7 +294,7 @@ order: 3
     - 可以证明如果 F 中没有违背 BCNF 原则的函数依赖，那么 F 的闭包中也没有
     - 这个方法不能用于检测 R 的分解
 - BCNF 分解
-#algo(caption: "BCNF的分解算法伪代码")[
+#algo(title: "BCNF的分解算法伪代码")[
   ```typ
   result={$R$};
   done=false;
@@ -335,7 +335,7 @@ order: 3
   - 如果不是，就需要检查 $beta$ 中的每一个属性包含在R的候选键中
 - 3NF decomposition algorithm
   - 简单来说就是先算 $F_c$作为分解，然后加入 candidate key，最后可选地删除冗余
-#algo(caption: "3NF的分解算法伪代码")[
+#algo(title: "3NF的分解算法伪代码")[
   ```typ
   Let $F_c$ be a canonical cover for $F$;
   $i$ = 0;

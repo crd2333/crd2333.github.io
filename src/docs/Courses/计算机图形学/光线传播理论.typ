@@ -69,7 +69,7 @@ order: 3
     #fig("/public/assets/Courses/CG/2024-11-28-22-33-57.png",width: 40%)
   - 求交方法二：Möller-Trumbore 射线-三角形求交算法（MT 算法）
     - 计算光线是否在三角形内以及与平面交点
-    - 核心出发点是用重心坐标表示平面 #h(1fr)
+    - 核心出发点是用重心坐标表示平面
     #fig("/public/assets/Courses/CG/img-2024-07-30-14-36-34.png",width: 40%)
     - 具体步骤
       + 求解 $t，b1，b2$（三个式子三个未知数，求解方法为克莱姆法则）
@@ -86,7 +86,7 @@ order: 3
     + 在这些盒子中再计算光线与三角形的交点
 - 以 2D 为例，在 x-plane 和 y-plane 上分别求出 $t_min$ 和 $t_max$，然后
   $ t_"enter"=max{t_min}, t_"exit"=min{t_max} $
-  - 算 $t_"enter"$ 和 $t_"exit"$，光线与 box 有交点的判定条件当且仅当 #h(1fr)
+  - 算 $t_"enter"$ 和 $t_"exit"$，光线与 box 有交点的判定条件当且仅当
     $ t_"enter" < t_"exit" "&&" t_"exit" >= 0 $
   #fig("/public/assets/Courses/CG/2024-11-28-22-45-08.png",width: 60%)
 - 包围盒的划分，一般有 Uniform grids，Spatial Partitions 和 Object Partitions 三种
@@ -122,7 +122,7 @@ order: 3
 - Motivation：Blinn-phong 着色计算、Whitted styled 光线追踪都不够真实
 - 辐射度量学：在物理上准确定义光照的方法，但依然在几何光学中的描述，不涉及光的波动性、互相干扰等
 - 几个概念：
-  + *Radiance Energy 辐射能 $Q$* #h(1fr)
+  + *Radiance Energy 辐射能 $Q$*
     $ Q ~~~ [J = "Joule"] $
     - 基本不咋用
   + *Radiant Flux(Power) 辐射通量 $Phi$*
@@ -145,7 +145,7 @@ order: 3
     - $theta$ 是入射（或出射）光线与法向量的夹角
     - Radiance 和 Irradiance, Intensity 的区别在于是否有方向性
     - 把 Irradiance 和 Intensity 联系起来，Irradiance per solid angle 或 Intensity per projected unit area
-    - *Irradiance* 与 *Radiance* 之间的关系 #h(1fr)
+    - *Irradiance* 与 *Radiance* 之间的关系
       $ E(p) = int_(H^2) L_i (p, omega) cos theta dif omega $
 - 双向反射分布函数(Bidirectional Reflectance Distribution Function, BRDF)
   - 是一个 4D function $f(i,o)$（3D 的方向由于用单位向量表示所以少一个自由度，例如球面的 $th, phi$ 表示）
@@ -157,7 +157,7 @@ order: 3
 - 推广为渲染方程（绘制方程）
   - 物体自发光（用 $L_e$ 表示 emission） + 反射方程，式中 $Om^+$ 表示上半球面，$p$ 是着色点
   $ L_o (p, omega_o) = L_e (p, omega_o) + int_(Omega^+) f_r (p, omega_i, omega_o) L_i (p, omega_i) (n dot omega_i) dif omega_i $
-  - 换一个角度看，把式子通过“算子”概念简写为 $L=E+K L$ #h(1fr)
+  - 换一个角度看，把式子通过“算子”概念简写为 $L=E+K L$
     - 然后移项泰勒展开得到 $L = E + K E + K^2 E + ...$，如下图
     #fig("/public/assets/Courses/CG/img-2024-07-31-23-36-46.png", width: 60%)
     - 即我们考虑 $L_i$ 可以不止来自光源，也能来自其它物体的弹射
@@ -174,14 +174,14 @@ order: 3
   - 到目前位置，蒙特卡洛是唯一能执行 general high dimensional integral 的方法
 - 概率论基础 —— 蒙特卡洛方法
   - 概念
-    - define target integral #h(1fr)
+    - define target integral
       $ int_a^b f(x) dif x $
     - Uniform random variable
       $ X_i approx p(x) $
     - Monte Carlo Estimation
       $ F_N = 1/N sumiN frac(f(X_i),p(X_i)) $
   - 好处
-    - 无偏（期望值是真值），证明也很简单 #h(1fr)
+    - 无偏（期望值是真值），证明也很简单
       $ E(F_N) &= E(1/N sumiN frac(f(X_i),p(X_i))) = 1/N sumiN E(f(X_i)/p(X_i)) \ &= 1/N sumiN int_a^b frac(f(x),p(x)) p(x) dif x = 1/N sumiN int_a^b f(x) dif x = int_a^b f(x) dif x $
     - [ ] 还有其它
 - 回忆 Whitted-styled 光线追踪
@@ -261,7 +261,7 @@ order: 3
 - *漫反射材质(Diffuse)的 BRDF*
   - Light is equally reflected in each output direction
     $ f(i,o) = "constant" $
-  - 如果再假设入射光也是均匀的，并且有能量守恒定律 $L_o = L_i$，那么： #h(1fr)
+  - 如果再假设入射光也是均匀的，并且有能量守恒定律 $L_o = L_i$，那么：
     #fig("/public/assets/Courses/CG/img-2024-08-04-11-39-26.png",width:80%)
     - 定义反射率 $rho$ 来表征一定的能量损失，还可以对 RGB 分别定义 $rho$
 - *抛光/毛面金属(Glossy)材质的 BRDF*
@@ -284,7 +284,7 @@ order: 3
   - 菲涅尔效应指：视线垂直于表面时，反射较弱；而当视线非垂直表面时，夹角越小，反射越明显。譬如看脚底游泳池的水是透明的，但是远处的水面反射强烈
   - 定性分析：绝缘体和导体的菲涅尔项不同
   - 定量分析：精确计算菲涅尔项。但很复杂，没有必要，只要知道这玩意儿跟 出/入射角度、介质反射率 $eta$ 有关就行
-  - 近似计算：Schlick’s approximation（性价比更高） #h(1fr)
+  - 近似计算：Schlick’s approximation（性价比更高）
     $ R(th)=R_0+(1-R_0)(1-cos th)^5 $
     - 其中 $R_0=((n_1-n_2)/(n_1+n_2))^2$
 
@@ -319,7 +319,7 @@ order: 3
 - 可以根据物体微表面是否具有方向性将物体分类 —— 各向同性(Isotropic)和各向异性(Anisotropic)材质
   - *各向同性* —— 各个方向法线分布相似；
   - *各向异性* —— 各个方向法线分布不同，如沿着某个方向刷过的金属
-  - 后者会造成一个现象，高光方向会跟物体的方向不一致 #h(1fr)
+  - 后者会造成一个现象，高光方向会跟物体的方向不一致
     #fig("/public/assets/Courses/CG/2024-11-27-18-53-25.png",width: 40%)
   - 用 BRDF 定义，各向同性材质满足 BRDF 与方位角 $phi$ 无关
     $ f_r (th_i,phi_i; th_r, phi_r) = f_r (th_i, th_r, |phi_r - phi_i|) $
@@ -328,7 +328,7 @@ order: 3
 
 == BRDF Summary
 - BRDF 的性质总结
-  + 非负性(non-negativity) #h(1fr)
+  + 非负性(non-negativity)
     $ f_r (omega_i -> omega_r) >= 0 $
   + 线性(linearity)
     $ L_r (p, omega_r) = int^(H^2) f_r (p, omega_i -> omega_r) L_i (p, omega_i) cos theta_i dif omega_i $
@@ -398,6 +398,7 @@ order: 3
   - 优点是计算速度快，通常在漫反射场景会有很好的表现；缺点是不能处理 Glossy 材质，以及当光源离着色点特别近时会出现异常亮点（因为渲染方程中有 $1/r^2$ 项）
 
 == ZJU CG Advanced Rendering
+- [ ] TODO
 - 动机：Efficient computation of the Rendering Equation
 - Precomputed Radiance Transfer
   - 通过预计算的方式，把光照信息存储在纹理中，然后在运行时直接读取，从而减少计算量
@@ -504,7 +505,7 @@ order: 3
     + 任意光通过焦点射向透镜，会变为互相平行的光
     + 假设薄透镜的焦距可以任意改变（用透镜组来实现）
   - 薄透镜公式：$1/f = 1/z_i + 1/z_o$
-  - Circle of Confusion(CoC)：可以看出C和A成正比——光圈越大越模糊 #h(1fr)
+  - Circle of Confusion(CoC)：可以看出C和A成正比——光圈越大越模糊
     #fig("/public/assets/Courses/CG/img-2024-08-05-13-53-49.png",width: 70%)
 - 渲染中模拟透镜(Ray Tracing Ideal Thin Lenses)
   - 一般光线追踪和光栅化使用的是针孔摄像机模型，但是如果想做出真实相机中的模糊效果，需要模拟薄透镜相机（而且不再需要 MVP 等）
