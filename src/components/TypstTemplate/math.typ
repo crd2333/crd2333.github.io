@@ -1,4 +1,4 @@
-#import "@preview/quick-maths:0.2.0": shorthands
+#import "@preview/quick-maths:0.1.0": shorthands
 #import "@preview/mitex:0.2.4": *
 
 #let dcases(..args) = math.cases(..args.pos().map(math.display)) // cases with display style
@@ -79,13 +79,20 @@
 #let first = $1^"st"$
 #let second = $2^"nd"$
 #let third = $3^"rd"$
+
 // AI specific
 #let MLP = math.text("MLP")
+#let FFN = math.text("FFN")
 #let CNN = math.text("CNN")
 #let RNN = math.text("RNN")
 #let Transformer = math.text("Transformer")
 #let Attention = math.text("Attention")
 #let clamp = math.text("clamp")
+#let token = math.text("token")
+#let softmax = math.text("softmax")
+#let Concat = math.text("Concat")
+#let MultiHead = math.text("MultiHead")
+#let Attention = math.text("Attention")
 
 // ---------- 常用单位（这样它们就可以直接囊括入 $$） ----------
 #let bit = math.text("bit")
@@ -683,10 +690,10 @@
 #let ai = $a_i$
 #let aj = $a_j$
 #let ak = $a_k$
-// #let am = $a_m$
-// #let aM = $a_M$
-// #let an = $a_n$
-// #let aN = $a_N$ // 'a' used for arrow
+#let am = $a_m$
+#let aM = $a_M$
+#let an = $a_n$
+#let aN = $a_N$
 #let b0 = $b_0$
 #let b1 = $b_1$
 #let b2 = $b_2$

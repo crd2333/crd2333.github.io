@@ -41,8 +41,8 @@ order: 1
       G_k (th, J(beta)) = Pi_(j in A(k)) mat(exp(omega_j), bold(j)_j;bold(0), 1) \
       w_j = I + hat(omega)_j sin(norm(omega_j)) + hat(omega)_j^2 cos(norm(omega_j)) in RR^(3 times 3) ~~~ "(Rodrigues’s Formula)"
       $
-      - 其中 $A(k)$ 定义了关节 $k$ 的有序集合，$J(beta)$ 表示关节点位置，$G_k$ 是第 $k$ 个关节点的 world transformation，$G'_k$ 跟 $G_k$ 相比是移除了 rest pose $th^*$ 导致 transformation 的 the same transformation
-      - 事实上 $overline(t)_i --> overline(t)'_i$ 这一步就是标准的 LBS 算法的形式，每个权重 $w_(k,i)$ 可以理解为 pose moved 骨骼 $k$ 对 rest pose shape 的顶点 $i$ 的影响系数，每个 $G'_k$ 把静息顶点 $overline(t)_i$ 拽到某个地方
+      - 其中 $A(k)$ 定义了关节 $k$ 的有序集合，$J(beta)$ 表示关节点位置，$G_k$ 是第 $k$ 个关节点的 world transformation，$G'_k$ 跟 $G_k$ 相比是移除了 rest pose $th^*$ 影响后的同一个变换
+      - 事实上 $overline(t)_i --> overline(t)'_i$ 这一步就是标准的 LBS 算法的形式，每个权重 $w_(k,i)$ 可以理解为 pose moved 骨骼 $k$ 对 $T_p$ 中顶点 $i$ 的影响系数，每个 $G'_k$ 把静息顶点 $overline(t)_i$ 拽到某个地方
   - 具体步骤是：
     + Add shape blend shapes
     + Infer shape-dependent joint locations，根据 shape 调整 joint

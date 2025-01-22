@@ -45,7 +45,7 @@ order: 4
   - 受限的观测：受限传感器等，无法获取全局信息
   - 探索：指数级别的联合策略空间
 - MARL 范例
-  #fig("/public/assets/AI/AI_RL/img-2024-07-09-10-17-41.png")
+  #fig("/public/assets/AI/AI_RL/img-2024-07-09-10-17-41.png",width:60%)
   - 可扩展的集中训练与分布式执行过程
   - 满足IGM原则：智能体个体最优决策即全局最优联合决策
     - 与纳什均衡矛盾？（个体最优并非全局最优）好像确实是这样的
@@ -53,9 +53,9 @@ order: 4
 == MARL with Factored Value Functions
 - 值分解算法（线性）
   - 方法一(VDN)
-  #fig("/public/assets/AI/AI_RL/img-2024-07-09-10-28-30.png")
+  #fig("/public/assets/AI/AI_RL/img-2024-07-09-10-28-30.png",width:60%)
   - 方法二(DOP)
-  #fig("/public/assets/AI/AI_RL/img-2024-07-09-10-29-09.png")
+  #fig("/public/assets/AI/AI_RL/img-2024-07-09-10-29-09.png",width:60%)
 - 线性值分解局限性
   - 有限的表征能力
   - 没有全局收敛保证
@@ -67,10 +67,10 @@ order: 4
   - 不难看出，当 $pa Qtot \/ pa Q_i = 1$ 时，QMIX 退化为 VDN
   - QMIX 的模型由两大部分组成（三个网络组成），一个是 agent network，输出单智能体的 $Q_i$ 的函数，mixing network 则是以 $Q_i~(i=1 wave n)$ 作为输入，输出为联合 #Qtot。为了保证单调性，mixing network 的网络参数 $bw, bold(b)$ 通过 hypernetworks 网络计算得出，并且 hypernetworks 输出的网络权重都必须大于0，对偏置没有要求
   - 在训练上，QMIX 就是一个 MA 版本的 DQN，因此也是用 target agent network 和 target mixing network 算 $y_j$，计算它与用当前 agent network 和 mixing network 得到的 $Q_i$ 的 MSE，然后用梯度下降更新当前网络参数，隔一段时间将当前网络(eval)参数复制到 target 网络参数
-  #fig("/public/assets/AI/AI_RL/img-2024-07-09-10-44-22.png")
+  #fig("/public/assets/AI/AI_RL/img-2024-07-09-10-44-22.png",width:60%)
 - QPLEX
   - 相当于 MA 版本的 DQN $->$ Dueling DQN，把 $Q$ 值改为 Advantage
-  #fig("/public/assets/AI/AI_RL/img-2024-07-09-10-49-41.png")
+  #fig("/public/assets/AI/AI_RL/img-2024-07-09-10-49-41.png",width:60%)
 
 == 其它 MARL 方法
 - 动态共享学习目标 $->$ ROMA
@@ -106,7 +106,7 @@ order: 4
 #let bx = $bold(x)$
 == MADDPG
 - 首先回顾 DDPG
-  #fig("/public/assets/AI/AI_RL/img-2024-07-11-09-45-21.png")
+  #fig("/public/assets/AI/AI_RL/img-2024-07-11-09-45-21.png",width:70%)
 - 传统算法在多智能体环境中有以下几个困境
   + 环境的变化由所有智能体共同影响，对于单个智能体，环境是不稳定的，这违反了 Q-learning 所需的马尔可夫假设；
   + 由于环境的不稳定，策略不同时，状态转移矩阵也不同，因此不能直接将过去经验 $(s, a_i, r_i, s')$ 进行回放；
@@ -120,7 +120,7 @@ order: 4
     - $N$ 个智能体，策略参数分别为：$bold(th) = {th1, dots, thN}$，策略：$bold(pi) = {pi1, dots, pi_n}$
     - 针对智能体 $i$ 的策略梯度公式：#mitex(`\nabla_{\theta_{i}}J(\theta_{i})=\mathbb{E}_{s\sim p}\pi_{,a\sim\pi_{\theta}}[\nabla_{\theta_{i}}l o g\pi_{i}(a_{i}|o_{i})Q_{i}^{\pi}(\bold{x},a_{1},\ldots a_{N})]`)
     - 其中 $Q_i^pi (bx, a_1, dots, a_N)$ 是一个集中的动作价值函数，它将所有智能体的动作 $a1, dots, aN$，以及一些状态信息 $bx$ 作为输入，输出每个智能体的动作价值；
-    - $bx$中包含所有智能体的观测信息 $bx=(o_1, dots, 0_N)$，以及其他额外信息如通信信息等；
+    - $bx$中包含所有智能体的观测信息 $bx=(o_1, dots, o_N)$，以及其他额外信息如通信信息等；
     - 由于 $Q_i^pi$ 都是独立学习到，因此每个智能体可以有任何的奖励结构，包括合作或竞争以及混合奖励。
 - MADDPG 算法思路基于以下原理：
   - 每个智能体都只输出一个确定性动作，而不是基于概率分布 $pi$ 采样的随机变量。则：
@@ -129,7 +129,7 @@ order: 4
   - 如果已知各个智能体的动作，即便生成的策略不同，环境依旧是稳定的。
   - 可以直接将 DDPG 的目标损失拓展到多智能体版本。
 - 算法流程如下：
-  #fig("/public/assets/AI/AI_RL/img-2024-07-12-11-31-06.png")
+  #fig("/public/assets/AI/AI_RL/img-2024-07-12-11-31-06.png",width:60%)
 
 == COMA
 - 系统的联合动作空间 (joint action space) 将会随智能体数量指数性地扩大。因此，直接从这么大的联合动作空间中学习出一个比较好用的联合策略会非常困难。
@@ -138,7 +138,7 @@ order: 4
 - CTDE 存在多智能体信用分配，COMA 提出了一种方法用于学习非中心式的、部分可观测的多智能体协同的控制策略。
 - COMA 可以认为是 MA 版本的 A2C，使用*反事实基线*实现 Advantage
 
-#fig("/public/assets/AI/AI_RL/img-2024-07-11-10-11-13.png")
+#fig("/public/assets/AI/AI_RL/img-2024-07-11-10-11-13.png",width:60%)
 
 == LICA
 - LICA-Critic

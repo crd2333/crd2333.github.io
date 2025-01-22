@@ -237,42 +237,6 @@ order: 1
   - 本质跟抗锯齿类似，都是采样频率不够的问题
   - 使用 DLSS(Deep Learning Super Sampling) 技术
 
-== \*OpenGL
-- OpenGL 是一个跨平台的图形 API，用于渲染 2D 和 3D 图形
-- OpenGL Ecosystem
-  - OpenGL, WebGL, OpenGL ES, OpenGL NG, Vulkan, DirectX ...
-  - #link("https://blog.csdn.net/qq_23034515/article/details/108283747")[WebGL，OpenGL和OpenGL ES三者的关系]
-- OpenGL 是做什么的？
-  - 定义对象形状、材质属性和照明
-    - 从简单的图元、点、线、多边形等构建复杂的形状。
-  - 在3D空间中定位物体并解释合成相机
-  - 将对象的数学表示转换为像素
-    - 光栅化
-  - 计算每个物体的颜色
-    - 遮光
-- Three Stages in OpenGL
-  - Define Objects in World Space
-  - Set Modeling and Viewing Transformations
-  - Render the Scene
-  - 跟我们学的顺序类似
-- OpenGL Primitives
-  - GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_QUADS, GL_POLYGON, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_QUAD_STRIP
-  - 放到 `glBegin` 里决定如何解释，具体见 PPT
-- OpenGL 的命令基本遵守一定语法
-  - 所有命令以 `gl` 开头
-  - 常量名基本是大写
-  - 数据类型以 `GL` 开头
-  - 大多数命令以两个字符结尾，用于确定预期参数的数据类型
-- OpenGL 是 Event Driven Programming
-  - 通过注册回调函数(callbacks)来处理事件
-  - 事件包括键盘、鼠标、窗口大小变化等
-  #fig("/public/assets/Courses/CG/2024-09-22-16-45-55.png", width: 50%)
-- Double buffering
-  - 隐藏绘制过程，避免闪烁
-  - 有时也会用到 Triple buffering
-- 后来看了看 OpenGL 的相关教程，感觉现在的实现和这里不太一样（可能过时了……）。还是以网络教程为准
-- WebGL Tutorial / OpenGL ES
-
 = Shading 着色
 #info()[
   + 光照和基本着色模型

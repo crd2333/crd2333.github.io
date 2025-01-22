@@ -82,7 +82,7 @@
 
 === Momentum Contrast for Unsupervised Visual Representation Learning
 - 时间：2019.11
-- MoCo-v1 见之前的文章（#link("https://crd2333.github.io/note/Reading/%E8%B7%9F%E6%9D%8E%E6%B2%90%E5%AD%A6AI%EF%BC%88%E8%AE%BA%E6%96%87%EF%BC%89/MoCo")[链接]），不再赘述
+- MoCo-v1 见之前的文章（#link("https://crd2333.github.io/note/Reading/%E8%B7%9F%E6%9D%8E%E6%B2%90%E5%AD%A6AI/MoCo")[链接]），不再赘述
 
 === A Simple Framework for Contrastive Learning of Visual Representations
 - 时间：2020.2
@@ -268,7 +268,7 @@
   - 从方法和模型角度上讲，和第三阶段一模一样，主要是融合了 Transformer
 
 == 总结
-在这之后，对比学习应该就是 CLIP 的天下了，可以看 CLIP 及其相关工作（#link("https://crd2333.github.io/note/Reading/%E8%B7%9F%E6%9D%8E%E6%B2%90%E5%AD%A6AI%EF%BC%88%E8%AE%BA%E6%96%87%EF%BC%89/CLIP")[链接]）。而随着 MAE 的火爆，对比学习的热潮逐渐冷却了一些，转而向掩码学习而去。再然后就不知道了，可能是多模态大模型？
+在这之后，对比学习应该就是 CLIP 的天下了，可以看 CLIP 及其相关工作（#link("https://crd2333.github.io/note/Reading/%E8%B7%9F%E6%9D%8E%E6%B2%90%E5%AD%A6AI/CLIP")[链接]）。而随着 MAE 的火爆，对比学习的热潮逐渐冷却了一些，转而向掩码学习而去。再然后就不知道了，可能是多模态大模型？
 
 最后再自己画一张图总结一下 CV 领域对比学习的发展
 #fig("/public/assets/Reading/limu_paper/对比学习串讲/2024-10-05-16-30-12.png")

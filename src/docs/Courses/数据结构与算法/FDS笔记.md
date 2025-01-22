@@ -10,8 +10,8 @@ order: 1
   - 最好、最坏
 - 计算数的计算，`return` 要算一次，`if`、`while` 等判断算一次
 - 斐波那契的算法复杂度分析与优化
-  - [斐波那契数列的三种算法以及复杂度_斐波那契数列复杂度-CSDN博客](https://blog.csdn.net/MallowFlower/article/details/78858553)
-  - [通过斐波那契数列探讨时间复杂度和空间复杂度_斐波那契数列时间复杂度-CSDN博客](https://blog.csdn.net/Suyebiubiu/article/details/107878061)
+  - [斐波那契数列的三种算法以及复杂度_斐波那契数列复杂度-CSDN 博客](https://blog.csdn.net/MallowFlower/article/details/78858553)
+  - [通过斐波那契数列探讨时间复杂度和空间复杂度_斐波那契数列时间复杂度-CSDN 博客](https://blog.csdn.net/Suyebiubiu/article/details/107878061)
     - 这里注意一下一个错误，空间复杂度只看树的高度，因为同一时间只算一条路，到达叶节点了就删除空间然后重新走，所以最多就走 N - 1 条路
 
 ### 1.2. 算法比较（最大连续子串和）
@@ -44,7 +44,7 @@ order: 1
     - `insert` 和 `delete` 的具体操作
     - 拓展：Doubly Linked Circular Lists
     - 应用：多项式的表示，用数组表示过于稀疏
-    - 拓展Multilists
+    - 拓展 Multilists
   - Cursor Implementation of Linked Lists (no pointer)
     - 在一些语言中没有 pointer 的概念，因此需要用 cursor 的形式模拟 pointer
       - 具体方法就是用数组的 index 代替数组的地址，也就是数组的每一项是个包含 `element` 和 `next` 的结构体，`next` 不为指针而为数组下标。当 `next` 为 $0$ 就等同于 `NULL`
@@ -65,7 +65,7 @@ order: 1
   - **Pop**
 - 实现：push、top、pop，链表写法与数组写法
 - 应用
-  - 用 stack 的特性检查括号(parenthesis, brackets, braces)的匹配
+  - 用 stack 的特性检查括号 (parenthesis, brackets, braces) 的匹配
   - 用 stack 计算逆波兰式
   - infix to postfix
     - operationStack 与 treeStack
@@ -94,7 +94,7 @@ order: 1
     - 深度：从根节点到某个节点的唯一路径的长度（上往下数），从 0 开始
     - 高度：从某个节点到叶节点的最长路径的长度（下往上数），从 0 开始
     - 这两个概念对某个特定节点来说不同，对树来说相同，并且 $Height(node) + Depth(node) = Height(tree) = Depth(tree)$
-    - 节点的层数：就是节点的深度(?)，但注意 $k$ levels 和 level $k$ 的问法
+    - 节点的层数：就是节点的深度 (?)，但注意 $k$ levels 和 level $k$ 的问法
     - 树的度数与图的度数不同，是其孩子的个数，不包含其父亲
 
 - 树的表示：
@@ -105,7 +105,7 @@ order: 1
 ### 3.2. 二叉树
 - 二叉树是每个节点最多有两个孩子的树
 - 应用例子：表达式树
-  - 如何构建：中序 $\to$ 后序(stack)，而后从后缀表达式构建
+  - 如何构建：中序 $\to$ 后序 (stack)，而后从后缀表达式构建
 - 遍历：**前序**(preorder，先根)、**中序**(inorder，中根)、**后序**(postorder，后根)、**层序**(levelorder)
   - 前序，先访问根节点，再递归每个子节点
   - 后序，先递归访问每个子节点，再访问根节点
@@ -135,14 +135,14 @@ order: 1
         }
     }
     ```
-- 拓展：从 “先根+中根” 或 “中根+后根” 或 “中根+优先级规则” 或 “前根/后根+二叉搜索” 可以唯一确定一棵二叉树（**但“先根+后根”不行**）
+- 拓展：从“先根 + 中根”或“中根 + 后根”或“中根 + 优先级规则”或“前根/后根 + 二叉搜索”可以唯一确定一棵二叉树（**但“先根 + 后根”不行**）
   - 前两者常用作考题，第三者在 autograd 中实践，第四者只能应用于数字、字符等有序的情况
 - 例子：文件系统目录缩进、文件系统大小计算
 
 !!! note
     在普通的 tree 中，子节点的顺序无关紧要，但在 binary tree 中，左儿子和右儿子是不同的
 
-### 3.3. 线索二叉树(ThreadedTree)
+### 3.3. 线索二叉树 (ThreadedTree)
   - 分别以前序、中序、后序遍历的形式利用闲置的空指针，也因此分成三种线索二叉树
   - 课上讲的是中序线索二叉树，满足三个规则
     1. 如果一个节点的左儿子为空，那么它的左指针指向它的中序遍历前驱节点
@@ -202,11 +202,11 @@ order: 1
 
 ### 3.6. 拓展：完美、完全、完美二叉树
 - 参考 [完美二叉树、完全二叉树、完满二叉树](https://www.cnblogs.com/idorax/p/6441043.html)
-- 完美二叉树(又称满二叉树, Perfect binary tree)：所有叶子节点都在最底层，每个非叶子节点都有两个子节点
-- 完全二叉树(Complete binary tree)：所有叶子节点都在最底下两层（所有叶节点都位于相邻的两个层上），最后一层的叶子节点都靠左排列，并且除了最后一层，其他层的节点个数都要达到最大
-- 完满二叉树(Full binary tree, Strictly binary tree)：所有非叶子节点都有两个子节点
+- 完美二叉树 (又称满二叉树，Perfect binary tree)：所有叶子节点都在最底层，每个非叶子节点都有两个子节点
+- 完全二叉树 (Complete binary tree)：所有叶子节点都在最底下两层（所有叶节点都位于相邻的两个层上），最后一层的叶子节点都靠左排列，并且除了最后一层，其他层的节点个数都要达到最大
+- 完满二叉树 (Full binary tree, Strictly binary tree)：所有非叶子节点都有两个子节点
 
-### 3.7. 二叉树搜索树(binary search tree)
+### 3.7. 二叉树搜索树 (binary search tree)
 - 定义：
   - 每个节点有一个关键字，是各不相同的整数
   - 如果左子树非空，那么左子树所有关键字的值必须小于当前节点的关键字
@@ -307,7 +307,7 @@ order: 1
     !!! example
         插入顺序：4, 2, 1, 3, 6, 5, 7 $~~~~~~~~~~~~~~~~$ 插入顺序：1, 2, 3, 4, 5, 6, 7
         ![](/public/assets/Courses/FDS/FDS笔记/img-2024-01-16-10-14-46.png) $~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$ ![](/public/assets/Courses/FDS/FDS笔记/img-2024-01-16-10-15-23.png)
-- 拓展：AVL(Adelson-Velskii and Landis)树，参考 [数据结构与算法分析学习笔记(二)--AVL树的算法思路整理](https://www.cnblogs.com/heqile/archive/2011/11/28/2265713.html)（md 难得一比 ~~，零基础枯了~~，目前应该不用掌握具体操作）
+- 拓展：AVL(Adelson-Velskii and Landis) 树，参考 [数据结构与算法分析学习笔记 (二)--AVL 树的算法思路整理](https://www.cnblogs.com/heqile/archive/2011/11/28/2265713.html)（md 难得一比 ~~，零基础枯了~~，目前应该不用掌握具体操作）
 
 ***
 ## 4. Heap & Priority queue
@@ -320,23 +320,23 @@ order: 1
   - **插入** `void Insert(ElementType X, PriorityQueue H);`
   - **删除最小的元素** `ElementType DeleteMin(PriorityQueue H);`
   - 寻找最小的元素 `ElementType FindMin(PriorityQueue H);`
-- 哨兵(sentinel)：第零个元素不存储数据，只是用来方便计算
+- 哨兵 (sentinel)：第零个元素不存储数据，只是用来方便计算
 
 #### 4.1.1. 几种 ADT 的比较
 - 为了实现优先队列，我们来比较几种 ADT 的插入与删除操作的复杂度
-  - 数组(Array)：
+  - 数组 (Array)：
     - 插入元素到末尾 $\Theta(1)$
     - 找到最大/最小元素 $\Theta(n)$, 删除元素移动数组 $O(n)$
-  - 链表(Linked List)：
+  - 链表 (Linked List)：
     - 插入元素到链表开头 $\Theta(1)$
     - 找到最大/最小元素 $\Theta(n)$, 删除元素 $\Theta(1)$
-  - 有序数组(Ordered Array)：
+  - 有序数组 (Ordered Array)：
     - 找到合适的位置 $O(n)$, 移动数组并插入元素 $O(n)$
     - 删除开头/末尾元素 $\Theta(1)$
-  - 有序链表(Ordered List)：
+  - 有序链表 (Ordered List)：
     - 找到合适的位置 $O(n)$, 插入元素 $\Theta(1)$
     - 删除开头/末尾元素 $\Theta(1)$
-  - 二叉搜索树(Binary Search Tree)：
+  - 二叉搜索树 (Binary Search Tree)：
     - 插入元素 $O(\log n)$
     - 删除元素 $O(\log n)$
 - 前四种实现方式中，Linked List 最合适，因为优先队列的删除操作不会比插入操作多
@@ -427,7 +427,7 @@ order: 1
 ***
 ## 5. Disjoint set
 - 问题引入：Dynamic Equivalence Problem(等价类问题)
-- 用名为 disjoint set(并查集)的数据结构来解决
+- 用名为 disjoint set(并查集) 的数据结构来解决
   - 结合 cursor implemented list 和 tree，一个 set 就是一棵树，其根节点为负数，指示 set 内的数量
   - 两种操作：find、union
     ```c
@@ -477,7 +477,7 @@ order: 1
     - 设 $T$ 是按大小合并的 $N$ 个节点的树。可以用归纳法证明，$height \le \lfloor \log N \rfloor + 1$
     - 因此对于 $N$ 个 Union 进行 $M$ 个 `Find` 操作，所用时间为 $N+M\log_2N$
   - 按高度合并：始终将矮的树合并到高的树上
-    - 路径压缩不完全与按高度求并兼容，因为路径压缩可以改变树的高度。此时，对于每棵树所存储的高度就变成了估计的高度，有时称为秩(rank)
+    - 路径压缩不完全与按高度求并兼容，因为路径压缩可以改变树的高度。此时，对于每棵树所存储的高度就变成了估计的高度，有时称为秩 (rank)
 - 按秩求并与路径压缩的算法复杂度分析，涉及 Ackerman 函数，略复杂，没看懂
 - 按秩求并与按高度求并：本质上是一样的，但是又搞了个秩的概念，不是很懂这里什么意思
 
@@ -487,25 +487,25 @@ order: 1
 - G, E, V, directed, undirected, 度数等基本概念
 - 限制：不考虑 self loop、multigraph
 - complete graph, subgraph, component graph 等，都是离散里学过的概念，不赘述
-- tree 是无向图的一种特殊情况(conneted and acyclic)，而 list 又是 tree 的一种特殊情况，这种我们称之为退化
+- tree 是无向图的一种特殊情况 (conneted and acyclic)，而 list 又是 tree 的一种特殊情况，这种我们称之为退化
 - DAG := directed acyclic graph
 
 ### 6.2. 具体实现
-- 用二维数组(adjacency matrix)来表示图
+- 用二维数组 (adjacency matrix) 来表示图
   - 对无向图，可以砍掉一半的空间，但空间复杂度依然为 $O(V^2)$，不是很优秀，对非稠密图开销太大
-- 用邻接表(Adjacency list)来表示图
+- 用邻接表 (Adjacency list) 来表示图
   - 用链表来表示每个顶点的邻接点
   - 空间复杂度为 $O(V+E)$，更优秀
     ![](/public/assets/Courses/FDS/FDS笔记/img-2024-01-16-14-39-18.png)
 - 现在我们考虑度数，对 adjacency matrix，只需整个求和即可。对 adjacency list，遍历一遍链表只能得到无向图的度数；对有向图，这样只能找到出度，需要增加一个列表来将边反向存入，或者使用邻接多重链表
-- 用邻接多重链表(Adjacency Multilist)，相对复杂一些
+- 用邻接多重链表 (Adjacency Multilist)，相对复杂一些
 
 ### 6.3. 图的应用之——Topological Sort
 - AOV 网络：有向图中，用顶点表示活动，用弧表示活动之间的优先关系。deasible 的 AOV 网络一定是 DAG
-- 前驱(predecessor)与后继(successor)的概念，直接前驱(immediate predecessor)与直接后继(immediate successor)的概念
+- 前驱 (predecessor) 与后继 (successor) 的概念，直接前驱 (immediate predecessor) 与直接后继 (immediate successor) 的概念
 - 拓扑排序的概念不再赘述，排序结果可能不是唯一的
 - 课上给了两种版本，直接记优秀的那个
-  - 删入度为 0 的节点并删除其出边，直到没有入度为 0 的节点；如果最终有删不完的情况，则说明有环(unfeasilbe)，也就是——拓扑排序算法可以用来检测有向图是否有环
+  - 删入度为 0 的节点并删除其出边，直到没有入度为 0 的节点；如果最终有删不完的情况，则说明有环 (unfeasilbe)，也就是——拓扑排序算法可以用来检测有向图是否有环
     ```c
     void Topsort(GraphG)
     {
@@ -529,12 +529,12 @@ order: 1
     }
     ```
 
-### 6.4. 图的应用之——最短路径算法:单源最短路径
+### 6.4. 图的应用之——最短路径算法：单源最短路径
 - 定义：给定有向图 $G=(V,E)$ 以及一个花费函数 $c(e), e \in E(G)$(无权图则 $c(e)$ 为常数)，从源点到终点的一条路径 $P$ 的长度定义为 $\sum_{e_i \in P} c(e_i)$，称为带权路径长
-- 单源最短路径(Single-Source Shortest-Path Problem)
-  - 给定一个赋权图和一个特定顶点 $s$ 作为输入，找出从 $s$ 到中 $G$ 每一个其他顶点的最短带权路径。注意: 如果这里有负环，那么最短路径定义为 0。
+- 单源最短路径 (Single-Source Shortest-Path Problem)
+  - 给定一个赋权图和一个特定顶点 $s$ 作为输入，找出从 $s$ 到中 $G$ 每一个其他顶点的最短带权路径。注意：如果这里有负环，那么最短路径定义为 0。
 #### 6.4.1. 无权最短路径算法
-- 采用 BFS(Breadth-First Search) 的方式，从 $s$ 出发寻找所有距离为 1 的顶点(即与 $s$ 邻接)随后寻找与 $s$ 距离为 2 的顶点，即与刚刚那些顶点邻接的顶点，以此类推。
+- 采用 BFS(Breadth-First Search) 的方式，从 $s$ 出发寻找所有距离为 1 的顶点 (即与 $s$ 邻接) 随后寻找与 $s$ 距离为 2 的顶点，即与刚刚那些顶点邻接的顶点，以此类推。
     ```c
     void Unweighted(Table T)
     {   /* T is initialized with the source vertex S given */
@@ -559,7 +559,7 @@ order: 1
 - 时间复杂度为 $O(V+E)$
 #### 6.4.2. 有权最短路径算法
 - 介绍一种名为 **Dijkstra** 的算法，不能处理负权边
-- 可以参考这个 [Dijkstra算法（附案例详解） - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/454373256)
+- 可以参考这个 [Dijkstra 算法（附案例详解） - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/454373256)
     ```c
     void Dijkstra(Table T)
     {   /* T is initialized by Figure 9.30 on p.303 */
@@ -623,37 +623,37 @@ void  WeightedNegative(Table T)
   - $T=O(|V|+|E|)$ 而且不需要堆
 - 应用：AOE (Activity On Edge) 网络
   - 定义：AOE 网络是一个有向无环图。
-  - 其顶点包含三个值：序号，最早完成时间(EC)，最迟完成时间(LC)。
-  - 边表示活动之间的优先关系，边上的权值表示活动所需的时间，同时可以算出每个边可以偷懒而不影响工程的时间(Slack Time)。
+  - 其顶点包含三个值：序号，最早完成时间 (EC)，最迟完成时间 (LC)。
+  - 边表示活动之间的优先关系，边上的权值表示活动所需的时间，同时可以算出每个边可以偷懒而不影响工程的时间 (Slack Time)。
   - AOE 网络中，只有一个源点和一个汇点，源点表示工程的开始，汇点表示工程的完成。AOE 网络中，每个活动只能由一个事件发出，每个事件只能发出一项活动。
   - Critical Path := path consisting entirely of zero-slack edges.
 
 #### 6.4.5. 拓展
 - project: 带回溯的次短路
 - Eppstein Algorithm: K 短路算法，参考
-  1. [K Shortest Paths算法之Eppstein algorithm_eppstein算法-CSDN博客](https://blog.csdn.net/weixin_41656968/article/details/131146073#)
+  1. [K Shortest Paths 算法之 Eppstein algorithm_eppstein 算法-CSDN 博客](https://blog.csdn.net/weixin_41656968/article/details/131146073#)
   2. [K Shortest Path Routing - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/336140079)
 
-#### 6.4.6. 最短路径算法:全对最短路径
-- 全对最短路径问题(All-Pairs Shortest Path Problem)
+#### 6.4.6. 最短路径算法：全对最短路径
+- 全对最短路径问题 (All-Pairs Shortest Path Problem)
   - 应用 $|V|$ 次单源最短路径算法
   - 或者使用书上 ch.10 的 $O(N^3)$ 算法，对稠密矩阵效果更好
 
 ### 6.5. 图的应用之——网络流问题
-- 参考 [总结｜最大流（网络流基础概念+三个算法） - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/80567318)
-- 残差网络(Residual Network)：从 $s(source)$ 到 $t(sink)$ 的图 $G$
-- 求最大流(Maximum Flow)：从 $s$ 到 $t$ 的最大流量，基本思想是:找残差图中从源点到汇点的一条简单路径，称为增广路（augmenting path）；增广路的流量为增广路上的最小边权，创建这样一条流量，更新残差图，直到找不到增广路为止
+- 参考 [总结｜最大流（网络流基础概念 + 三个算法） - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/80567318)
+- 残差网络 (Residual Network)：从 $s(source)$ 到 $t(sink)$ 的图 $G$
+- 求最大流 (Maximum Flow)：从 $s$ 到 $t$ 的最大流量，基本思想是：找残差图中从源点到汇点的一条简单路径，称为增广路（augmenting path）；增广路的流量为增广路上的最小边权，创建这样一条流量，更新残差图，直到找不到增广路为止
 - 一个朴素实现是：
   1. 从 $s$ 到 $t$ 任找一条路径
   2. 将这条 path 的最短 edge 作为一个流量加到图 $G$ 中
   3. 更新图 $G$ 并且清除权值为 0 的边
   4. 重复 1-3 直到没有 $s$ 到 $t$ 的路径
-- 然而问题是，这个算法依赖于路径的选择，有时会导致错误的结果，在离散数学中提到，可以通过“回流”(or `undo`)的引入来解决这个问题
+- 然而问题是，这个算法依赖于路径的选择，有时会导致错误的结果，在离散数学中提到，可以通过“回流”(or `undo`) 的引入来解决这个问题
   - 具体实现是，将每条边的流量做一个反向图，初始化为 $0$。
     - 在把路上每一段的**容量减少** $\Delta$ 的同时，也把每一段上的**反方向的容量增加** $\Delta$。
     - 下一次查找时，允许从反向图中经过（也就是允许回流）
 - 分析：
-  - 如果用无权最短路算法($O(|V|+|E|)$)来寻找路径，时间复杂度为 $T=O(f \cdot |E|)$，其中 $f$ 为最大流量
+  - 如果用无权最短路算法 ($O(|V|+|E|)$) 来寻找路径，时间复杂度为 $T=O(f \cdot |E|)$，其中 $f$ 为最大流量
   - 如果不关心具体的权值而只选择最短的路径（用无权最短路算法），那么
   $$
   \begin{align*}
@@ -672,7 +672,7 @@ void  WeightedNegative(Table T)
   \end{align*}
   $$
 
-### 6.6. 图的应用之——最小生成树(Minimum Spanning Tree)
+### 6.6. 图的应用之——最小生成树 (Minimum Spanning Tree)
 - Definition: A spanning tree of a graph $G$ is a tree which consists of $V(G)$ and a subset of $E(G)$
   - 它的边数为 $|V(G)|-1$，且再加任意一条边就会形成环
   - 之所以叫最小，是因为我们希望这个树的权值和最小（如果是有权的话）
@@ -737,13 +737,13 @@ void  WeightedNegative(Table T)
       }
   ```
   - 利用 DFS 找（无权）生成树，此时无所谓最小，随便找一个就行
-    - 性质1：**back edge**（没有被 DFS 采用的原图中的边，如果加入到生成树中就成了反向边） 不能在子树与子树之间，只会在孩子与祖先之间
-    - 性质2：if $u$ is an ancestor of $v$ in a DFS tree, then $Num(u) < Num(v)$
+    - 性质 1：**back edge**（没有被 DFS 采用的原图中的边，如果加入到生成树中就成了反向边）不能在子树与子树之间，只会在孩子与祖先之间
+    - 性质 2：if $u$ is an ancestor of $v$ in a DFS tree, then $Num(u) < Num(v)$
   - 利用 DFS 找双联通分量，见下
   - 利用 DFS 找 Euler Circuit(tour)，见下
 
 #### 6.7.1. Biconnected
-- 一个顶点 $V$ 是 **articulation point**（关节点，or 割点, cut vertex），当且仅当 $G' = DeleteVertex(G, V)$ 有至少两个连通分量
+- 一个顶点 $V$ 是 **articulation point**（关节点，or 割点，cut vertex），当且仅当 $G' = DeleteVertex(G, V)$ 有至少两个连通分量
 - $G$ 称为 **biconnected graph**（双连通图），当且仅当 $G$ 是连通的且 $G$ 中没有 articulation point
 - $G$ 的 **biconnected component** 是它的 maximal biconnected subgraph.
 
@@ -983,7 +983,7 @@ void InsertionSort (ElementType A[], int N)
   - 将 $S - \{v\}$ 分为两个不相交的集合，$S_1 = \{ x \in S - \{v\} | x\le v \}$, $S_2=\{ x \in S - \{v\} | x\ge v \}$
   - 返回 $quicksort(S_1), v, quicksort(S_2)$
 - 关键在于主元 pivot 的选取
-- 对小数组，插入排序比快速排序更快，设置一个截止范围 Cutoff(e.g. 10)。 当 N 小于阈值的时候采用插入排序。这个 Cutoff 不是指对整个数组做判断，而是迭代调用到最后都转化为小数组，对这个小数组用插入排序。
+- 对小数组，插入排序比快速排序更快，设置一个截止范围 Cutoff(e.g. 10)。当 N 小于阈值的时候采用插入排序。这个 Cutoff 不是指对整个数组做判断，而是迭代调用到最后都转化为小数组，对这个小数组用插入排序。
 
 !!! note
     pivot 左边的都比它小，右边的都比它大。也就是说，pivot 一定会被排到它最终的位置上；更进一步，$n$ 次有效（非空）的快排至少会有 $n$ 个元素到达最终位置
@@ -1125,26 +1125,26 @@ $$
         }
     }
     ```
-- 可并行性(?)
+- 可并行性 (?)
 - PPT 的例子没看懂
 - 复杂度分析：时间复杂度为 $O(P(N+B))$，其中 $P$ 为位数，$B$ 为桶数，$N$ 为数据个数。可以看到，这是一个线性时间的排序算法，但是需要额外的空间 $O(N+B)$
 
 ### 7.9. Hash（散列，哈希）
 #### 7.9.1. 哈希表
-- 哈希表（hash table, ht）也称为散列表，是一种数据结构，它通过把关键字值映射到表中一个位置，来使得各个操作都变成 $O(1)$ 时间，这些操作包括：
+- 哈希表 (hash table, ht) 也称为散列表，是一种数据结构，它通过把关键字值映射到表中一个位置，来使得各个操作都变成 $O(1)$ 时间，这些操作包括：
   1. 查找关键字是否在表中
   2. 查询关键字
   3. 插入关键字
   4. 删除关键字
 - 几个定义
-  - 关键字也称为标识符(identifier)
-  - 一个位置是一个桶(bucket)，一个桶可以有多个槽(slot)。多个关键字对应同一个位置时，将不同关键字存在同一个位置的不同槽中
-  - 对于标识符 $x$，定义一个哈希函数 $f(x)$ 表示 $x$ 在哈希表 ht[] 中的位置(bucket)
+  - 关键字也称为标识符 (identifier)
+  - 一个位置是一个桶 (bucket)，一个桶可以有多个槽 (slot)。多个关键字对应同一个位置时，将不同关键字存在同一个位置的不同槽中
+  - 对于标识符 $x$，定义一个哈希函数 $f(x)$ 表示 $x$ 在哈希表 ht[] 中的位置 (bucket)
   - 设哈希表 ht 的大小为 $b$（即 $f(x)$ 值域为 $[0,b−1]$），最多有 $s$ 个槽，则定义以下值：
-    1. $T$ 表示 $x$ 可能的不同标识符(or hash value)个数，$T \le b$
-    2. $n$ 表示 ht 中所有不同标识符(or hash value)的个数
-    3. 标识符密度(Identitifier density)定义为 $n/T$
-    4. 装载密度(Loading density)定义为 $λ=n/(sb)$
+    1. $T$ 表示 $x$ 可能的不同标识符 (or hash value) 个数，$T \le b$
+    2. $n$ 表示 ht 中所有不同标识符 (or hash value) 的个数
+    3. 标识符密度 (Identitifier density) 定义为 $n/T$
+    4. 装载密度 (Loading density) 定义为 $λ=n/(sb)$
   - 当存在 $i_1 \neq i_2$，但 $f(i_1)=f(i_2)$ 的情况，则称为发生了碰撞（collision）
   - 当将一个新的标识符映射到一个满的桶时，则称为发生了溢出（overflow）
     - 当 s = 1 时，碰撞和溢出将同时发生
@@ -1152,7 +1152,7 @@ $$
 #### 7.9.2. 哈希函数
 - $f$ 要满足的性质：
   - 容易计算，最小化冲突的数量
-  - 应该是无偏见(unbiased)的，即 $\forall x, i$，我们有 $P(f(x)=i)=\frac{1}{b}$，这样的哈希函数称为均匀哈希函数.
+  - 应该是无偏见 (unbiased) 的，即 $\forall x, i$，我们有 $P(f(x)=i)=\frac{1}{b}$，这样的哈希函数称为均匀哈希函数。
   - TableSize 最好是一个素数，这样对随机输入，关键字的分布比较均匀
 - 例如：
 $$
@@ -1161,7 +1161,7 @@ $$
   - 这里用 32 是因为这是大于等于 27 的第一个 2 的幂次，于是可以用左移 5 次来实现（加速的小 trick）
 
 #### 7.9.3. 分离链接
-- 解决冲突的一种方法是分离链接(separate chaining)，将哈希映射到同一个值的所有元素保存在一个列表（链表）中
+- 解决冲突的一种方法是分离链接 (separate chaining)，将哈希映射到同一个值的所有元素保存在一个列表（链表）中
 - 分离链接法没有槽的概念，或者说可以认为是 $s=+\infty$
 - 结构体定义
     ```c
@@ -1244,21 +1244,21 @@ $$
   - 关于上面的优化，我的想法是只要让 find 返回两个值就好了，一个是 bucket 的位置，一个是 bucket 中 slot 的位置（就是原本的 find 返回的东西）。只是这在 C 语言中似乎实现起来有些麻烦
 
 #### 7.9.4. 开放地址
-- 开放地址（open addressing）是另一种解决冲突的方法，当有冲突发生时，尝试选择其它单元，直到找到空的为止
+- 开放地址 (open addressing) 是另一种解决冲突的方法，当有冲突发生时，尝试选择其它单元，直到找到空的为止
 - 开放地址法没有槽的概念，或者说可以认为 $s=1$
 - 利用数组存储，可以想见，这是一种更加内存友好的方式。但是这种方式的缺点是，一方面，当装载密度 $\lambda$ 较大时，性能会急剧下降（找半天都没有空的）；另一方面，$\lambda < 0.5$ 时，认为有较高空间浪费
 - 即有多个哈希函数 $h_0(x),h_1(x), \dots$，其中 $h_i(x)=(hash(x)+f(i)) ~ \% ~ TableSize$
   - 其中 $f(i)$ 为增量函数，有多种选取的方式
 - 根据增量函数的定义我们可以分为线性探测和二次探测
 
-##### 7.9.4.1. 线性探测(Linear Probing)
+##### 7.9.4.1. 线性探测 (Linear Probing)
 - 增量函数 $f(i) = i$，即冲突了就往后一个一个找，直到找到空的为止
-- 会导致聚集（clustering），即一旦发生了冲突，那么后面的元素都会聚集在一起，搜索次数会变得非常大
+- 会导致聚集 (clustering)，即一旦发生了冲突，那么后面的元素都会聚集在一起，搜索次数会变得非常大
 - 使用线性探测的探测次数
   1. 对于插入和不成功查找来说约为 $\frac{1}{2}( 1+\frac{1}{(1-\lambda)^2} )$ 次
   2. 对于成功的查找来说约为 $\frac{1}{2}( 1+\frac{1}{(1-\lambda)} )$ 次
 
-##### 7.9.4.2. 二次探测(Quadratic Probing)
+##### 7.9.4.2. 二次探测 (Quadratic Probing)
 - 增量函数为二次函数，一般为 $f(i)=i^2$
 - 一个问题是可能会空着很多位置永远走不到利用不起来。可以由一个定理避免：
 
@@ -1307,7 +1307,7 @@ $$
     - 如果有太多的 deletions，插入将会严重减慢
     - 平方探测解决了线性探测的聚团问题，但也不是说没有聚团问题，只是聚团的概率变小了，这称为 secondary clustering 问题，只在 $hash(x_1) = hash(x_2)$ 时才会发生
 
-#### 7.9.5. 双哈希(Double Hash)
+#### 7.9.5. 双哈希 (Double Hash)
 - 更进一步地避免 secondary clustering 问题，可以使用双哈希（double hashing）的方法，即使用两个哈希函数 $h_1(x)$ 和 $h_2(x)$，冲突时的增量函数为 $f(i)=i*h_2(x)$
   1. 其中 $h_2(x)$ 不能为 0
   2. 且确保可以探测整个表
@@ -1317,7 +1317,7 @@ $$
     - 如果双哈希实现没有问题，模拟表明预期的探测数量几乎与 random 冲突解决策略相同
     - 实践中，平方探测的性能一般已经足够，且避免使用第二个哈希函数，可能更简单、更快
 
-#### 7.9.6. 再哈希(Rehashing)
+#### 7.9.6. 再哈希 (Rehashing)
 - 跟双哈希是完全不同的两个概念，不要搞混
 - 对于使用平方探测的开放地址散列法，如果表的元素过多甚至接近填满，那么操作的运行时间将开始消耗过长。这时就需要 rehashing
 - 步骤如下

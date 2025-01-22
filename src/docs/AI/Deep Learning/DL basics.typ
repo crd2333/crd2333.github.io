@@ -42,14 +42,14 @@
 - RNN 主要用于处理序列数据，比如时间序列数据，它的高级变种包括 LSTM 和 GRU 等。
 == Basic RNN
 - RNN 的基本结构如下，其中 $W_"in", W_h, W_"out"$ 都是共享的，以此减少参数量。
-#fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-16-29-29.png")
+#fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-16-29-29.png", width: 80%)
 - RNN 最大的问题是梯度消失和梯度爆炸
 - RNN 本身的改进有：多层 RNN 和双向 RNN
   - 多层 RNN：将许多 RNN 层堆叠得到，在纵向上也进行序列化学习
   - 双向 RNN：当排列顺序固定，文本意义一般是固定的，人类习惯于从左往右阅读，但对于 RNN 来说，从左往右或从右往左并没有本质的区别，且二者可以并行。
   #grid(
     columns:2,
-    fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-16-33-24.png"),
+    fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-16-33-24.png", width: 80%),
     grid.cell(align: horizon, fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-16-32-55.png"))
   )
 
@@ -92,7 +92,7 @@ output, hc = model(X, hc)
 
 == LSTM
 - LSTM 通过引入门控机制，缓解 RNN 的梯度消失和梯度爆炸问题，分为输入门、遗忘门、输出门和记忆单元。
-#fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-22-06-17.png")
+#fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-22-06-17.png", width: 90%)
 - LSTM 的用法跟 RNN 差不多，也分 `nn.LSTM` 和 `nn.LSTMCell`，以后者为例
 ```py
 lstm_cell = nn.LSTMCell(input_size, hidden_size)
@@ -111,13 +111,13 @@ for i in range(seq_length):
 == GRU
 - GRU 是 LSTM 的简化版，只有两个门：重置门和更新门（输入门和遗忘门合并），没有输出门和记忆单元（与隐藏单元合并）。
 - 参数更少，性能不减
-#fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-22-09-41.png")
+#fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-22-09-41.png", width: 90%)
 
 = Attention & Transformer
 - #link("https://zhuanlan.zhihu.com/p/338817680")[参考链接]
 - Transformer 是一个基于注意力机制的模型。Attention is all you need.
 - 原始版本的 Transformer 由 encoder 和 decoder 组成，BERT 等模型只使用了 encoder 部分；GPT 等模型只使用了 decoder 部分。
-#fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-22-14-26.png")
+#fig("/public/assets/AI/AI_DL/basic/img-2024-07-03-22-14-26.png", width: 90%)
 - Transformer 在训练和推断时刻是不同的
   + 训练时：第$i$个 decoder 的输入 = encoder 输出 + ground truth embeding
   + 预测时：第$i$个 decoder 的输入 = encoder 输出 + 第 $i-1$ 个 decoder 输出
@@ -166,7 +166,7 @@ for i in range(seq_length):
 - 将神经网路用在图上面最核心的问题是：如何表示图使得它能够和神经网络兼容
   - 用邻接矩阵来表示连接性，其问题是矩阵巨大且稀疏，并且行列顺序无关导致表示不唯一
   - 用邻边列表，每个顶点、边以及全局图的属性都用标量（或向量，不影响）来表示。存储高效且与顺序无关
-  #fig("/public/assets/AI/AI_DL/basic/2024-09-24-16-16-29.png")
+  #fig("/public/assets/AI/AI_DL/basic/2024-09-24-16-16-29.png", width: 90%)
 
 == 图神经网络
 - GNN 对图上所有的属性（顶点、边和全局）进行可优化变换，这个变换能够保持图的对称信息（置换不变性）
@@ -175,20 +175,20 @@ for i in range(seq_length):
 === GCN
 - 接下来逐步推导得到 GCN
 - 一个最简单利用了 MLP 的网络层，对顶点向量、边向量和全局向量分别做 MLP
-  #fig("/public/assets/AI/AI_DL/basic/2024-09-24-11-04-44.png")
+  #fig("/public/assets/AI/AI_DL/basic/2024-09-24-11-04-44.png", width: 90%)
 - 最后再加一个分类层，就可以对顶点或边或全局做分类，或者加上*汇聚*操作也可以进行预测
-  #fig("/public/assets/AI/AI_DL/basic/2024-09-24-11-07-03.png")
+  #fig("/public/assets/AI/AI_DL/basic/2024-09-24-11-07-03.png", width: 90%)
 - 一个问题在于：对每个属性做变换的时候，仅仅是每个属性进入自己对应的 MLP，并没有体现出三者之间的相互联系的连接信息
   - 为此进行*汇聚*操作来进行信息传递，例如把每个顶点与其相连的顶点的向量相加，然后再送入 MLP
   - 再复杂一点，顶点和边之间也可以直接进行信息传递（如果维度不同就投影一下，或者干脆 concat 也可以）
   - 当然这是顺序相关的，不过可以交替进行以避免顺序影响
   #grid2(
-    fig("/public/assets/AI/AI_DL/basic/2024-09-24-11-16-32.png"),
-    fig("/public/assets/AI/AI_DL/basic/2024-09-24-11-16-40.png")
+    fig("/public/assets/AI/AI_DL/basic/2024-09-24-11-16-32.png", width: 90%),
+    fig("/public/assets/AI/AI_DL/basic/2024-09-24-11-16-40.png", width: 90%)
   )
   - 和卷积操作有点类似，但是还是有区别（汇聚时权重相等），之所以不做权重是因为图的连接比卷积的位置权重灵活得多
 - 加入全局信息 master node，跟所有 node 和 edge 都相连
-  #fig("/public/assets/AI/AI_DL/basic/2024-09-24-12-04-15.png")
+  #fig("/public/assets/AI/AI_DL/basic/2024-09-24-12-04-15.png", width: 90%)
 
 === GraphSAGE
 ...
@@ -319,7 +319,7 @@ for i in range(seq_length):
 - 注意力机制的变种
   - self-attention
   - multi-head attention
-- 关于 Transformer 的基础可以参考 #link("http://crd2333.github.io/note/Reading/%E8%B7%9F%E6%9D%8E%E6%B2%90%E5%AD%A6AI%EF%BC%88%E8%AE%BA%E6%96%87%EF%BC%89/Transformer")[原论文阅读笔记]
+- 关于 Transformer 的基础可以参考 #link("https://crd2333.github.io/note/Reading/%E8%B7%9F%E6%9D%8E%E6%B2%90%E5%AD%A6AI/Transformer")[原论文阅读笔记]
 
 == AIGC: AI Generative Content
 ...

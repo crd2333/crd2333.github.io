@@ -41,9 +41,9 @@
 - #link("https://www.runoob.com/cplusplus/cpp-constructor-destructor.html")[C++ 类构造函数 & 析构函数 | 菜鸟教程 (runoob.com)]
 - 类构造函数
   - 它需要被放在 public 中；不加 `void`、`int` 等返回类型；名字和类名相同。它可以用于为某些成员变量设置初始值（即初始化），并做一些操作比如输出初始化信息等。可以带参数，且可以配合成员初始化列表来使用
-  - 成员初始化列表(Member Initialization List)：用于初始化类的成员变量
+  - 成员初始化列表 (Member Initialization List)：用于初始化类的成员变量
   - 成员初始化列表和普通的类构造函数的区别在于：性能，以及对 const 变量、引用变量的处理。总之能用初始化列表就用初始化列表
-  - 注意按照声明的顺序初始化，而不是按照 list 里的顺序，否则将导致不可预测的结果(ub!)，销毁的顺序则是相反的
+  - 注意按照声明的顺序初始化，而不是按照 list 里的顺序，否则将导致不可预测的结果 (ub!)，销毁的顺序则是相反的
   - 参考：#link("https://zhuanlan.zhihu.com/p/386604081")[C++成员初始化列表 - 知乎 (zhihu.com)]、#link("https://www.cnblogs.com/BlueTzar/articles/1223169.html")[C++类构造函数初始化列表 - BlueTzar - 博客园 (cnblogs.com)]
 
 - 类析构函数
@@ -55,7 +55,7 @@
   - 用于从一个已有的对象创建新的类对象。它需要被放在 public 中；不加 `void`、`int` 等返回类型；名字和类名相同。那如何与类构造函数区分呢？答案是参数，用对象的常量引用（否则用值传递会出现递归调用问题）
   - 语法 ```cpp T(const T& w) {...}```
   - 如果类的设计者不写复制构造函数，编译器就会自动生成复制构造函数。大多数情况下，其作用是实现从源对象到目标对象逐个字节的复制，即使得目标对象的每个成员变量都变得和源对象相等。编译器自动生成的复制构造函数称为“默认复制构造函数”
-  - 注意，默认构造函数（即无参构造函数）不一定存在（程序员写了就不会自动生成），但是复制构造函数总是会存在。一般默认复制构造函数也能工作得很好，但在涉及指针的时候需要小心(shallow or deep copy)
+  - 注意，默认构造函数（即无参构造函数）不一定存在（程序员写了就不会自动生成），但是复制构造函数总是会存在。一般默认复制构造函数也能工作得很好，但在涉及指针的时候需要小心 (shallow or deep copy)
   - 拷贝构造函数常见于三种情况：直接从一个对象创建并初始化另一个对象、函数创建形参需要复制一个对象、函数返回对象需要复制一个对象
   - copy constructor 在返回值时的调用与否
     ```cpp
@@ -86,8 +86,7 @@
     };
     ```
 
-- 移动构造函数
-- [ ] 待补充
+- 移动构造函数，见 @左值引用和右值引用 移动语义部分
 
 === 友元函数 Friend Function
 - 是定义在类外部，但有权访问类的所有私有(private)成员和保护(protected)成员。尽管友元函数的原型有在类的定义中出现过，但是友元函数并不是成员函数
@@ -131,8 +130,10 @@
   - 公有继承(public): public $arrow.r$ public, protected $arrow.r$ protected, private $arrow.r$ unavailable(can indirectly)
   - 保护继承(protected): public, protected $arrow.r$ protected
   - 私有继承(private): public, protected $arrow.r$ private
-  - 总而言之，同一个类可以访问自己的 public, protected, private；派生类只能不能访问 private；外部类不能访问 protected, private
+  - 总而言之，同一个类可以访问自己的 public, protected, private；派生类不能访问 private；外部类不能访问 protected, private
 - 这些特殊成员不能被继承：基类的构造函数（这个好像不太对）、析构函数和拷贝构造函数；基类的重载运算符；基类的友元函数
+
+- [ ] 虚继承和虚基类，参考 #link("https://zhuanlan.zhihu.com/p/342271992")[C++虚继承和虚基类详解]
 
 - Upcast 与 Return types relaxation
   - 当把派生类的指针或引用赋给基类的指针或引用时，称为 upcast
@@ -210,22 +211,11 @@
   };
   ```
 - virtual 虚函数
-  - 之前一直把虚函数理解为纯虚函数了，含有纯虚函数（函数只声明不定义）的类叫做*抽象基类*，不能实例化
-    - 抽象基类更进一步，Protocol/Interface classes，即*协议类*
-      - 其 variables 均为 static，其 member function 要么是 static 的，要么是 pure virtual 的
-  - 纯虚函数可以用 `=0` 显式标识
-  - 但是虚函数并不一定是纯虚函数，如下面 Circle 类的 render 函数
-  - 如果一个函数被声明为虚函数，那么在运行时，调用该函数的代码将根据对象的实际类型来决定调用哪个版本的函数。这就是所谓的*动态绑定*或*运行时多态性*。
-- Cpp 多态和虚函数的机理、本质还是不太懂，或者说根本就没懂，好难
-#quote(caption: "Copied from Zhr")[
-  #tab 多态 (polymorphism) 是面向对象编程的一个重要特性，它允许一个基类的指针指向一个派生类的对象，通过基类的指针调用派生类的成员函数。
-
-  多态可以通过虚函数 (virtual function) 来实现，虚函数可以通过在成员函数的前面加上 virtual 关键字来定义，这会让编译器在运行时动态绑定函数的地址。派生类重写的虚函数前面也可以加上 virtual 关键字作为提示，但不是必须的。
-
-  如果不想在基类中给出虚函数的实现，可以将虚函数定义为纯虚函数 (pure virtual function)，形式为 virtual type func(args) = 0。这会让基类变为抽象类，无法实例化，只能作为接口使用。
-
-  为了确认派生类成功重写了基类的虚函数，可以在基类的虚函数后面加上 override 关键字，例如 void func() override { ... }。这样的话，如果派生类没有成功重写基类的虚函数，编译器便会报错。override 关键字可以和 final 关键字一起使用，例如 void func() final override { ... }，顺序并不要紧。
-]
+  - 多态可以通过虚函数 (virtual function) 来实现，虚函数可以通过在成员函数的前面加上 virtual 关键字来定义，这会让编译器在运行时动态绑定函数的地址。派生类重写的虚函数前面也可以加上 virtual 关键字作为提示，但不是必须的
+  - 如果一个函数被声明为虚函数，那么在运行时，调用该函数的代码将根据对象的实际类型来决定调用哪个版本的函数。这就是所谓的*动态绑定*或*运行时多态性*
+  - 如果不想在基类中给出虚函数的实现，可以将虚函数定义为纯虚函数 (pure virtual function)，形式为 `virtual type func(args) = 0`。这会让基类变为抽象类，无法实例化，只能作为接口使用
+    - 抽象基类更进一步，Protocol/Interface classes，即*协议类*。其 variables 均为 static，其 member function 要么是 static 的，要么是 pure virtual 的
+  - 为了确认派生类成功重写了基类的虚函数，可以在基类的虚函数后面加上 override 关键字，例如 `void func() override { ... }`。这样如果派生类没有成功重写基类的虚函数，编译器便会报错。override 关键字可以和 final 关键字一起使用，例如 `void func() final override { ... }`，顺序并不要紧
 - 一个例子
   ```cpp
   class Ellipse : public Shape {
@@ -253,8 +243,55 @@
       render(&circ); // dynamic -- Circle::render()
   }
   ```
+- 总结：定义一个函数为虚函数，不代表函数为不被实现的函数。定义它为虚函数是为了允许用基类的指针来调用子类的这个函数。定义一个函数为纯虚函数，才代表函数没有被实现。定义纯虚函数是为了实现一个接口，起到一个规范的作用，规范继承这个类的程序员必须实现这个函数
 
-- 总结：定义一个函数为虚函数，不代表函数为不被实现的函数。定义它为虚函数是为了允许用基类的指针来调用子类的这个函数。定义一个函数为纯虚函数，才代表函数没有被实现。定义纯虚函数是为了实现一个接口，起到一个规范的作用，规范继承这个类的程序员必须实现这个函数。
+==== 虚函数的实现
+- *虚函数表*：拥有虚函数的类会自动生成一个虚函数表 `vtbl` （属于类而不是对象，一般存在程序的数据段，更确切地是 `.rodata` 段），是一个指针数组，里面的元素是虚函数的函数指针
+- *虚表指针*：创建对象时对象内部会自动生成一个虚表指针 `*vptr` （通常会在对象内存的最起始位置），指向类的虚表 `vtbl` 在调用虚函数时，会经由 `vptr` 找到 `vtbl`，再通过 `vtbl` 中的函数指针找到对应虚函数的代码并进行调用
+  - `vptr` 的值是在构造函数的*初始化列表*中写进去的。因此执行基类构造函数的时候，`vptr` 还指向基类的虚表；执行派生类构造函数的 body 的时候，`vptr` 就指向派生类的虚表了
+- 普通函数、虚函数、虚函数表都是同一个类的所有对象公有的，只有成员变量和虚表指针是每个对象私有的
+- 自然，非虚函数可以直接调用，不用经过虚表，这符合 C 的零成本抽象原则
+- 一个例子
+  #grid(
+    columns: 2,
+    column-gutter: 4pt,
+    [
+      ```cpp
+      class A {
+      public:
+          virtual void vfunc1();
+          virtual void vfunc2();
+          void func1();
+          void func2();
+      private:
+          int m_data1, m_data2;
+      };
+      class B : public A {
+      public:
+          void vfunc1() override;
+          void func1();
+      private:
+          int m_data3;
+      };
+      class C: public B {
+      public:
+          void vfunc2() override;
+          void func2();
+      private:
+          int m_data1, m_data4;
+      };
+      B bobject;       // 类 B 的一个对象
+      A* p = &bobject; // 通过基类指针 *p 指向派生类 B 的对象
+      ```
+    ],
+    [
+      - 这些类的虚表如图所示
+        #fig("/public/assets/Languages/Cpp/2025-01-11-13-19-00.png")
+    ]
+  )
+  - 可以发现，通过基类指针 `p`，可以访问基类中的所有非虚成员，无法访问派生类独有的非虚成员（其内存位置在基类成员之后），却可以通过虚表来访问派生类重写的虚函数
+    - 若想访问派生类独有的非虚成员，可以通过强制类型转换，将 `p` 转换为派生类的指针，如 `(B*)p->func2()`
+    - 不要重载 (overwrite) 继承而来的非虚函数（区别于 override)，因为会破坏多态性和 is-a 原则
 
 == 重载函数和重载运算符 Overload
 - Cpp 允许在同一作用域中的某个函数和运算符指定多个定义，分别称为函数重载和运算符重载。
@@ -299,10 +336,10 @@
     ```
 - 成员函数重载与非成员函数重载
   - 对二元运算符而言，如果在类内重载，第一个参数是隐式的，否则如果在类外重载，第一个参数需要显式指定
-  - 除此之外，类内（member）和类外（global，通常会声明为 friend）还有诸多不同，比如是否会进行类型转换（前者不会后者会）等。
+  - 除此之外，类内 (member) 和类外（global，通常会声明为 friend）还有诸多不同，比如是否会进行类型转换（前者不会后者会）等
   - 总而言之，单目运算符最好用类内，`=`、`[]`、`->`、`->*` 必须用类内，其它二元运算符最好用类外
 - 参数和返回值应该是否应该引用或是常量？参考运算符原型是怎么写的
-  #fig("/public/assets/Languages/Cpp/img-2024-05-14-15-22-59.png")
+  #fig("/public/assets/Languages/Cpp/img-2024-05-14-15-22-59.png", width:50%)
   - 以及赋值运算符（拷贝赋值运算符） `T& operator=(const T& other);` 返回引用以支持连续赋值
     - 赋值运算符是 cpp 六大默认成员函数之一；它必须是一个成员函数；需要 delete 掉原有的资源，然后再分配新的资源（重要！）
 - operators `++` 和 `--`
@@ -373,10 +410,11 @@ std::cout << sizeof(void*) << std::endl; // 8
 - Casting operators
   - #link("https://zhuanlan.zhihu.com/p/151744661")[Cpp 四种 cast]
   - static_cast: explicit type conversion, not safe for object pointers（但反过来，也不会增加检查的开销）
-    + 基本类型的转换，比如 `int` 转 `char`
+    + 在程序编译时刻进行类型转换，不会进行运行时检查。常用于基本类型的转换，比如 `int` 转 `char`
     + 类的 upcast，子类的指针或者引用转换为基类（安全）
     + 类的 downcast，基类的指针或引用转换为子类（不安全，没有类型检查）
   - dynamic_cast: 只能用在指向类的指针或引用，允许 upcast 和 downcast（当不完整时返回 nullptr）
+    + 用于运行时类型识别，只能用于多态类
     + 类的 upcast，子类的指针或引用转化为基类（安全）
     + 类的 downcast，基类的指针或引用转化为子类（安全，有类型检查）
   - const_cast: add or removes constness for 指针、引用、对象
@@ -405,7 +443,7 @@ std::cout << sizeof(void*) << std::endl; // 8
   int chico(int n, int m = 6, int j); //illeagle
   ```
 - 当函数采用先声明后定义的方式时，只能在声明中指定默认值，而不能在定义中指定默认值
-- 在底层，其实也是利用了函数重载实现。所以一般来说慎用默认参数，不如自己显式地重载
+- 在底层，其实也是利用了函数重载实现。所以一般来说慎用默认参数，不如自己显式地重载（这点跟 Python 的灵活性不同）
 
 === 匿名函数 Lambda Function <Lambda>
 - 匿名函数的概念等很好理解，这里不多赘述
@@ -434,7 +472,7 @@ std::cout << sizeof(void*) << std::endl; // 8
 - mutable
   ```cpp
   int x = 1;
-  auto f=[x]() {x++;};   // 编译错误，不能修改x的值
+  auto f = [x]() { x++; };   // 编译错误，不能修改 x 的值
   f();
   ```
   - 但是如果加上 `mutable` 就可以了（但由于是值捕获，所以不会改变外部变量的值）
@@ -443,7 +481,7 @@ std::cout << sizeof(void*) << std::endl; // 8
   - 一般情况下，编译器会自动推断出 lambda 的返回类型。但是如果函数体里面有多个返回语句，或者有一些常量 return 返回时候，编译器可能无法自动推断
 - 函数体：注意匿名函数外面最后需要添加一个 `;` 分号
 - 匿名函数的实质
-  - 每当你定义一个 lambda 表达式后，编译器会自动生成一个匿名类（这个类当然重载了 `()` 运算符），我们称为闭包类型(closure type)
+  - 每当你定义一个 lambda 表达式后，编译器会自动生成一个匿名类（这个类当然重载了 `()` 运算符），我们称为闭包类型 (closure type)
   - 例子
   ```cpp
   int x = 1;
@@ -466,7 +504,7 @@ std::cout << sizeof(void*) << std::endl; // 8
   - 不存在空引用，引用必须连接到一块合法的内存
   - 引用必须在创建时被初始化。指针可以在任何时间被初始化
   - 引用初始化后就不能指向其他对象或者重复初始化为其他对象，指针可以在任何时间指向其他对象
-  - 引用在底层是一个 `T *const`
+  - 引用在底层是一个 `T *const`，其本质为*指针常量*（指针本身是常量，而指向的对象不是）
 - 引用的简单例子
   ```cpp
   int i = 1;
@@ -498,7 +536,6 @@ std::cout << sizeof(void*) << std::endl; // 8
     return 0;
   }
   ```
-- 引用的本质就是常量指针
 - 关于值传递、指针传递、引用传递的选择
 #info(caption: [Tips])[
   - Pass in an object if you want to store it
@@ -511,11 +548,15 @@ std::cout << sizeof(void*) << std::endl; // 8
 
 ==== 左值引用和右值引用 <左值引用和右值引用>
 - 左值与右值
-  - 左值(Lvalue)和右值(Rvalue)是根据表达式是否可以*在赋值操作中作为左侧项*来区分的，或者可以通过是否能取地址和是否有名字来区分
-  - 左值(Lvalue)：左值是一个表达式，它指向内存中的一个固定地址。左值通常指的是变量的名字，它们在程序的整个运行期间都存在
-  - 右值(Rvalue)：右值是一个临时的、不可重复使用的表达式。右值通常包括字面量、临时生成的对象以及即将被销毁的对象
+  - 左值 (Lvalue) 和右值 (Rvalue) 根据表达式是否可以*在赋值操作中作为左侧项*来区分，或者通过是否能取地址和是否有名字来区分
+  - 左值是一个表达式，它指向内存中的一个固定地址。左值通常指变量的名字，它们在程序的整个运行期间都存在
+  - 右值是一个临时的、不可重复使用的表达式。右值通常包括字面量、临时生成的对象以及即将被销毁的对象
+  - 之所以要使用右值引用，是为了
+    + 支持移动语义，减少不必要的内存拷贝
+    + 支持完美转发，避免重载函数的重复定义
+    + 拓展可变参数模板，实现更加灵活的模板编程
 - 移动语义
-  - 移动语义涉及右值引用(`type&&`)，用于绑定临时对象和 `std::move()` 函数返回的对象，它的目的是更精细地控制内存分配，加快程序运行速度
+  - 移动语义涉及右值引用 (`type&&`)，用于绑定临时对象和 `std::move()` 函数返回的对象，它的目的是更精细地控制内存分配，加快程序运行速度
     - `std::move()` 将一个对象的左值引用转换为右值引用，实质上是一个静态类型转换，告诉编译器将一个左值当作右值来处理
   - 默认成员函数又多了移动构造函数和移动赋值操作符函数
   - 可以看这篇文章，很通透 #link("https://zhuanlan.zhihu.com/p/455848360")[一文入魂：妈妈再也不担心我不懂C++移动语义了]
@@ -532,7 +573,7 @@ std::cout << sizeof(void*) << std::endl; // 8
   // 完美转发的函数模板
   template<typename T>
   void logAndProcess(T&& param) {
-    // 调用 process 函数，同时保持param的左值 / 右值特性
+    // 调用 process 函数，同时保持 param 的左值 / 右值特性
     process(std::forward<T>(param));
   }
   int main() {
@@ -546,49 +587,62 @@ std::cout << sizeof(void*) << std::endl; // 8
 == 指针 Pointer
 - 原始指针跟 C 里面应该没什么区别
 
-==== 智能指针
-- 智能指针是封装了原生指针的类模板，用于自动管理对象的生命周期，主要有 `unique_ptr`, `shared_ptr`, `weak_ptr`，在 `<memory>` 头文件中
+=== `malloc` and `free`, `new` and `delete`
+- `malloc` 并不是系统调用，而是 C 的库函数
+  - 当分配内存小于 $128KB$ 时，调用 `brk` syscall，从 heap 分配内存，否则调用 `mmap` syscall，从文件映射区分配内存
+  - 为什么不都用 `mmap`？因为 `mmap` 分配的内存每次释放的时候都会归还给 OS，重新分配时都处于缺页状态
+- `free` 如何确定要释放的内存大小？
+  - `malloc` 会在分配的内存块前面多分配一个 `size_t` 的空间，记录分配的内存大小
+  - `free` 会根据这个值来释放内存（对传入的内存地址向左偏移 `sizeof(size_t)` 字节）
+- `malloc` 和 `new` 的区别
+  - `malloc` 是库函数，`new` 是运算符；前者只分配内存，后者还会调用构造函数；前者返回 `void*`，后者返回指定类型的指针；前者失败返回 `NULL`，后者失败抛出异常
+  - `new` 申请内存的步骤：调用 `operator new` 分配内存，调用构造函数初始化对象，返回对象指针
+- `delete` 的步骤：调用析构函数，调用 `operator delete` 释放内存
+
+=== 智能指针
+- 智能指针是*封装了原生指针的类模板*，用于自动管理对象的生命周期，主要有 `unique_ptr`, `shared_ptr`, `weak_ptr`，在 `<memory>` 头文件中
 - 从三个层次理解智能指针：
   + 用一种叫做 RAII（Resource Acquisition Is Initialization，资源获取即初始化）的技术对普通指针进行封装，使得智能指针实质是一个对象，行为表现得却像一个指针
   + 作用是确保动态资源得到安全释放，避免内存泄漏
   + 还有一个作用是把值语义转换成引用语义
 - `unique_ptr`
-  - 不能拷贝和赋值，只能移动
+  - 不能拷贝和赋值，只能通过移动语义转换所有权
   - 什么时候用？相比原始指针确保动态资源能得到释放，相比 `shared_ptr` 开销小，大多数场景下用到的应该都是 `unique_ptr`
 - `shared_ptr`
-  - 是 `unique_ptr` 的两倍空间，维护了一个引用计数，当引用计数为 0 时自动释放资源
+  - 是 `unique_ptr` 的两倍空间，维护了一个引用计数，当引用计数为 $0$ 时自动释放资源
   - 什么时候用？通常用于一些资源创建昂贵比较耗时的场景， 比如涉及到文件读写、网络连接、数据库连接等。当需要共享资源的所有权时，例如，一个资源需要被多个对象共享，但是不知道哪个对象会最后释放它
 - `weak_ptr`
-  - 用于解决 `shared_ptr` 的循环引用问题
+  - *不具有普通指针的行为*，而是配合 `shared_ptr` 使用，用于解决循环引用问题
   - 什么时候用？当两个对象相互引用，且其中一个对象是 `shared_ptr` 类型时，会导致循环引用，从而导致内存泄漏。此时可以使用 `weak_ptr` 来解决这个问题
+  - `weak_ptr` 的绑定不会影响 `shared_ptr` 的引用计数，可以用 `use_count()` 监测计数。它也可以通过 `expire()` 判断是否已释放，用 `lock()` 获取 `shared_ptr` 对象
 - 例子
-```cpp
-int main() {
-    {
-        std::unique_ptr<int> uptr(new int(10));  //  绑定动态对象
-        //std::unique_ptr<int> uptr2 = uptr;  // 不能赋值
-        //std::unique_ptr<int> uptr2(uptr);  // 不能拷贝
-        std::unique_ptr<int> uptr2 = std::move(uptr); // 转换所有权
-        uptr2.release(); // 释放所有权
-    } // 超过 unique_ptr 的作用域，自动释放
-    {
-        int a = 10;
-        std::shared_ptr<int> ptra = std::make_shared<int>(a);
-        std::shared_ptr<int> ptra2(ptra); // copy
-        std::cout << ptra.use_count() << std::endl;
+  ```cpp
+  int main() {
+      {
+          std::unique_ptr<int> uptr(new int(10)); //  绑定动态对象
+          // std::unique_ptr<int> uptr2 = uptr;   // 不能赋值
+          // std::unique_ptr<int> uptr2(uptr);    // 不能拷贝
+          std::unique_ptr<int> uptr2 = std::move(uptr); // 转换所有权
+          uptr2.release(); // 释放所有权
+      } // 超过 unique_ptr 的作用域，自动释放
+      {
+          int a = 10;
+          std::shared_ptr<int> ptra = std::make_shared<int>(a);
+          std::shared_ptr<int> ptra2(ptra); // copy
+          std::cout << ptra.use_count() << std::endl;
 
-        int b = 20;
-        int *pb = &a;
-        // std::shared_ptr<int> ptrb = pb;  \/\/ error，需要转换为 shared_ptr
-        std::shared_ptr<int> ptrb = std::make_shared<int>(b);
-        ptra2 = ptrb;
-        pb = ptrb.get();
+          int b = 20;
+          int *pb = &a;
+          // std::shared_ptr<int> ptrb = pb;  // error，需要转换为 shared_ptr
+          std::shared_ptr<int> ptrb = std::make_shared<int>(b);
+          ptra2 = ptrb;
+          pb = ptrb.get();
 
-        std::cout << ptra.use_count() << std::endl;
-        std::cout << ptrb.use_count() << std::endl;
-    }
-}
-```
+          std::cout << ptra.use_count() << std::endl;
+          std::cout << ptrb.use_count() << std::endl;
+      }
+  }
+  ```
 - 参考
   + #link("https://www.cnblogs.com/rebrobot/p/18215501")[现代 C++ 智能指针详解：原理、应用和陷阱]
   + #link("https://www.cnblogs.com/wxquare/p/4759020.html")[C++11 中智能指针的原理、使用、实现
@@ -597,13 +651,13 @@ int main() {
 == 常量 Constant
 - Run-time constant 和 Compile-time constant
   ```cpp
-  const int x = 123; // x 为编译时常量(Compile-time constant)，123为字面量(literal)
-  // 在这种简单的情况下，编译器会直接把x优化为汇编里的立即数，存储在静态存储区
+  const int x = 123; // x 为编译时常量 (Compile-time constant)，123为字面量 (literal)
+  // 在这种简单的情况下，编译器会直接把 x 优化为汇编里的立即数，存储在静态存储区
   cin >> size;
-  const int SIZE = size; // SIZE为运行时常量(Runtime constant)，只有运行的时候才能知道常量的值
+  const int SIZE = size; // SIZE为运行时常量 (Runtime constant)，只有运行的时候才能知道常量的值
   // 因此编译器只能把它设置成变量，然后保证它不会被修改，这样就会存储在栈或堆里，跟普通变量一样
   // 这里的 const 纯粹是编译器帮你检查的工具，对二进制来说完全是透明的
-  // 所以实际上更好的叫法是只读 readonly
+  // 所以实际上更好的叫法是只读 read only
   ```
 - 修改常量
   ```cpp
@@ -634,7 +688,7 @@ int main() {
 - Compile-time constants in classes
   ```cpp
   class HasArray {
-      const int size=1;
+      const int size = 1;
       int array[size]; // ERROR!
   };
   ```
@@ -642,52 +696,61 @@ int main() {
   - 解决办法是声明为 `static const int size=1;`
   - 或者使用匿名枚举 hack: `enum { size = 1 };`（编译时会被替换为 1）
 - 指针常量和常量指针
+  - 区别在于 `const` 在 `*` 的左右
   ```cpp
   int a = 1, b = 2;
   int* const p = &a;  // 指针常量，指针是常量，但指向内容不是
   const int* q = &a;  // 常量指针，指针指向内容是常量，但指针不是
                       // 或者写为 int const *q = &a; 效果是一模一样的
   *p = 9;             // 成功
-  // p = &b;             // 错误
-  // *q = 9;             // 错误
+  // p = &b;          // 错误
+  // *q = 9;          // 错误
   q = &b;             // 成功
   a = 3;              // 但无论哪种，都不妨碍直接改 a
   ```
 
 == 模板 Template
-- 模板是C++支持参数化多态的工具，使用模板可以使用户为类或者函数声明一种一般模式，使得类中的某些数据成员或者成员函数的参数、返回值取得任意类型。
-- 通俗来讲，就是让程序员编写与类型无关的代码，而专注于语义实现。比如编写了一个交换两个 int 类型的 swap 函数，那它不重载就无法交换 double 类型。
+- 模板是 C++ 支持参数化多态的工具，使用模板可以使用户为类或者函数声明一种一般模式，使得类中的某些数据成员或者成员函数的参数、返回值取得任意类型
+  - 通俗来讲，就是让程序员编写与类型无关的代码，而专注于语义实现。比如编写了一个交换两个 int 类型的 swap 函数，那它不重载就无法交换 double 类型
+  - 模板如何转化为不同类型？跟 `auto` 类似，由编译器自动推导，本质上是把程序员所需的重复工作交给编译器
 - 模板通常有两种形式：函数模板和类模板
   - 函数模板针对仅参数类型不同的函数
   - 类模板针对仅数据成员和成员函数类型不同的类
 - 注意：模板的声明或定义只能在全局，命名空间或类范围内进行。即不能在局部范围，函数内进行
 - 函数模板的格式
   ```cpp
-  template <class 形参名, class 形参名, ......> 返回类型 函数名(参数列表)
-  { ... }
+  template <class 形参名, class 形参名, ......>
+  返回类型 函数名(参数列表) {
+    ...
+  }
   ```
 - 类模板的格式
   ```cpp
-  template <class 形参名, class 形参名, ......> class 类名
-  { ... };
+  template <class 形参名, class 形参名, ......>
+  class 类名 {
+    ...
+  };
   ```
 - 一个结合的例子
   ```cpp
-  template<class T> class A{
-      public:
-          T g(T a,T b);
-          A();
+  template<class T>
+  class A {
+  public:
+      T g(T a,T b);
+      A();
   };
 
-  template<class T> A<T>::A() {}
+  template<class T>
+  A<T>::A() {}
 
-  template<class T> T A<T>::g(T a,T b) {
-      return a+b;
+  template<class T>
+  T A<T>::g(T a,T b) {
+      return a + b;
   }
 
   int main(){
       A<int> a;
-      cout<<a.g(1,2)<<endl;
+      cout << a.g(1,2) << endl;
       return 0;
   }
   ```
@@ -697,7 +760,7 @@ int main() {
 - 类型形参与非类型形参
   - 前面那些 `T` 就是类型形参，指代之后实例化时的类型；还有非类型形参
   - 非类型形参只能是常量（或常量表达式），另外只能是整型，指针和引用
-  - 非类型模板参数(non-type template parameter)常常用在容器的上限之类的地方。在 cpp17 后，这个 parameter 甚至可以是 auto 来让编译器自行推断
+  - 非类型模板参数 (non-type template parameter) 常常用在容器的上限之类的地方。在 cpp17 后，这个 parameter 甚至可以是 auto 来让编译器自行推断
     ```cpp
     template <class T, int bounds = 100>
     class FixedVector{
@@ -725,21 +788,21 @@ int main() {
 ==== 模板特化
 - 不同与模板实例化。常用在为一个特定的类型提供特殊的实现
 - 对多个模板参数还分为*偏特化*和*全特化*
-- 比如下面的例子中，我们实现了两个类型的比较，它适用于大多数类型如 `int`, `double`，但无法用于 `char*`，这时需要函数模板特化
+- 比如下面的例子中，我们实现了两个类型的比较，适用于大多数类型如 `int`, `double`，但无法用于 `char*`，这时需要函数模板特化
   ```cpp
   #include <iostream>
   #include <cstring>
   // 一般的函数模版
   template <class T>
   int compare(const T left, const T right) {
-      std::cout <<"in template<class T>..." <<std::endl;
+      std::cout <<"in template<class T>..." << std::endl;
       return (left - right);
   }
 
   // 这个是一个特化的函数模版
   template < >
   int compare<const char*>(const char* left, const char* right) {
-      std::cout << "in special template< >..." <<std::endl;
+      std::cout << "in special template< >..." << std::endl;
       return strcmp(left, right);
   }
 
@@ -753,7 +816,7 @@ int main() {
 
   // 这个其实本质是函数重载，跟模版特化没有关系，但是会优先调用它
   int compare(char* left, char* right) {
-      std::cout <<"in overload function..." <<std::endl;
+      std::cout <<"in overload function..." << std::endl;
       return strcmp(left, right);
   }
 
@@ -849,13 +912,13 @@ int main() {
   ```cpp
   class exception{
   public:
-      exception () throw(); //构造函数
-      exception (const exception&) throw(); //拷贝构造函数
-      exception& operator= (const exception&) throw(); //运算符重载
-      virtual ~exception() throw(); //虚析构函数
+      exception () throw(); // 构造函数
+      exception (const exception&) throw(); // 拷贝构造函数
+      exception& operator= (const exception&) throw(); // 运算符重载
+      virtual ~exception() throw(); // 虚析构函数
       virtual const char* what() const throw();
-      //虚函数，用于描述错误的具体情况
-      //继承的时候要override这个what()函数
+      // 虚函数，用于描述错误的具体情况
+      // 继承的时候要override这个what()函数
   };
   ```
 
@@ -1036,14 +1099,11 @@ int main() {
 = Cpp 新特性整理
 == C++11
 - 成员初始化列表，参见 @构造函数和析构函数
-
 - 移动语义，参见 @左值引用和右值引用
-
 - Lambda 表达式，参见 @Lambda
-
 - 可调用对象，参见 @Callable_Object
-
 - 智能指针
+- 可参考 #link("https://blog.csdn.net/jiange_zh/article/details/79356417")[C++11常用新特性快速一览]
 
 == C++14
 - Lambda 表达式的泛型
@@ -1051,26 +1111,80 @@ int main() {
 == C++17
 - if 和 switch 语句中初始化变量
   - 字面意思，好处在于不用在外面初始化，而且不会污染外部作用域
--
 
 = Cpp STL 库整理
-- 一些通用的方法
-- Vector
-  - 内部用
+- 可以参考 #link("https://zhuanlan.zhihu.com/p/542115773")[C++ STL 十六大容器 —— 底层原理与特性分析]
+
+== Array
+- 跟 Cpp 的 `[]` 数组无限接近，所有元素按照内存地址线性排列，并不维护任何多余数据比如 `size`
+- 但它毕竟是标准模板库的一员，支持 `begin(), end(), front(), back(), at(), empty(), data(), fill(), swap(), ...` 等标准接口
+
+== Vector
+- 内部就是一段连续的线性内存空间，用三个迭代器来表示：`begin()`, `end()`, `capacity()`
+- 与数组相比，它有更多的灵活性和功能，可以自动管理内存，允许动态地插入和删除元素。它高效的秘诀在于每次空间不够时，重新分配并拷贝到一块更大的内存空间 (e.g. 50% plus)
+- `push_back()` and `emplace_back()`
+  - 当使用Push_back时会先调用类的有参构造函数创建一个临时变量，再将这个元素拷贝或者移动到容器之中，而emplace_back则是直接在容器尾部进行构造比push_back少进行一次构造函数调用。在大部分场景中emplace_back可以替换push_back，但是push_back会比emplace_back更加安全，emplace_back只能用于直接在容器中构造新元素的情况，如果要将现有的对象添加到容器中则需要使用push_back
 ```cpp
 
 ```
-- List
-  - 内部用双向链表实现
+
+== List
+- 内部用双向链表实现
 ```cpp
 list<int> l;
+std::list<int> numbers;
 
+numbers.push_back(1); // 向列表中添加元素
+numbers.push_back(2);
+numbers.push_back(3);
+
+std::cout << "First element: " << numbers.front() << std::endl; // 访问并打印列表的第一个元素
+
+std::cout << "Last element: " << numbers.back() << std::endl; // 访问并打印列表的最后一个元素
+
+std::cout << "List elements: "; // 遍历列表并打印所有元素
+for (auto it = numbers.begin(); it != numbers.end(); ++it)
+    std::cout << *it << " ";
+std::cout << std::endl;
+
+numbers.pop_back(); // 删除列表中的最后一个元素
+
+std::cout << "List elements after removing the last element: "; // 再次遍历列表并打印所有元素
+for (auto it = numbers.begin(); it != numbers.end(); ++it)
+    std::cout << *it << " ";
+std::cout << std::endl;
 ```
-- Stack
-  -
+
+== Stack
+- `<stack>` 的底层容器可以是任何支持随机访问迭代器的序列容器，如 `vector` 或 `deque`
+- `<stack>` 不提供直接访问栈中元素的方法，只能通过 `top()` 访问栈顶元素
+- 尝试在空栈上调用 `top()` 或 `pop()` 将导致未定义行为
 ```cpp
+std::stack<int> s;
 
+s.push(1); // 向栈中添加元素
+s.push(2);
+s.push(3);
+
+std::cout << "Top element is: " << s.top() << std::endl; // 访问栈顶元素
+
+s.pop(); // 移除栈顶元素
+std::cout << "After popping, top element is: " << s.top() << std::endl;
+
+if (!s.empty()) { // 检查栈是否为空
+    std::cout << "Stack is not empty." << std::endl;
+}
+
+std::cout << "Size of stack: " << s.size() << std::endl; // 打印栈的大小
 ```
+
+== Map, Unordered_map
+- 有序和无序的 map，前者用红黑树实现，后者用哈希表实现
+- 所以优缺点也分别就是 “有序但是慢”，“无序但是快”
+- 为什么不叫 `hash_map`？因为 `unordered_map` 是 C++11 新增的，在这之前一些编译器提供了自己的非标准扩展。但有了这个标准库的替代实现后，之前的这些扩展就不再需要了
+
+== Deque
+- 参考 #link("https://blog.csdn.net/yl_puyu/article/details/103361874")[[C++系列] 58. deque底层实现原理剖析]
 
 #quote(caption: "Copied from Zhr")[
   - 常见容器的迭代器类型如下：
