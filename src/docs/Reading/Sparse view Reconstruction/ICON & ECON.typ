@@ -321,8 +321,8 @@ draft: true
     fig("/public/assets/reading/human/2024-11-14-21-15-18.png"),
     fig("/public/assets/reading/human/2024-11-14-21-16-37.png")
   )
-  - 其实在 ECON 前后的这段时期(22-23)，在不限于人体的各种领域比如场景表示，已经有从 implicit 又转回到 explicit 的趋势（包括基于 NeRF 的各种工作也是），这跟 ECON 背后的这种 general insight 不谋而合
-  - 而且在 ECON 发布几个月以后，3DGS 横空出世（有点佩服作者的预见性），从 implicit 又转回到 explicit 的这个过程，本身就有点“把暴力黑盒的神经网络换成精细的、类神经网络的足够 powerful 的三维表示”的感觉
+  - 其实在 ECON 前后的这段时期 (22-23)，在不限于人体的各种领域比如场景表示，已经有从 implicit 又转回到 explicit 的趋势（包括基于 NeRF 的各种工作也是），这跟 ECON 背后的这种 general insight 不谋而合
+  - 而且在 ECON 发布几个月以后，3DGS 横空出世（有点佩服作者的预见性），从 implicit 又转回到 explicit 的这个过程，本身就有点 “把暴力黑盒的神经网络换成精细的、类神经网络的足够 powerful 的三维表示” 的感觉
 #q[
   #tab 不同于 implicit-based methods，$ECON_EX$ 没有任何 implicit 模块，这也是标题的立意，单目穿衣人重建这个问题，不是非要上 implicit 才能保住细节，explicit 也可以的，一个数字人，显式隐式各自表述。
 
@@ -334,7 +334,7 @@ draft: true
   - 个人觉得，就是 Implicit 的方法更多是一个黑盒，输入给它 clothed normal map 和 body mesh normal 和 SDF 后，你也不知道它在返回输出之前做了什么，在人体的哪些部分对哪个输入比较看重等，都是未知的
   - 与之相对的，改成 Explicit 之后，首先是引入了 “把衣服撑起来” 这个先验(Inductive biase)，而且过程中的变换、参数的设置都更好由我们控制，某种程度上使得表达变得更加 powerful
 - 这个三明治结构的提法倒是第一次见，感觉应该是指先集中精力克服大部分难关，然后补全小问题的这种思路
-- 随后，因为补全填缝的思路而能够处理多人遮挡、因为基于 SMPL-X 先验而能够做替换和动画，这都是意外之喜了
+- 随后，因为补全填缝的思路而天然能够处理多人遮挡、因为基于 SMPL-X 先验而能够做替换和动画，这都是意外之喜了
 
 #q[
   尽管有各种问题，（但个人认为），ECON 依旧是目前为止，泛化性最好的，单图穿衣人重建算法，我们在 AMT 上花了六百欧做了上千组 perception study，最后的结论是——除了在 fashion images 上和 PIFuHD 打了个平手，其他所有的 hard cases，challenging poses or loose clothing，ECON 的重建质量一骑绝尘。
@@ -346,7 +346,7 @@ draft: true
 == 问题和展望
 #q[
   ECON 也有一些问题，比如
-  + SMPL-X 对于直立站姿的预测结果往往会屈腿，这会“带坏”ECON 的重建
+  + SMPL-X 对于直立站姿的预测结果往往会屈腿，这会 “带坏” ECON 的重建
   + SMPL-X 的手腕旋转如果预测错误，直接替换就会出现图示的 stitching artifacts
   4. 极端宽松的衣服下，目前 normal 预估的质量无法保证，伴随着 ECON 的重建也会有破洞
   - 至于 3.，人体和衣服之间往往是有距离的，而 ECON 的优化过程，目前没有考虑衣服的紧合度 tightness（具体实现中，我们手工设定了 thickness=2cm），导致在一些极端的情况下，人会看起来扁扁的，这个问题，或许可以通过额外预测 tightness，并将其引入到 d-BiNI 优化过程中来解决。

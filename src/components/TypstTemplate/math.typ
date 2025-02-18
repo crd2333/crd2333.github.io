@@ -93,6 +93,10 @@
 #let Concat = math.text("Concat")
 #let MultiHead = math.text("MultiHead")
 #let Attention = math.text("Attention")
+#let SelfAttention = math.text("SelfAttention")
+#let CrossAttention = math.text("CrossAttention")
+#let Diffusion = math.text("Diffusion")
+#let MSE = math.text("MSE")
 
 // ---------- 常用单位（这样它们就可以直接囊括入 $$） ----------
 #let bit = math.text("bit")
@@ -379,6 +383,7 @@
 #let bA = math.bold("A")
 #let bB = math.bold("B")
 #let bC = math.bold("C")
+#let bD = math.bold("D")
 #let bE = math.bold("E")
 #let bF = math.bold("F")
 #let bG = math.bold("G")

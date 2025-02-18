@@ -77,6 +77,7 @@
 ## VSCode 如何调试
 - [VScode tasks.json 和 launch.json 的设置 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/92175757)
 - ~~还是不会~~ 以现在 (23.11.28) 的视角看，似乎这些调试相关文章有不少都过时了，我现在只需要对 `C`, `Cpp` 分别搞一个 `tasks.json`，然后保证处在两个工作区就好了
+- （25.2.18 更新），现在感觉 VSCode 还是作为小型文本编辑器比较好用，真上大型项目还是老老实实用 VS 或者 Rider 等专业 IDE 吧。。。
 
 !!! warning
     - 编译的时候看的是**当前工作区一级文件夹**下的 `.vscode` 文件夹中的内容，而不是当前编译文件所在的文件夹下的 `.vscode`

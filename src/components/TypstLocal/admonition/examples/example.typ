@@ -53,7 +53,7 @@
   footer: [This is a footer.],
 )
 
-#example(
+#example1(
   [test],
   footer: [This is a footer.],
 )

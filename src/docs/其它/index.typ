@@ -7,7 +7,7 @@
 
 
 - 存储一些杂项笔记，如
-  + makefile
+  + 构建工具与包管理 (makefile, cmake, conda ...)
   + VSCode
-  + Linux 和 CLI(zsh, powershell, terminal)
+  + Linux 和 CLI (zsh, powershell, terminal)
   + git

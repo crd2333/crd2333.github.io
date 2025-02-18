@@ -1,6 +1,6 @@
-// ---
-// order: 14
-// ---
+---
+order: 14
+---
 
 #import "/src/components/TypstTemplate/lib.typ": *
 

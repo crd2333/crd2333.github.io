@@ -1,6 +1,6 @@
-// ---
-// order: 9
-// ---
+---
+order: 9
+---
 
 #import "/src/components/TypstTemplate/lib.typ": *
 

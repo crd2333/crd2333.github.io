@@ -1,5 +1,6 @@
 ---
 order: 1
+draft: true
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *
@@ -61,6 +62,7 @@ order: 1
     - $10$ 个参数的具体物理意义和 $24$ 个关节点的具体物理位置有很多介绍，这里不赘述
   - 过程中 rest pose template $bT in RR^(3N)$、蒙皮权重 $cW$、shape 顶点偏移主成分 $cS$、rest vertices 到 rest pose 的映射 $cJ$、pose 顶点偏移 $cP$ 都是通过训练得到的
   - 最后输出一个具有 $6980$ 个顶点的 mesh，并且有了模型参数以后，我们可以调整输入参数 shape 和 pose 来控制人体
+  #fig("/public/assets/Reading/Human/2025-01-25-15-28-05.png", width: 30%)
 
 = SMPL 的衍生工作
 - SMPL 影响力非常大，我们知道人体重建任务最关键的是 geometry and appearance，SMPL 成为对前者广泛应用的一个基础先验(prior)或模板(template)

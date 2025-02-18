@@ -1,12 +1,12 @@
 ---
-order: 9
+order: 3
 draft: true
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *
 
 #show: project.with(
-  title: "Human Reconstruction",
+  title: "Monocular Reconstruction -- Human",
   lang: "zh",
 )
 
