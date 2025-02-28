@@ -1,19 +1,19 @@
 // 导入本地包
 #import "fonts.typ":*
 #import "/src/components/TypstLocal/admonition/lib.typ": *
-#import "/src/components/TypstLocal/thms/lib.typ": *
 
 // 导入 preview 包
 // 树、图文包裹、图标、真值表
-#import "@preview/syntree:0.2.0": syntree, tree
+#import "@preview/syntree:0.2.1": syntree, tree
 #import "@preview/treet:0.1.1": tree-list
 #import "@preview/wrap-it:0.1.1": wrap-content, wrap-top-bottom
 #import "@preview/cheq:0.2.2": checklist
 #import "@preview/pinit:0.2.2": *
-#import "@preview/indenta:0.0.3": fix-indent
 #import "@preview/numbly:0.1.0": numbly
 #import "@preview/oxifmt:0.2.1": strfmt
-#import "@preview/drafting:0.2.1": *
+#import "@preview/drafting:0.2.2": *
+#import "@preview/theorion:0.3.2": *
+#import cosmos.fancy: * // theorion 的样式
 
 // 假段落
 #let fake_par = context{let b=par(box());b;v(-measure(b+b).height)}

@@ -1,13 +1,13 @@
-#import "@preview/fletcher:0.5.3" as fletcher: diagram, node, edge
-#import "@preview/tablem:0.1.0": tablem
+#import "@preview/fletcher:0.5.5" as fletcher: diagram, node, edge
+#import "@preview/tablem:0.2.0": tablem
 #import "@preview/lovelace:0.3.0": pseudocode-list, pseudocode, line-label
-#import "@preview/truthfy:0.5.0": truth-table, truth-table-empty
-#import "@preview/codly:1.1.1": *
-#import "@preview/timeliney:0.1.0": timeline, headerline, group, taskgroup, task, milestone
+#import "@preview/truthfy:0.6.0": truth-table, truth-table-empty
+#import "@preview/zebraw:0.4.3": *
+#import "@preview/timeliney:0.2.0": timeline as timeliney, headerline, group, taskgroup, task, milestone
 
 // 插入图片
 #let fig(alignment: center, ..args) = figure(
-  kind: "image",
+  kind: image,
   supplement: none,
   image(..args)
 )
@@ -20,7 +20,7 @@
 // 普通表，包含居中
 #let tbl(alignment: center, align_content: center + horizon, automath: false, ..args) = {
   let fig = figure(
-    kind: "table",
+    kind: table,
     supplement: none,
     table(align: align_content, ..args)
   )
@@ -32,7 +32,7 @@
 // 三线表，包含居中
 #let tlt(alignment: center, align_content: center + horizon, automath: false, ..args) = {
   let fig = figure(
-    kind: "table",
+    kind: table,
     supplement: none,
     table(
       stroke: none,
@@ -51,9 +51,25 @@
 // 类 markdown 表格，使用 tablem 实现
 #let tblm(alignment: center, align_content: center + horizon, automath: false, ..args) = {
   let fig = figure(
-    kind: "table",
+    kind: table,
     supplement: none,
     tablem(align: align_content, ..args)
+  )
+  if automath {
+    show table.cell: automath_rule
+    fig
+  } else {fig}
+}
+// csv 表格，使用 csv 处理转为表格
+#let csvtbl(alignment: center + horizon, automath: false, columns: 0, raw) = {
+  let data = csv(bytes(raw.text))
+  let fig = figure(
+    kind: table,
+    table(
+      columns: if columns == 0 {data.at(0).len()} else {columns},
+      align: alignment,
+      ..data.flatten()
+    )
   )
   if automath {
     show table.cell: automath_rule
@@ -96,26 +112,17 @@
 }
 #let no-number = [- #hide([])] // empty line and no number
 
-// 代码块，使用 codly 实现
-#let code(body) = [#body]
-
-// icons for codly
-#let codly_icon(codepoint) = {
-  box(
-    height: 1em,
-    baseline: 0.1em,
-    image(codepoint)
+// 代码块，使用 zebraw 实现
+#let code(
+  body,
+  ..args
+) = figure(
+  kind: raw,
+  zebraw(
+    body,
+    ..args
   )
-  h(0.2em)
-}
-#let c_svg = codly_icon("/public/assets/c.svg")
-#let cpp_svg = codly_icon("/public/assets/cpp.svg")
-#let python_svg = codly_icon("/public/assets/python.svg")
-#let rust_svg = codly_icon("/public/assets/rust.svg")
-#let java_svg = codly_icon("/public/assets/java.svg")
-#let sql_svg = codly_icon("/public/assets/sql.svg")
-#let typst_svg = codly_icon("/public/assets/typst.svg")
-#let verilog_svg = codly_icon("/public/assets/verilog.svg")
+)
 
 #let diagram(..args) = figure(
   kind: "image",
