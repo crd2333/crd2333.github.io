@@ -441,12 +441,12 @@ order: 5
     - 如果当前日志不是 CLR 日志，则下一个待 UNDO 的日志为当前日志的 PrevLSN；如果当前日志是 CLR 日志，则下一个待 UNDO 的日志为当前日志的 UndoNxtLSN（这将跳过中间已经被 UNDO 的日志）。
     - 【似乎是这样】如下图，我们先 undo 日志 4，这时需要写 CLR 4'，将其 UndoNextLSN 指向 3（即为 4 的 PrevLSN）；假如这个时候掉电了，我们就需要 redo 这个 CLR 4'（相当于 undo 4），它指向的 3 则是需要接着 undo 的日志（也要继续生成 CLR 3'）
     #fig("/public/assets/Courses/DB/img-2024-06-03-17-09-49.png")
-#quote()[
-#tab 每个日志记录都有一个唯一标识该记录的日志顺序号（LSN）。LSN：由一个文件号以及在该文件中的偏移量组成。
+#quote[
+  每个日志记录都有一个唯一标识该记录的日志顺序号（LSN）。LSN：由一个文件号以及在该文件中的偏移量组成。
 
-每一页也维护一个叫页日志顺序号（PageLSN）的标识。每当一个更新操作发生在某页上时，该操作将其日志记录的LSN存储在该页的PageLSN域中。在恢复的撤销阶段，LSN值小于或等于PageLSN值的日志记录将不在该页上执行，因为它的动作已经在该页上了。
+  每一页也维护一个叫页日志顺序号（PageLSN）的标识。每当一个更新操作发生在某页上时，该操作将其日志记录的LSN存储在该页的PageLSN域中。在恢复的撤销阶段，LSN值小于或等于PageLSN值的日志记录将不在该页上执行，因为它的动作已经在该页上了。
 
-每个日志记录包含同一事务的前一日志记录的LSN，放在PrevLSN中，使得一个事务可以由后向前提取，而不必读整个日志。事务回滚中会产生一些特殊的redo-only的日志，称为补偿日志记录（Compensation Log Record, CLR)。CLR中还有额外的（？）称为UndoNextLSN的字段，记录下一个需要undo的日志的LSN。
+  每个日志记录包含同一事务的前一日志记录的LSN，放在PrevLSN中，使得一个事务可以由后向前提取，而不必读整个日志。事务回滚中会产生一些特殊的redo-only的日志，称为补偿日志记录（Compensation Log Record, CLR)。CLR中还有额外的（？）称为UndoNextLSN的字段，记录下一个需要undo的日志的LSN。
 ]
 - Dirty Page Table 脏页表
   - 存储在缓冲区的，记录已经被更新过的 page 的表

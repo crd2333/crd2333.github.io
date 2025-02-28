@@ -129,8 +129,8 @@
   )
 
 == Vulkan 基础技术
-
-
+- 可以参考这一篇咕咕了、只有第一章的教程 #link("https://frightenedfoxcn.github.io/blog/e453db9c/")[大概可能不难上手的 Vulkan 教程（1） 计算管线]，介绍了一个基本的 Vulkan 程序的结构
+- 中文文档 #link("https://docs.vulkan.net.cn/guide/latest/index.html")[Vulkan 指南]
 
 
 == Vulkan 优化技术概述

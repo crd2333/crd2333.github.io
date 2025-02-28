@@ -8,29 +8,29 @@
 = SLAM 中的 CV
 == SfM
 - 参考 #link("https://blog.csdn.net/shyjhyp11/article/details/104108926")
-=== 增量式的 SfM(Incremental Structure-from-Motion)
+=== 增量式的 SfM (Incremental Structure-from-Motion)
 - 步骤
   - 先从一对图像开始，计算*对极几何约束*(epipolar geometry)，*本质矩阵*(Essential Matrix)；
-  - 然后，可以从 Essential Matrix 中 decompose 两个相机的 pose（旋转矩阵 R 及位移 t），然后就可以使用 triangulation，三角化算出一些三维点（误差累计的来源）；
+  - 然后，可以从 Essential Matrix 中 decompose 两个相机的 pose（旋转矩阵 $R$ 及位移 $t$），然后就可以使用 triangulation，三角化算出一些三维点（误差累计的来源）；
   - 所以可以通过两张图，计算出包含两个相机和一些三维点的初始三维重建，接着再使用 Resection 方法，加第三个相机（第三张图片），即使用三维点（已计算点）和两维点（新加点）的 对应关系（correspondence），计算出第三个相机的姿态。逐步增加相机，逐步找到三维点，及对应的图像点。
 - 问题：误差会不断累计。
-  - 比如加第三张图像时，用的是 3D-2D 对应点的对应关系，来做 Resection 或者做 PnP。我们之前讲到，在做 Resection 时，假设 3D 点坐标是绝对精确的、没有误差的，误差全部来自于 2D 点坐标（特征点检测出来的像素坐标值），但增量式 SfM 在添加相机时，使用的三维点坐标，是前面计算出来的。所以三维点的误差，会导致我们新加进来的第三张图的相机的pose（R 和 t）的误差，进一步会导致我第四张图有些误差。
+  - 比如加第三张图像时，用的是 3D-2D 对应点的对应关系，来做 Resection 或者做 PnP。我们之前讲到，在做 Resection 时，假设 3D 点坐标是绝对精确的、没有误差的，误差全部来自于 2D 点坐标（特征点检测出来的像素坐标值），但增量式 SfM 在添加相机时，使用的三维点坐标，是前面计算出来的。所以三维点的误差，会导致我们新加进来的第三张图的相机的 pose（$R$ 和 $t$）的误差，进一步会导致我第四张图有些误差。
   - 这样，使用第三张和第四张图对应相机三角化出来的三维点，也会有误差，逐步被放大
-- 怎么办呢？目前没有什么办法，非线性优化呗，即 minimize 重投影误差(reprojection error)，所以，通常在做了几次添加相机（图像）后，就需要做一把 Bundle Adjustment。这时候就相对安全了，这时候就可以继续添加相机了。这时就会有一个判断准则，比如添加了20张图像（或者判断 triangulate 出来的相机姿态需要优化了），就需要做 Bundle Adjustment 了。
+- 怎么办呢？目前没有什么办法，非线性优化呗，即 minimize 重投影误差 (reprojection error)，所以，通常在做了几次添加相机（图像）后，就需要做一把 Bundle Adjustment。这时候就相对安全了，这时候就可以继续添加相机了。这时就会有一个判断准则，比如添加了 $20$ 张图像（或者判断 triangulate 出来的相机姿态需要优化了），就需要做 Bundle Adjustment 了。
   - 就这样一直添加图像，直到所有的图像全部添加完以后，还要再最后做一次整体的 Bundle Adjustment。因为 BA 是在优化所有的相机，所有的三维点。整套这样的流程就叫做 Incremental Structure-from-Motion。
 
-=== 全局式的SfM(Global Structure-from-Motion)
+=== 全局式的 SfM (Global Structure-from-Motion)
 - 步骤
-  - 先给定一对图像对(pair)，同样要计算 Essential Matrix，然后同样的 decompose 出来相机的相对运动（Relative Motion，包含：相对旋转矩阵 R 和相对平移矩阵 t）；使用同样的方法，算出所有的图像对的 E 和 Motion，比如有 n 张图，就有 $C_n^2$ 个图像对。
-  - 然后根据这些所有的图像对，算出的 Relative Motion，解一个优化问题（称之为：Register all cameras），把所有相机的朝向(Rotation)和中心点坐标(center)一次性的求出来。
+  - 先给定一对图像对 (pair)，同样要计算 Essential Matrix，然后同样的 decompose 出来相机的相对运动（Relative Motion，包含：相对旋转矩阵 $R$ 和相对平移矩阵 $t$）；使用同样的方法，算出所有的图像对的 $E$ 和 Motion，比如有 $n$ 张图，就有 $C_n^2$ 个图像对。
+  - 然后根据这些所有的图像对，算出的 Relative Motion，解一个优化问题（称之为：Register all cameras），把所有相机的朝向 (Rotation) 和中心点坐标 (center) 一次性的求出来。
   - 最后当然离不开 Bundle Adjustment，因为这才是最后要解的 reprojection error 的 minimize。前面初始化的效果越好，后面 Bundle Adjustment 的效果就越好。一般情况下，使用 Global Structure-from-Motion，最后收敛的也就越快。
-- 通过 Essential Matrices 和 Decomposition，算出来相对的旋转 R 、相对的平移 t，怎样把他们放到世界坐标系中，如何把他们 register 到一起，这个就是这一步要解决的问题。这步一般可以分成两步 Rotation Averaging 和 Translation Averaging
+- 通过 Essential Matrices 和 Decomposition，算出来相对旋转 $R$、相对平移 $t$，怎样把他们放到世界坐标系中，如何把他们 register 到一起，这个就是这一步要解决的问题。这步一般可以分成两步 Rotation Averaging 和 Translation Averaging
   - Rotation Averaging（求解所有相机朝向）
   - Translation Averaging（求解所有相机中心点）
 
 == IMU 融合视觉里程计
-- 参考 #link("https://blog.csdn.net/weixin_43569276/article/details/104783347")[SLAM基础 —— 视觉与IMU融合（VIO基础理论）]
-- #link("https://blog.csdn.net/qq_35453190/article/details/114452939")[基于优化的IMU与视觉信息融合]
+- 参考 #link("https://blog.csdn.net/weixin_43569276/article/details/104783347")[SLAM 基础 —— 视觉与 IMU 融合（VIO 基础理论）]
+- #link("https://blog.csdn.net/qq_35453190/article/details/114452939")[基于优化的 IMU 与视觉信息融合]
 
 
 
@@ -122,7 +122,7 @@
   - 然后提一嘴 RGB-D 相机
 
 #quote(caption: "网上看到的一段话，不是很理解什么意思")[
-  #tab BA和图优化，是把位姿和空间点放在一块，进行优化。特征点非常多，机器人轨迹越走越长，特征点增长的也很快。因此位姿图优化的意义在于：在优化几次以后把特征点固定住不再优化，只当做位姿估计的约束，之后主要优化位姿。
+  BA和图优化，是把位姿和空间点放在一块，进行优化。特征点非常多，机器人轨迹越走越长，特征点增长的也很快。因此位姿图优化的意义在于：在优化几次以后把特征点固定住不再优化，只当做位姿估计的约束，之后主要优化位姿。
 
   也就是说，不要红色的路标点了，只要位姿。位姿里的三角形是位姿，蓝色的线是两个位姿之间的变换。
 

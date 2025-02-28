@@ -281,7 +281,7 @@ draft: true
 
 ==== Shape Completion
 #q[
-  #tab 好了，现在正反两面的衣服已经被人体“撑起来”了，这个时候我们会注意到，正反两面的间隙，尤其是侧面，有缝，这就好比旗袍开叉开到了胳肢窝。所以接下来我们要做的，就是补全这个裂缝。
+  好了，现在正反两面的衣服已经被人体“撑起来”了，这个时候我们会注意到，正反两面的间隙，尤其是侧面，有缝，这就好比旗袍开叉开到了胳肢窝。所以接下来我们要做的，就是补全这个裂缝。
 
   在 ECON 中，我们提供了两种补全策略，一种是用类似 IF-Nets 的思路（如下图），输入 SMPL-X body 和 d-BiNI 优化出来的正反面，implicitly 做几何补全，称为 IF-Nets+，其结果我们标记为 $ECON_IF$
 
@@ -324,7 +324,7 @@ draft: true
   - 其实在 ECON 前后的这段时期 (22-23)，在不限于人体的各种领域比如场景表示，已经有从 implicit 又转回到 explicit 的趋势（包括基于 NeRF 的各种工作也是），这跟 ECON 背后的这种 general insight 不谋而合
   - 而且在 ECON 发布几个月以后，3DGS 横空出世（有点佩服作者的预见性），从 implicit 又转回到 explicit 的这个过程，本身就有点 “把暴力黑盒的神经网络换成精细的、类神经网络的足够 powerful 的三维表示” 的感觉
 #q[
-  #tab 不同于 implicit-based methods，$ECON_EX$ 没有任何 implicit 模块，这也是标题的立意，单目穿衣人重建这个问题，不是非要上 implicit 才能保住细节，explicit 也可以的，一个数字人，显式隐式各自表述。
+  不同于 implicit-based methods，$ECON_EX$ 没有任何 implicit 模块，这也是标题的立意，单目穿衣人重建这个问题，不是非要上 implicit 才能保住细节，explicit 也可以的，一个数字人，显式隐式各自表述。
 
   而且 ECON 的三明治结构，也适用于通用物体，比如去年 3DV Best Paper Honourable Mention，Any-shot GIN，大同小异。这种三明治设计简化了重建，正反面搞定了，九成的物体几何信息就有了，留给补全模块的工作量就小很多。同时，补全能“填缝”，也能应对大面积遮挡，所以 ECON 天然地可以处理多人遮挡场景。
 
