@@ -13,18 +13,19 @@
   version: 0.3
   Nearly rewrite the code the implement admonitions by showybox, making it more flexible.
 */
-#import "@preview/showybox:2.0.3": showybox
+#import "@preview/showybox:2.0.4": showybox
 
 #let iconbox(
-  icon: emoji.info,    // a symbol or an image
-  caption: "iconbox",  // title of the box
-  caption_size: 12pt,  // size of the caption
+  icon: emoji.info,   // a symbol or an image
+  caption: "iconbox", // title of the box
+  caption_size: 12pt, // size of the caption
   size: 9pt,          // size of content
-  breakable: true,     // whether the box can be broken across pages
+  breakable: true,    // whether the box can be broken across pages
+  indent: false,      // whether enable indent in the box
   ..args
 ) = {
   let caption = box(height: caption_size,
-    if type(icon) == "symbol" {
+    if type(icon) == symbol {
       pad(caption_size * 0.15, text(caption_size, icon))
     } else {
       image(icon, fit: "contain", width: caption_size)
@@ -55,7 +56,11 @@
     align: right,
     ..args,
   )
-  if size != 0 {
+  if size != 0 and indent == false {
+    set text(size: size)
+    set par(first-line-indent: 0em)
+    body
+  } else if size != 0 {
     set text(size: size)
     body
   } else {
