@@ -257,10 +257,10 @@
   - Dunn 指数考察簇间最小距离最小且所有簇的直径最大
     - 它衡量簇的紧密度和分离度的比值，越大越好
   $
-  avg(C) = frac(2,abs(C)(abs(C)-1)) sum_(1=<i<j=<abs(C)) "dist"(C_i,C_j) ~~~ "聚类内平均距离" \
-  "diam"(C) = max_(1=<i=<abs(C)) max_(x,y in C_i) "dist"(x,y) ~~~ "聚类内最大距离" \
-  d_min (C_i, C_j) = min_(x in C_i, y in C_j) "dist"(x,y) ~~~ "聚类间最小距离" \
-  d_"cen" (C_i, C_j) = "dist"(bmu_i, bmu_j) ~~~ "聚类中心距离"
+  avg(C) = frac(2,abs(C)(abs(C)-1)) sum_(1=<i<j=<abs(C)) "dist"(C_i,C_j) ~~~~ "聚类内平均距离" \
+  "diam"(C) = max_(1=<i=<abs(C)) max_(x,y in C_i) "dist"(x,y) ~~~~ "聚类内最大距离" \
+  d_min (C_i, C_j) = min_(x in C_i, y in C_j) "dist"(x,y) ~~~~ "聚类间最小距离" \
+  d_"cen" (C_i, C_j) = "dist"(bmu_i, bmu_j) ~~~~ "聚类中心距离"
   $ <->
   $
   "DB指数" ~ &"DBI" = 1/k sum_(i=1)^k max_(j!=i) frac(avg(C_i) + avg(C_j), d_"cen" (C_i, C_j)) \
@@ -401,7 +401,7 @@
       - 实际上可以转化为从权值矩阵 $W$ 计算矩阵 $M$ 然后做特征值分解，取最小的 $d'$ 个特征值对应的特征向量组成 $Z^T$
         $
         "let"~~ Z = (bz_1, bz_2, dots, bz_m) in RR^(d' times N), M = (I - W)^T (I - W), \
-        "optimize"~~ min_(Z) tr(Z M Z^T) ~~~ s.t. ~ Z Z^T = I
+        "optimize"~~ min_(Z) tr(Z M Z^T) ~~~~ s.t. ~~ Z Z^T = I
         $
   ]
 

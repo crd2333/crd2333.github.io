@@ -342,7 +342,7 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
     $ vec(u^((i)),v^((i)),1) equiv mat(p_11,p_12,p_13,p_14;p_21,p_22,p_23,p_24;p_31,p_32,p_33,p_34) vec(x_w^((i)),y_w^((i)),z_w^((i)),1) $
   + Solve $P$
     - 利用之前求解单应矩阵的方法，把 $N$ 个方程转化成 $A bp = bold(0)$ 的形式 (Rearranging the terms)，随后
-      $ min_bp norm(A bp) ~~~~~ "such that" norm(bp) = 1 $
+      $ min_bp norm(A bp) ~~~~ "such that" norm(bp) = 1 $
     - 也是求解最小二乘法，具体过程不需要掌握，但要知道解就是 $A^T A$ 的*最小特征值*对应的*特征向量*，即可以对 $A$ 应用奇异值分解
   + 最后，把它重组回 $P$，然后分解成内参 $K$ 和外参矩阵，我们把它记为
     $ P_(3*4) = [K_(3*3), bold(0)] mat(R_(3*3),bt_(3*1); bold(0),1) $
@@ -410,7 +410,7 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
     $
     [x_l, y_l, z_l] mat(0,-t_z,t_y;t_z,0,-t_x;-t_y,t_x,0) mat(r_11,r_12,r_13;r_21,r_22,r_23;r_31,r_32,r_33) [x_r,y_r,z_r]^T = 0 \
     [x_l, y_l, z_l] mat(e_11,e_12,e_13;e_21,e_22,e_23;e_31,e_32,e_33) [x_r,y_r,z_r]^T = 0 \
-    [x_l, y_l, z_l] E [x_r,y_r,z_r]^T = 0 ~~~ E #[is called *Essential Matrix*]
+    [x_l, y_l, z_l] E [x_r,y_r,z_r]^T = 0 ~~~~~~ E #[is called *Essential Matrix*]
     $
   + 当我们算出本质矩阵 $E$ 后可以使用分解 $E=T_times R$ 得到 $R, t$
     - $T_times$ 是反对称的，$R$ 是正交的，使用 Singular Value Decomposition (SVD)
@@ -418,7 +418,7 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
     $
     bx_l^T = [u_l, v_l, 1] z_l K_l^(-1^T), bx_r = K_r^(-1) z_r vec(u_r, v_r, 1) \
     [u_l,v_l,1] K_l^(-1^T) E K_r^(-1) [u_r,v_r,1]^T \
-    [u_l,v_l,1] F [u_r,v_r,1]^T ~~~ F #[is called *Fundamental Matrix*] \
+    [u_l,v_l,1] F [u_r,v_r,1]^T ~~~~ F #[is called *Fundamental Matrix*] \
     E = K_l^T F K_r
     $
     - 由于基础矩阵也是 homogenous 的，因此在求解时可以在式中删去 $z_l, z_r$，并且可以加上约束 $norm(f)=1$
@@ -532,9 +532,9 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
 - 我们可以将立体匹配转化为一个优化问题，把像素点周围的视差约束考虑进来，最小化一个能量函数
   $ underbrace(E(d), #[disparity\ of each pixel]) = underbrace(E_d (d), "match cost") + underbrace(la E_s (d), "smoothness cost") $
   - 匹配本身的损失：目的是在另一张图中找到最佳匹配 (match cost)
-  $ E_d (d) = sum_((x,y) in I) C(x,y,d(x,y)) ~~~ C: "e.g. SSD, SAD, ZNCC" $
+  $ E_d (d) = sum_((x,y) in I) C(x,y,d(x,y)) ~~~~ C: "e.g. SSD, SAD, ZNCC" $
   - 光滑性的损失：相邻的两个像素，视察应该尽可能接近 (smoothness cost)
-    $ E_s (d) = sum_((p,q) in ep) V(d_p, d_q) ~~~ ep ": set of neighboring pixels" $
+    $ E_s (d) = sum_((p,q) in ep) V(d_p, d_q) ~~~~ ep ": set of neighboring pixels" $
     - $V$ 的选取一般也有两种方法，后者对边缘处更好（不过度惩罚）
     #fig("/public/assets/Courses/CV/2024-11-07-10-56-42.png", width: 40%)
   - Can minimize this independently per scanline using dynamic programming (DP)
@@ -615,7 +615,7 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
     - 可以利用 PCA，对应小特征值的特征向量即为局部表面法向（方差大的则是沿着表面方向）
   + 第三步，我们根据得到的法向构建 $0-1$ 的体素，即用体素拟合点云，使得 $0-1$ 交界的地方就是点云所在之处。我们可以定义一个优化问题：优化变量就是每个体素的值，为 $0$ 或 $1$
     - Represent surface by indicator (occupancy) function
-      $ cX_M (p) = cases(1 ~~~ "if" p in M, 0 ~~~ "otherwise") $
+      $ cX_M (p) = cases(1 ~~~~ "if" p in M, 0 ~~~~ "otherwise") $
     - 对于目标函数，我们可以这样思考：对于体素的边界，物体内部值为 $1$，外部值为 $0$，则该处的梯度就沿着表面的法向。而我们又已知法向，因此可以优化梯度与法向之间的 Loss（只算有点的区域）
       $ min_X norm(na X - arrow(V))^2 $
 #fig("/public/assets/Courses/CV/2025-01-08-21-59-07.png", width:70%)

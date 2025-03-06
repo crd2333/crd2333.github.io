@@ -206,10 +206,10 @@ order: 3
 #definition(title: "Lossless join 无损分解的定义")[
   - R 被分解为 (R_1, R_2) 并且$R=R_1 union R_2$
   - 对于任何关系模式 R 上的关系 r 有 $r=Pi_(R_1)(r) join Pi_(R_2)(r)$
-  - 同时，lossless join 要求下列至少一项成立（至少有一项在 $R_1 sect R_2$ 的闭包中）
+  - 同时，lossless join 要求下列至少一项成立（至少有一项在 $R_1 inter R_2$ 的闭包中）
   $
-  R_1 sect R_2 -> R_1 "(共同属性决定R1)"\
-  R_1 sect R_2 -> R_2 "(共同属性决定R2)"
+  R_1 inter R_2 -> R_1 "(共同属性决定R1)"\
+  R_1 inter R_2 -> R_2 "(共同属性决定R2)"
   $
 ]
 - 注意 $r subset Pi_(R_1)(r) join Pi_(R_2)(r)$ 是有损分解（看起来信息变多了，实际上反而引入不确定性）

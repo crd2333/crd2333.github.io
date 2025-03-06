@@ -59,7 +59,7 @@
   - Simple NFA: 没有 transition 到 $s$，$F={f}$ 为单集合
 - DFA 与 NFA 的关系：完全等价
   - 如何转化 NFA $M=(K, Si, De, s, F) -->$ DFA $M = (K, Si, de, s, F)$
-  - $K'=2^K, s'=E(s), F'={Q in K'|Q sect F != emptyset}$
+  - $K'=2^K, s'=E(s), F'={Q in K'|Q inter F != emptyset}$
   - $de: forall Q in K', forall a in Si$
     $ de(Q,a) = union_(q in Q){union_(p:(q,a,p) in De) E(p)} $
     - 翻译成人话：对状态集合中的每个元素 $q$，它能通过 $a$ 到的所有状态 $p$，$p$ 的 e-transition 集合。外层 union 才是真 union，内层 union 是从 $K-> 2^K$，即幂集要考虑完整
@@ -68,7 +68,7 @@
   - 正则闭包：Union, Intersect, Concatenation, Star（思考用 FA 的证明）
   - 证明*是*：DFA, NFA, REX, Closure property
   - 证明*否*：Pumping Theorem, Closure property + 反证
-  #theorem(titile: "Pumping Theorem")[
+  #theorem(title: "Pumping Theorem")[
     对 regular language，存在 $p >= 1$，$s.t. forall w in L ~(abs(w) > p)$，满足 $w = x y z$，且
     #grid3(
       columns: (1fr, 1fr, 1fr),
@@ -83,7 +83,7 @@
       - 简化为 $K={q_1,q_2,...,q_n}, s=q_(n-1),F={q_n}$
       - $L_(ij)^k$ 表示从 $q_i -> q_j$ 的路径表示的语言（其对应 REX 为 $R_(ij)^k$），且中间状态（不包含首尾）下表不大于 $k$
       - 目标 $R_((n-1)n)^(n-2)$，起始 $R_(i i)^0, R_(ij)^0$，递推关系 $ R_(ij)^k = R_(ij)^(k-1) union R_(i k)^(k-1) (R_(k k)^(k-1)) R_(k j)^(k-1) $
-  - 特别注意 $emptyset <-> L(emptyset) = {} = emptyset, ~~~ emptyset^* <-> L(emptyset^*)={e}$
+  - 特别注意 $emptyset <-> L(emptyset) = {} = emptyset, ~~~~ emptyset^* <-> L(emptyset^*)={e}$
 - 总结
   - $DFA <==> NFA <==> REX$
 
@@ -113,7 +113,7 @@
 
     了解如何证明：考虑节点最少的能生成 $w$ 的 parse tree，non-terminals 只有 $abs(V-Si)$ 个，令 $p$ 为节点最大 fanout 的 $abs(V-Si)+1$ 次方，对树的高度形成限制……
 
-    #untab 掌握如何运用
+    掌握如何运用
   ]
 
 = Turing Machine
@@ -146,7 +146,7 @@
   - semidecide
     $ M #[*semidecide*] L "if" cases(exists "some branches accept" w in L, "no branch accepts" w in.not L "(reject or looping)") $
   - decide
-    $ M #[*decide*] L &"if" cases(exists "some branches accept" w in L, "every branch reject" w in.not L) ~~"并且" \ & forall w, exist N "s.t."~ "every branch halts within" N "steps" (N "depends on" w,M) $
+    $ M #[*decide*] L &"if" cases(exists "some branches accept" w in L, "every branch reject" w in.not L) ~~ "并且" \ & forall w, exist N "s.t."~ "every branch halts within" N "steps" (N "depends on" w,M) $
     - 第二条什么意思呢？
       - 考虑一个图灵机，每一步向右走或停机，任意分支能停机但是可以任意长，满足第一条但不满足第二条（*会停机*和*一定步数内停机*是两个不同的概念）
       - 从 DTM 模拟的角度考虑，就是说非确定产生的树高度小于 $N$
@@ -196,14 +196,14 @@
     - 定义证明：在 $D$ 的 state diagram 上跑 DFS，如果能到 $f in F$ 则接受，否则拒绝
   + 判定问题 $R_6$ ($EQ_DFA$)
     $ EQ_DFA = {\"D_1\"\"D_2\"|D_1,D_2 "are two DFAs with" L(D_1) = L(D_2)} $
-    - $R_6 =< R_5$ 规约：利用对称差 $A plus.circle B = A union B - A sect B$，$A = B$ iff $A plus.circle B = emptyset$，然后用 $R_5$ 看看该语言的 DFA 的 state diagram 是不是真的为空
+    - $R_6 =< R_5$ 规约：利用对称差 $A plus.circle B = A union B - A inter B$，$A = B$ iff $A plus.circle B = emptyset$，然后用 $R_5$ 看看该语言的 DFA 的 state diagram 是不是真的为空
     - 现在回过头来看，这种利用对称差的方法，把两个输入的问题转化为单个，自己想肯定是想不出来的，好好体会一下
 - 规约
   - $A =< B$，如果 $B$ yes，那么 $A$ 也 yes
   #diagram(
-    node((-1,0),[$ A_NFA \ \"D\"\"w\" $]),
+    node((-1,0),[$ A_NFA \ \"D\"\"w\" $], radius: 18pt),
     edge((-1,0), marks: "-|>", (1,0)),
-    node((1,0),[$ A_DFA \ \"D\"\"w\" $]),
+    node((1,0),[$ A_DFA \ \"D\"\"w\" $], radius: 18pt),
   )
   - 只要满足以下两点即可规约
     + 建立 $\"D\"\"w\" in A_NFA$ iff $\"D\"\"w\" in A_DFA$ 的双射
@@ -309,7 +309,7 @@
   ]
   - 规约证明
     - 不妨令 $emptyset in.not cL$（否则令 $cL=overline(cL)$ 即可），从 $cL$ 中取出一个 $A$，存在 $M_A$ semidecide $A$
-    - $A_TM =< R$ 规约：$M "accepts" w iff L(M^*)=L(M_A)=A in cL$，$M^*$ 对于 input $x$，如果 $M$ accepts $w$ 就返回 $M_A$ 跑 $x$ 的结果 ~~~~ ($L(M_A) in cL$)；如果 $M$ reject $w$ or looping 就 reject ($emptyset in.not cL$)
+    - $A_TM =< R$ 规约：$M "accepts" w iff L(M^*)=L(M_A)=A in cL$，$M^*$ 对于 input $x$，如果 $M$ accepts $w$ 就返回 $M_A$ 跑 $x$ 的结果 $(L(M_A) in cL)$；如果 $M$ reject $w$ or looping 就 reject $(emptyset in.not cL)$
 - 最后再举一个复杂点的例子，不可判定问题 $ALL_PDA$
   $ ALL_PDA = {\"P\"|P "is a PDA with" L(P)=Si^*} \
     NotALL_PDA = {\"P\"|P "is a PDA with" L(P)!=Si^*} $
@@ -410,7 +410,7 @@
 
 == 证明系统
 - 我们把 strings 视作 statement $x$ 和 proof $t$，判断证明是否正确，本质上还是个图灵机
-  $ V(x,t) = cases(1\, ~~~ &"if" t "is valid for" x, 0\, &"otherwise") $
+  $ V(x,t) = cases(1\, ~~~~ &"if" t "is valid for" x, 0\, &"otherwise") $
 - 令 $Im$ 为 set of true statements (actually a language)，它的 proof system 是一个图灵机，满足以下条件
   - *Effectiveness*
     $ "for" x,t in Si^*, ~ V "either accepts or rejects" (x,t) $
@@ -436,7 +436,7 @@
   - 这样的 $L$ 称为图灵可枚举的 (turing enumerable)，$M$ enumerates $L$
 - 图灵可枚举跟递归可枚举的关系
 #theorem[
-  $ A is "turing enumerable" <==> A is "recursively enumerable" $
+  $ A "is turing enumerable" <==> A "is recursively enumerable" $
   - 掌握证明思路（如果有限显然成立，考虑无限情况）
     - $=>$：$M$ 枚举 $A$，构造 $M'$ 半判定 $A$，对每个输入 $x$，字面意思直接枚举，如果 $x$ 等于某个被 $M$ 枚举的字符串 $w$ 就接受即可。不一定停机？没关系因为是证明 R.E.
     - $<=#h(0em)$：$M'$ 半判定 $A$，构造图灵机 $M$ 输出（打印）那些被接受的字符串，具体而言，$M$ 以升序遍历 $Si^*$ 中的 $s_j$，检查它是否被 $M'$ 接受，如果是则 output $s_j$

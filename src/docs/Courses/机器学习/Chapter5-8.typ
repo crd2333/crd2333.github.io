@@ -143,8 +143,8 @@
 - 输入 $T={(bx_1,y1), dots, (bx_N,yN)}, bx_i in RR^n, y_i in {-1,+1}$
 - 构造并求解约束最优化问题
   $
-  &"原始形式" ~~~ max_(bw,b) ga ~~~ s.t. ~ y_i ~ frac(bw dot bx_i + b, norm(bw)) >= ga, ~~ &i=1,2,dots,N \
-  &"优化形式" ~~~ max_(bw,b) 1/2 norm(bw)^2 ~~~ s.t. ~ y_i (bw dot bx_i + b) >= 1, ~~ &i=1,2,dots,N
+  &"原始形式" ~~~~ max_(bw,b) ga ~~~~ s.t. ~ y_i ~ frac(bw dot bx_i + b, norm(bw)) >= ga, ~~~~ &i=1,2,dots,N \
+  &"优化形式" ~~~~ max_(bw,b) 1/2 norm(bw)^2 ~~~~ s.t. ~ y_i (bw dot bx_i + b) >= 1, ~~~~ &i=1,2,dots,N
   $
 - 输出最大间隔分离超平面、分离决策函数、支持向量
   $
@@ -178,7 +178,7 @@
     - SMO 会根据违反 KKT 条件程度选择 $al_i, al_j$
       - 但有点太寄吧难算了，考试时直接画图从结果倒推吧，都初始化为 $0$，然后选最后不应该是 $0$ 的那些个作为 SMO 变量
   + 固定其它变量，通过解析方法求解 $al_i, al_j$ 的最优值，此时对偶问题的约束为
-    $ al_i y_i + al_j y_j = - sum_(k!=i,j) al_k y_k, ~~~ al_i, al_j >= 0 $
+    $ al_i y_i + al_j y_j = - sum_(k!=i,j) al_k y_k, ~~~~ al_i, al_j >= 0 $
 - 引入对偶问题的原因是，一是对偶问题更容易求解，二是使用内积的形式便于引入核函数（因此，核 SVM 只能用于对偶形式）
   - 但原始 SVM 的计算复杂度在 $O(m)$，而核 SVM 虽然更容易求解，但计算复杂度落在 $O(m^2) wave O(m^3)$ 之间，反而更高了
 
@@ -209,7 +209,7 @@
     - KKT 条件
       $
       cases(
-        0 =< al_i =< C\, ~~~ xi_i >= 0,
+        0 =< al_i =< C\, ~~~~ xi_i >= 0,
         y_i (bw dot bx_i + b) - 1 + xi_i >= 0,
         (C - al_i) xi_i = 0,
         al_i (y_i (bw dot bx_i + b) - 1 + xi_i) = 0

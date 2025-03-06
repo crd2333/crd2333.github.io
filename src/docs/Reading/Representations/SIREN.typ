@@ -39,7 +39,7 @@ order: 2
 
 == Formulation
 - 把上面说的那个函数表示为可行集问题 ${C_m (a(x), Phi(x), nabla Phi(x), nabla^2 Phi(x), ...)}_(m=1)^M$，满足 $M$ 个约束，每个都把 $Phi$ 关联到 $a(x)$（？）
-  $ "find" Phi(x) "subject to" C_m (a(x), Phi(x), nabla Phi(x), nabla^2 Phi(x), ...) = 0, ~~~ forall x in Omega_m, m = 1, ..., M $
+  $ "find" Phi(x) "subject to" C_m (a(x), Phi(x), nabla Phi(x), nabla^2 Phi(x), ...) = 0, ~~~~ forall x in Omega_m, m = 1, ..., M $
 #note[
   paper 中的 notation 对初学者来说可能有些不适，因为长期以来使用神经网络处理图像数据时，input 大多情况下是图像本身(e.g. matrices with RGB channels)；但是这篇 paper 中，我们用神经网络所学是 $Phi$，这里面的 input 是 pixel coordinate（即 $x=(i, j)$），而 $Phi(x)$ 代表着不同 pixel value。$Phi(x)$ 表示对给定的像素位置输入，学出来网络认为这里的值是什么。而 $a(x)$ 表示这个像素位置的 ground truth，所以说每个约束都把 $Phi$ 关联到 $a(x)$，意思是约束神经网络往 $a$ 的方向学。这一点需要格外注意
 ]
@@ -51,7 +51,7 @@ order: 2
 
 === 隐式神经表示的周期性激活函数
 - 文章提出的核心 idea，即用 $sin$ 函数来做激活函数
-  $ Phi(x) = W_n (phi_(n-1) circle phi_(n-2) circle ... circle phi_0) (x) + b_n, ~~~ x_i arrow.r.bar phi_i (x_i) = sin(W_i x_i + b_i) $
+  $ Phi(x) = W_n (phi_(n-1) circle phi_(n-2) circle ... circle phi_0) (x) + b_n, ~~~~ x_i arrow.r.bar phi_i (x_i) = sin(W_i x_i + b_i) $
   - 神经网络设为 $n$ 层 layer ，每层线性层计算操作为 $W_i * x_i + b_i$ ，并添加 $sin$ 操作，注意每个 $sin$ 是带缩放的（这一点好像论文里都没怎么提到，直到后面第一层初始化那里才说，令人费解）
   - 第 $0$ 到 $n-1$ 层，线性操作 + 激活 （最后层不加激活，避免值域错误）
 - 有趣的是，SIREN 的任何导数本身就是 SIREN，因为正弦的导数是余弦，即相移正弦。因此，SIREN 的导数继承了 SIREN 的属性，使我们能够用“复杂”信号来监督 SIREN 的任何导数。

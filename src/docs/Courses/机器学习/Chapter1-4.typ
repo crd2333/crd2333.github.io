@@ -201,7 +201,7 @@
 - 回归任务处理连续值，如果是离散属性一般通过连续化处理（利用序关系或 one-hot 编码）
 - 一元形式直接略过，多元形式
   - 把 $w$ 和 $b$ 合并到 $w$ 中化为齐次表达，把整个数据集写成矩阵 $bX$，标记写成向量 $by$
-  $ f(bx) = bw dot bx, ~~~ f(bX) = bX bw $
+  $ f(bx) = bw dot bx, ~~~~ f(bX) = bX bw $
 - 一般采用均方误差作为损失函数
   $ bw^* = argmin_bw (by - bX bw)^T (by - bX bw) $
 - 模型采用最小二乘法，对上式求导即可，$bX^T bX$ 满秩则有 closed-form 解（若不满秩可以加入正则项）
@@ -248,7 +248,7 @@
 - 使用类内类间散度矩阵和广义瑞利商形式设计，拉格朗日乘子法优化得到最优解(closed-from)
   $
   min_bw -bw^T S_b bw \
-  s.t. ~~~ bw^T S_w bw = 1 \
+  s.t. ~~~~ bw^T S_w bw = 1 \
   ==> w = S_w^(-1) (bmu_0 - bmu_1)
   $
 - 多分类 LDA

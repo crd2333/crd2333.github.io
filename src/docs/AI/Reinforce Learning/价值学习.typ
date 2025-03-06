@@ -71,14 +71,14 @@ $
 - 为了实现方差与偏差的平衡，一种可行的方案是将蒙特卡洛方法与时序差分方法融合，实现*多步时序差分*，介于时序差分方法和蒙特卡洛方法（等效于无限步时序差分）之间。在此基础上提出*资格迹方法*，而 TD-$lambda$ 是一种比较常见的资格迹方法
 - $n$ 步时序差分学习
 $
-"定义 " n " 步累计奖励" ~~~ G_t^n = R_(t+1) + gamma R_(t+2) + dots + gamma^(n-1) R_(t+n) + gamma^n V(s_(t+n))\
+"定义 " n " 步累计奖励" ~~~~ G_t^n = R_(t+1) + gamma R_(t+2) + dots + gamma^(n-1) R_(t+n) + gamma^n V(s_(t+n))\
 V(s_t) <- V(s_t) + alpha(G_t^n - V(s_t))
 $
 - 资格迹方法(TD-$lambda$方法)通常使用一个超参数$lambda in [0, 1]$控制值估计蒙特卡罗还是时序差分
   - TD-$lambda$方法 把 $n$ 从 $1$ 到 $infty$ 做加权和，从而在 $n$ 步时序差分方法上更进一步
   - 当$lambda = 1$等价于蒙特卡罗方法，当$lambda = 0$等价于时序差分方法
 $
-"定义 " n " 步累计奖励" ~~~ G_t^n = R_(t+1) + gamma R(t+2) + dots + gamma^(n-1) R_(t+n) + gamma^n V(s_(t+n))\
+"定义 " n " 步累计奖励" ~~~~ G_t^n = R_(t+1) + gamma R(t+2) + dots + gamma^(n-1) R_(t+n) + gamma^n V(s_(t+n))\
 G_t^lambda = (1-lambda)sum_(n=1)^infty lambda^(n-1)G_t^n
 $
 - TD-$lambda$ 的两种视角
@@ -96,7 +96,7 @@ $
   - 也可以改成基于多步时序差分方法，即多步 SARSA 算法（$n$ 步）
     $ Q(s_t,a_t) = Q(s_t,a_t) + alpha(R_(t+1) + ga R_(t+2) + dots + ga^n Q(s_(t+n),a_(t+b)) - Q(s_t,a_t)) $
 - 策略改进为 $epg$
-  $ pi(a|s) = cases(ep/abs(cA)+1-ep\, ~~~ &"if" a = argmax_(a' in A) Q(s,a'), ep/abs(cA)\, &"other actions") $
+  $ pi(a|s) = cases(ep/abs(cA)+1-ep\, ~~~~ &"if" a = argmax_(a' in A) Q(s,a'), ep/abs(cA)\, &"other actions") $
 - SARSA 属于在线策略时序差分控制 (on-policy TD control)
   - 使用当前策略进行动作采样，即 SARSA 算法中的两个动作 $A$ 都是由当前策略选择的（都是 $epg$ 策略）
 
@@ -123,7 +123,7 @@ $
     - 参考 #link("https://www.cnblogs.com/xyz/p/16948169.html")[这篇博客]、#link("https://blog.csdn.net/hehedadaq/article/details/112424851")[这篇博客]，还是没太明白（
   - off-policy
     - 使用目标策略 $pi(a_t|s_t)$ 进行值函数评估 ($V^pi (s_t)$ or $Q^pi (s_t,a_t)$)
-      $ Q(s_t, a_t) = sum_(t=0)^T gamma^t R(s_t,a_t), ~~~ a_t wave !!!!!!!! underbrace(mu(s_t), "行为策略（可以不同于当前策略）") $
+      $ Q(s_t, a_t) = sum_(t=0)^T gamma^t R(s_t,a_t), ~~~~ a_t wave !!!!!!!!!!!!!! underbrace(mu(s_t), "行为策略（可以不同于当前策略）") $
     - 使用行为策略 $mu(a_t|s_t)$ 进行采样（收集数据）
     - 迭代式（策略提升）
       $ Q(s_t,a_t) = R(s_t,a_t) + ga Q(s_(t+1),a_(t+1)) $

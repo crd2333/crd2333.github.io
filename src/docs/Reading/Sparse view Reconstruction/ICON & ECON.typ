@@ -140,7 +140,7 @@ draft: true
   7. *Local-feature extraction*。提取全局特征用于后续隐式重建，具体有以下 $3$ 种特征。对于空间中一个 query point $P$：从 SMPL mesh 上取最近邻 $P^b$，$P$ 与 $P^b$ 的 signed distance 取一维；$P^b$ 的 barycentric surface normal 取三维；根据 $P^b$ 的可见性选择从预测出的正反 clothed normal $hcN_front^c,hcN_back^c$ 取三维
     $
     cF_P = [underbrace(cF_s (P),1), underbrace(cF_n^b (P),3), underbrace(cF_n^c (P),3)] \
-    cF_n^c (P) = cases(hcN_front^c (pi(P)) ~~ "if" P^b "is visible", hcN_back^c (pi(P)) ~~ "else") ~~~ "where" pi "is the projection function"
+    cF_n^c (P) = cases(hcN_front^c (pi(P)) ~~ "if" P^b "is visible", hcN_back^c (pi(P)) ~~ "else") ~~~~ "where" pi "is the projection function"
     $
     #fig("/public/assets/Reading/Human/2024-11-07-22-24-53.png", width: 60%)
     - 这里的 $cF_P$ 是独立于 global body pose 的局部特征。回忆 ICON 之前的方法，它们用 2D/3D SHM 提取出来一个不好说是什么的*全局特征*；而 ICON 这边很明确就是*只在局部敏感*的 signed distance, body normal, clothed normal

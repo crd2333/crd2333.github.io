@@ -126,7 +126,7 @@ order: 1
     $
 - 综合利用以上概念，可以得到背景虚化、人物清晰的照片
   + Large aperture，$D arrow.tr, N arrow.br$，增大进光量
-  + Long focal length，把上式分子分母同除以 $f(o-f)$，可以得到 $f arrow.tr ~~=>~~ "depth of filed" arrow.br$
+  + Long focal length，把上式分子分母同除以 $f(o-f)$，可以得到 $f arrow.tr ~~ => ~~ "depth of filed" arrow.br$
   + Near foreground & Far Background (accurate focus)，使人物落入景深而背景不在景深内
 
 == Geometric image formation
@@ -213,7 +213,7 @@ order: 1
       + High frequencies in image $I=I-blur(I)$
       + Sharpened image $I'= I+(I-blur(I))$
   - Edge detection filter
-    $ "vertical" mat(-1,0,1;-2,0,2;-1,0,1), ~~~ "horizontal" mat(-1,-2,-1;0,0,0;1,2,1) $
+    $ "vertical" mat(-1,0,1;-2,0,2;-1,0,1), ~~~~ "horizontal" mat(-1,-2,-1;0,0,0;1,2,1) $
   - Bilateral filter
     - 保持边缘的同时去除噪声
 
@@ -303,7 +303,7 @@ order: 1
   - Maximum Likelihood Estimation (MLE) = Maximize the likelihood to find the best $x$
   - (Linear) MSE = *MLE* with *Gaussian noise* assumption
   $
-  b_i = a_i^T + n, ~~~ n wave G(0, sigma^2) \
+  b_i = a_i^T + n, ~~~~ n wave G(0, sigma^2) \
   P[(a_i, b_i)|x] = P[b_i - a_i^T x] #sym.prop exp(- (b_i - a_i^T x)^2 / (2 sigma^2)) \
   P[(a_1, b_1) (a_2, b_2) ... (a_n, b_n)|x] #sym.prop exp(- sum_i (b_i - a_i^T x)^2 / (2 sigma^2)) = exp(- norm(A x - b)_2^2 / (2 sigma^2)) \
   hat(x) = argmax_x P[(a_1, b_1) (a_2, b_2) ... (a_n, b_n)|x] = argmin_x norm(A x - b)_2^2

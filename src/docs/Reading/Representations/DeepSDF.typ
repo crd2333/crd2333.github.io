@@ -47,7 +47,7 @@ order: 1
 
 == 方法
 - key idea 是使用 Deep Neural Networks 直接从点样本中回归连续的 SDF。训练后的网络能够预测给定查询位置的 SDF 值，从中我们可以通过评估空间样本来提取零水平集曲面。可以直观地理解为二元分类器，决策边界是形状表面
-- 最简单的想法当然就是为每个形状学习一个网络（没有包含任何 shape 的信息） $f_theta (x) approx SDF(x), ~~~ forall x in Omega$，训练时使用 L1 loss: $ cal(L)(f_theta (x),s) = |clamp(f_theta (x),s) - clamp(s,delta)| "，其中" clamp(x,delta)) := min(delta, max(-delta,x)) (delta = 0.1) $
+- 最简单的想法当然就是为每个形状学习一个网络（没有包含任何 shape 的信息） $f_theta (x) approx SDF(x), ~~~~ forall x in Omega$，训练时使用 L1 loss: $ cal(L)(f_theta (x),s) = |clamp(f_theta (x),s) - clamp(s,delta)| "，其中" clamp(x,delta)) := min(delta, max(-delta,x)) (delta = 0.1) $
 #fig("/public/assets/Reading/Representations/DeepSDF/2024-10-11-15-19-08.png", width: 60%)
 - 我们当然希望一个模型可以表示各种各样的形状，发现它们的共同属性并嵌入到低维潜在空间中。为此，我们引入了一个潜在向量 $z$
   - codebook 的思想，$z$ 代表对某个 general 形状的描述，每一种形状都有一个对应的 code，用某个 3D location $x$ 去 query 然后得到近似的 SDF 输出

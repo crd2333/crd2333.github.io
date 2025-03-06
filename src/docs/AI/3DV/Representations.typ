@@ -78,15 +78,15 @@ draft: true
   ]
 - 常用的隐式神经表示，如 SDF, Occupancy Field, NeRF，这些无论是 function 还是 field 实际上都是一种映射关系：
   $
-  SDF(bx) = s, ~~~ bx in RR^3, s in RR \
-  Occupancy(bx) = o, ~~~ bx in RR^3, o in [0, 1] \
-  NeRF(bx,bd) = (R G B,sigma), ~~~ bx in RR^3, "RGB is color, " sigma "is density"
+  SDF(bx) = s, ~~~~ bx in RR^3, s in RR \
+  Occupancy(bx) = o, ~~~~ bx in RR^3, o in [0, 1] \
+  NeRF(bx,bd) = (R G B,sigma), ~~~~ bx in RR^3, "RGB is color, " sigma "is density"
   $
   + *SDF*：空间中的一个点到物体表面最近的距离，点在曲面内部则规定距离为负值，点在曲面外部则规定距离为正值，点在曲面上则距离为 $0$。用神经网络去近似这个函数，相当于一个回归任务
     - 一个非常相近的概念是水平集 Level Set，还不是很清楚两者的区别
   + *Occupancy*：空间中的一个点是否被物体占用，通常以 $0.5$ 为标准，大于 $0.5$ 倾向于认为点被曲面占用（在内部），$0.5$ 倾向于没有被占用（在外部），$0.5$ 认为点在曲面上（即 $F(p)=0.5$ 表示一个曲面）。用神经网络去近似这个函数，相当于一个二分类任务，得到的*分类决策边界*等价于曲面描述
     - 变种：利用条件变量 $bc$ 编码一个特定曲面的形状，利用占用场来表示点的颜色值
-    $ Occupancy(bx, bc) = (o, R G B), ~~~ bx in RR^3, o in [0, 1], "RGB is color" $
+    $ Occupancy(bx, bc) = (o, R G B), ~~~~ bx in RR^3, o in [0, 1], "RGB is color" $
   + *NeRF*: 将“空间中的点 + 点发出的一条射线” 映射到 “点的密度值 + 射线方向对应的颜色值”；或者说，空间中每一个点的每一个角度，都对应一个颜色值和一个透明度。反过来，从空间中一个点出发，沿着某个方向看去，能看到这个方向上的颜色和透明度
 
 #v(1em)

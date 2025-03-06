@@ -143,7 +143,7 @@ order: 1
   - 类似于 C++ 中的引用
 
 === 扩展运算: 可以用前面的六种基本运算得到
-- *交(intersection)*：$r sect s={t mid(|) t in r and t in s}=r-(r-s)$
+- *交(intersection)*：$r inter s={t mid(|) t in r and t in s}=r-(r-s)$
 - *自然连接(natual-Join)*：$r join s$
   - 两个关系中同名属性在自然连接的时候当作*同一个属性*来处理
   - 相当于是对笛卡尔积的扩展，允许两个关系有同名属性，并且同名属性的值相同才会保留（先 $times$ 再 select）

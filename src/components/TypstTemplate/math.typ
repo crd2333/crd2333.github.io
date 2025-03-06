@@ -353,6 +353,17 @@
 #let piM = $pi_M$
 // #let pin = $pi_n$ // 'pin' is a keyword for pinit package
 #let piN = $pi_N$
+#let ka = $kappa$
+#let ka0 = $kappa_0$
+#let ka1 = $kappa_1$
+#let ka2 = $kappa_2$
+#let kai = $kappa_i$
+#let kaj = $kappa_j$
+#let kak = $kappa_k$
+#let kam = $kappa_m$
+#let kaM = $kappa_M$
+#let kan = $kappa_n$
+#let kaN = $kappa_N$
 
 // ---------- bold, cal, hat, tilde, arrow, overline letters ----------
 // bold letters
@@ -408,6 +419,8 @@
 #let bpi = $bold(pi)$
 #let bth = $bold(theta)$
 #let bmu = $bold(mu)$
+#let bsi = $bold(sigma)$
+#let bga = $bold(gamma)$
 // cal letters (only uppercases)
 #let cA = $cal(A)$
 #let cB = $cal(B)$

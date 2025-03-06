@@ -99,11 +99,11 @@
   - 训练阶段，在原始图片集合上进行，测试阶段，可以同时控制相机位姿、目标位姿和目标的形状和外观来产生 2D 图片。并且，GIRAFFE 可以合成超出训练图片中以外的物体
 - 回顾一下从 NeRF 到 GRAF 再到 GIRAFFE 的场景表达公式（隐式表达）
   - NeRF:
-  $ f_th : (ga(bx),ga(bd)) arrow.r.bar (si, bc) ~~~~~ RR^(L_x) times RR^(L_d) -> RR^+ times RR^3 $
+  $ f_th : (ga(bx),ga(bd)) arrow.r.bar (si, bc) ~~~~~~ RR^(L_x) times RR^(L_d) -> RR^+ times RR^3 $
   - GRAF:
-  $ g_th : (ga(bx),ga(bd), bz_s, bz_a) arrow.r.bar (si, bc) ~~~~~ RR^(L_x) times RR^(L_d) times RR^m times RR^n -> RR^+ times RR^3 $
+  $ g_th : (ga(bx),ga(bd), bz_s, bz_a) arrow.r.bar (si, bc) ~~~~~~ RR^(L_x) times RR^(L_d) times RR^m times RR^n -> RR^+ times RR^3 $
   - GRAFEE:
-  $ h_th : (ga(bx),ga(bd), bz_s, bz_a) arrow.r.bar (si, bf) ~~~~~ RR^(L_x) times RR^(L_d) times RR^m times RR^n -> RR^+ times RR^(M_f) $
+  $ h_th : (ga(bx),ga(bd), bz_s, bz_a) arrow.r.bar (si, bf) ~~~~~~ RR^(L_x) times RR^(L_d) times RR^m times RR^n -> RR^+ times RR^(M_f) $
 
 #hline()
 == Multiscale
@@ -168,7 +168,7 @@
   + 非线性场景参数化(non-linear scene parameterization)
     - 提出一种类似卡尔曼滤波的方式将超出一定距离的无界区域的高斯模型变换到非欧式空间中
     #fig("/public/assets/Reading/Representations/Improved_NeRF/2024-10-17-11-23-01.png", width: 80%)
-    $ "contract"(bx) = cases(bx &norm(bx)=<1, (2-1/norm(bx)) (bx/norm(bx)) ~~~ &norm(bx) > 1) $
+    $ "contract"(bx) = cases(bx &norm(bx)=<1, (2-1/norm(bx)) (bx/norm(bx)) ~~~~ &norm(bx) > 1) $
     - 该函数将坐标映射到半径为 $2$（橙色）的球上，其中半径为 $1$（蓝色）内的点不受影响。并且其设计使得从场景原点的相机投射的光线在橙色区域具有等距间隔
   + 在线蒸馏(online distillation)
     - 使用一个小的 proposal MLP 和一个大的 NeRF MLP。前者只预测权重 $bw$（体渲染公式的那玩意儿），并用许多采样点反复重采样；后者真正预测隐式表征，只过一遍

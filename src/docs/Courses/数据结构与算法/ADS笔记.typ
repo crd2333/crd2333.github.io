@@ -784,15 +784,15 @@ void AllPairs(TwoDimArray A, TwoDimArray D, int N)
 - dp 方法 1：
   - 记事件 $a_1, a_2, dots, a_n$，其中 $a_i wave a_j$ 记作 $S_(i j)$
   $ c_(i j)=cases(
-    0 ~~~ &"if" S_(i j)=emptyset,
-    max_() {c_(j k)+c_(k j)+1} ~~~ &"if" S_(i j)!=emptyset
+    0 ~~~~ &"if" S_(i j)=emptyset,
+    max_() {c_(j k)+c_(k j)+1} ~~~~ &"if" S_(i j)!=emptyset
   )  $
   - 冗余（计算顺序）
   - 思考如何 $O(N^2)$ 实现这个方法
 - dp 方法 2（一维）：
   $ c_i = cases(
-    1 ~~~ &"if" i = 1,
-    max{c_(i-1), c_(k(i))+1} ~~~ &"if" i != 1,
+    1 ~~~~ &"if" i = 1,
+    max{c_(i-1), c_(k(i))+1} ~~~~ &"if" i != 1,
   ) $
   - 其中 $c_i$ 表示从 $1$ 到 $i$ 个事件最多能选多少个，$c_(k(i))$ 表示选择了 $a_i$，去掉那些跟它不兼容的事件（结束时间迟于 $a_i$ 的开始时间）
 - Greedy 方法：

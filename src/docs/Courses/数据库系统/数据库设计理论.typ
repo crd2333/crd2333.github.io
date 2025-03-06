@@ -756,11 +756,11 @@ When replacement necessary:
 === cost 的估计
 - 忽略 IO 的每个操作的估计
 - 基本的变量定义
-  - $n_r$ 表示关系 $r$ 中元组的数量(也就是关系 $r$ 的 size)
-  - $b_r$ 包含 $r$ 中元组需要的 block 数量
-  - $l_r$ $~~r$ 中一个元组的 size
-  - $f_r$ block factor of $r$ 比如可以选取一个 block 能容纳的 $r$ 中元组的平均数量
-  - $V(A, r)$ 关系 $r$ 中属性 $A$ 可能取到的不同的值的数量，$=>$ Histograms
+  - $n_r$: 表示关系 $r$ 中元组的数量(也就是关系 $r$ 的 size)
+  - $b_r$: 包含 $r$ 中元组需要的 block 数量
+  - $l_r$: 表示 $r$ 中一个元组的 size
+  - $f_r$: block factor of $r$ 比如可以选取一个 block 能容纳的 $r$ 中元组的平均数量
+  - $V(A, r)$: 关系 $r$ 中属性 $A$ 可能取到的不同的值的数量，$=>$ Histograms
   - 当关系 $r$ 中的元组都存储在一个文件中的时候 $b_r= ceil(n_r \/ f_r)$
 - 选择的估计
   - 单属性选择
@@ -777,10 +777,10 @@ When replacement necessary:
     - negation $"size"=n_r-"size"(sigma_theta (r))$
 - join 的估计
   - 笛卡尔积的情况下，关系 $R,S$ 的 join 最终元组的个数为 $n_r times n_s$
-  - 如果 $R sect S$ 为空，则自然连接的结果和笛卡尔积的结果相同
-  - 如果非空，且 $R sect S$ 是 $R$ 的 key，则 $R,S$ 的自然连接结果中的元组个数不会超过 $n_s$
-  - 如果 $R sect S$ 的结果是 $S$ 到 $R$ 的外键，则最后的元组数为 $n_s$，反之对称
-  - 一般情况，$R sect S={A}$不是键，自然连接的结果 size 估计值为$(n_r times n_s)/(max(V(A,r),V(A,s)))$
+  - 如果 $R inter S$ 为空，则自然连接的结果和笛卡尔积的结果相同
+  - 如果非空，且 $R inter S$ 是 $R$ 的 key，则 $R,S$ 的自然连接结果中的元组个数不会超过 $n_s$
+  - 如果 $R inter S$ 的结果是 $S$ 到 $R$ 的外键，则最后的元组数为 $n_s$，反之对称
+  - 一般情况，$R inter S={A}$不是键，自然连接的结果 size 估计值为$(n_r times n_s)/(max(V(A,r),V(A,s)))$
 - 其他操作的估计
   - 投影（合并）的 $"size"=V(A,r)$
   - 聚合操作的 $"size"=V(A,r)$

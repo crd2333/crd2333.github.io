@@ -73,7 +73,7 @@ order: 1
   - 就是之前的几种仿射变换（如果线性的话）
   $
     M_"model" = mat(a, b, c, t_x; d, e, f, t_y; g, h, i, t_z; 0, 0, 0, 1)\
-    "for any axis: "~~~ upright(R) = E cos theta + (1 - cos theta) mat(k_(x) ; k_(y) ; k_(z)) (k_(x), k_(y), k_(z)) + sin theta mat(0, -k_(z), k_(y) ; k_(z), 0, -k_(x) ; -k_(y), k_(z), 0)
+    "for any axis: "~~~~ upright(R) = E cos theta + (1 - cos theta) mat(k_(x) ; k_(y) ; k_(z)) (k_(x), k_(y), k_(z)) + sin theta mat(0, -k_(z), k_(y) ; k_(z), 0, -k_(x) ; -k_(y), k_(z), 0)
   $
 - 视图/相机变换(View)
   - 也被叫做 ModelView transformation，因为对模型也要做（保持相对关系不变），我们要把整个世界变换到相机坐标系(View Reference Coordinate System)下
@@ -82,7 +82,7 @@ order: 1
     - 一般把相机转到原点，看向(*gaze at*) $-z$，up direction(*top*) 为 $y$ 轴
   - 先平移对齐远点，再旋转对齐轴($g$ to $-Z$, $t$ to $Y$, $(g times t)$ to $X$)
   $
-    T_"view" = mat(1,0,0,-x_e;0,1,0,-y_e;0,0,1,-z_e;0,0,0,1), ~~~~~~~ R_"view" = mat(x_gt, y_gt, z_gt, 0; x_t, y_t, z_t, 0; x_(-g), y_(-g), z_(-g), 0; 0, 0, 0, 1) =^("typically") mat(1,0,0,0;0,1,0,0;0,0,1,0;0,0,0,1) \
+    T_"view" = mat(1,0,0,-x_e;0,1,0,-y_e;0,0,1,-z_e;0,0,0,1), ~~~~~~ R_"view" = mat(x_gt, y_gt, z_gt, 0; x_t, y_t, z_t, 0; x_(-g), y_(-g), z_(-g), 0; 0, 0, 0, 1) =^("typically") mat(1,0,0,0;0,1,0,0;0,0,1,0;0,0,0,1) \
     M_"view" = R_"view" times T_"view"
   $
 - 投影变换(Projection)
@@ -90,8 +90,7 @@ order: 1
     - 视口是个 $[l,r] [b,t] [f,n]$（注意这里 z 轴是小的 far，大的 near）的长方体
     - 但一般 $f,n$ 通过 aspect ratio(width / height) 和 field of view（FOV，视野角）计算
     $
-      tan ("fovY") / 2=t / (|n|), ~~~~~~~~
-      "aspect"=r / t
+      tan ("fovY") / 2=t / (|n|), ~~~~ "aspect"=r / t
     $
     - 先将立方体的中心平移到原点，再将立方体缩放到$[-1,1]^3$中（也就是一个平移矩阵+一个缩放矩阵），方便之后的计算
     $
@@ -342,7 +341,7 @@ order: 1
   - 下面我们就认为已经知道 3D 物体的每一个三角形顶点对应的纹理 $u, v in [0,1]$ 坐标
 - 三角形内插值: 重心坐标(Barycentric Coordinates)
   - 重心坐标
-    $ (x,y)=al A + beta B + ga C ~~~ (al + beta + ga = 1) $
+    $ (x,y)=al A + beta B + ga C ~~~~ (al + beta + ga = 1) $
     - 通过 $al, beta, ga >= 0$ 可以任意表示三角形内的点，且与三个顶点所在坐标系无关
     - 这个重心坐标跟三角形重心不是一回事，三角形重心的重心坐标为 $(1/3, 1/3, 1/3)$
   - 对什么运用插值：插值的属性：纹理坐标，颜色，法向量等等，统一记为 $V$，插值公式为 $V = al V_A + beta V_B + ga V_C$

@@ -53,7 +53,7 @@ order: 3
 
 == Ray-Surface Intersection
 - Ray Equation
-  $ r(t)=o+t d ~~~ 0 =< t < infty $
+  $ r(t)=o+t d ~~~~ 0 =< t < infty $
   - 光线由点光源和方向定义
 - Ray Intersection With Implicit Surface 光线*与隐式表面求交*
   - General implicit surface: $p: f(p)=0$
@@ -123,25 +123,25 @@ order: 3
 - 辐射度量学：在物理上准确定义光照的方法，但依然在几何光学中的描述，不涉及光的波动性、互相干扰等
 - 几个概念：
   + *Radiance Energy 辐射能 $Q$*
-    $ Q ~~~ [J = "Joule"] $
+    $ Q ~~~~ [J = "Joule"] $
     - 基本不咋用
   + *Radiant Flux(Power) 辐射通量 $Phi$*
-    $ Phi = (dif Q)/(dif t) ~~~ [W = "Watt"][l m="lumen"] $
+    $ Phi = (dif Q)/(dif t) ~~~~ [W = "Watt"][l m="lumen"] $
     - 有时也把这个误称为能量
   + *Radiant Intensity 辐射强度 $I$*
     - Light Emitted from a Source
-    $ I(omega) = (dif Phi)/(dif omega) ~~~ [W/(s r)][(l m)/(s r) = c d = "candela"] $
+    $ I(omega) = (dif Phi)/(dif omega) ~~~~ [W/(s r)][(l m)/(s r) = c d = "candela"] $
     - solid angle 立体角
   + *Irradiance 辐照度 $E$*
     - Light Incident on a Surface
     - *Irradiance* 是指单位照射面积所接收到的 power
-    $ E = (dif Phi)/(dif A cos theta) ~~~ [W/m^2] $
+    $ E = (dif Phi)/(dif A cos theta) ~~~~ [W/m^2] $
     - 其中 $A$ 是投影后的有效面积
     - 注意区分 Intensity 和 Irradiance，对一个向外锥形，前者不变而后者随距离减小
   + *Radiance 辐亮度 $L$*
     - Light Reflected from a Surface
     - *Radiance* 是指每单位立体角，每单位垂直面积的功率。同时指定了光的方向与照射表面所受到的亮度
-    $ L = (dif^2 Phi(p, omega))/(dif A cos theta dif omega) ~~~ [W/(s r ~ m^2)][(c d)/(m^2)=(l m)/(s r ~ m^2)=n i t] $
+    $ L = (dif^2 Phi(p, omega))/(dif A cos theta dif omega) ~~~~ [W/(s r ~~ m^2)][(c d)/(m^2)=(l m)/(s r ~~ m^2)=n i t] $
     - $theta$ 是入射（或出射）光线与法向量的夹角
     - Radiance 和 Irradiance, Intensity 的区别在于是否有方向性
     - 把 Irradiance 和 Intensity 联系起来，Irradiance per solid angle 或 Intensity per projected unit area
@@ -150,7 +150,7 @@ order: 3
 - 双向反射分布函数(Bidirectional Reflectance Distribution Function, BRDF)
   - 是一个 4D function $f(i,o)$（3D 的方向由于用单位向量表示所以少一个自由度，例如球面的 $th, phi$ 表示）
   - 如果固定 $i$，就是描述了入射($omega_i$)光线经过某个表面反射后在各个可能的出射方向($omega_r$)上能量分布（反射率）
-  $ f_r (omega_i -> omega_r) = (dif L_r (omega_r))/(dif E_i (omega_i)) = (dif L_r (omega_r)) / (L_i (omega_i) cos theta_i dif omega_i) ~~~ [1/(s r)] $
+  $ f_r (omega_i -> omega_r) = (dif L_r (omega_r))/(dif E_i (omega_i)) = (dif L_r (omega_r)) / (L_i (omega_i) cos theta_i dif omega_i) ~~~~ [1/(s r)] $
 - 用 BRDF 描述的反射方程
   $ L_r (p, omega_r) = int_(H^2) f_r (p, omega_i -> omega_r) L_i (p, omega_i) cos theta_i dif omega_i $
   - 注意，入射光不止来自光源，也可能是其他物体反射的光（递归思想，反射出去的光 $L_r$ 也可被当做其他物体的入射光 $E_i$）
@@ -159,7 +159,7 @@ order: 3
   $ L_o (p, omega_o) = L_e (p, omega_o) + int_(Omega^+) f_r (p, omega_i, omega_o) L_i (p, omega_i) (n dot omega_i) dif omega_i $
   - 换一个角度看，把式子通过“算子”概念简写为 $L=E+K L$
     - 然后移项泰勒展开得到 $L = E + K E + K^2 E + ...$，如下图
-    #fig("/public/assets/Courses/CG/img-2024-07-31-23-36-46.png", width: 60%)
+      #fig("/public/assets/Courses/CG/img-2024-07-31-23-36-46.png", width: 60%)
     - 即我们考虑 $L_i$ 可以不止来自光源，也能来自其它物体的弹射
     - 光栅化实质上是只考虑了前两项（直接光照），这也是为什么我们需要光线追踪
     - *全局光照 = 直接光照(Direct Light) + 间接光照(Indirect Light)*
@@ -310,7 +310,7 @@ order: 3
   - 不同的 microfacet BRDFs 主要在 $D$ 上有所不同，经典模型包括: Blinn, Cook-Torrance, Ashikmin, GGX, Oren-Nayar
   - 以 Cook-Torrance Model 为例
     $
-    D = frac(e^(frac(-tan^2 (al),m^2)), pi m^2 cos^4 (al)), ~~~ al = arccos (n dot h)\
+    D = frac(e^(frac(-tan^2 (al),m^2)), pi m^2 cos^4 (al)), ~~~~ al = arccos (n dot h)\
     G = min(1, frac(2 (h dot n) (o dot n), o dot n), frac(2 (h dot n) (i dot n), o dot n))
     $
     - D is the Beckmann distribution

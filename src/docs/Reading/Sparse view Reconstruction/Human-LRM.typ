@@ -97,7 +97,7 @@ draft: true
   - RGB MLP 输入 point features, latent vectors $bh_p$ 以及 normals $hat(n)_p$，输出 RGB 值
     $ RGB = MLP_RGB (bT_(X Y),bT_(Y Z),bT_(X Z), bh_p, hat(n)_p) $
 - 然后体渲染的公式也因此略微变化
-  $ I(br) = sumiM al_i Pi_(i>j) (1-al_j) RGB_i, ~~~ al_i = 1 - e^(-si_i de_i) $
+  $ I(br) = sumiM al_i Pi_(i>j) (1-al_j) RGB_i, ~~~~ al_i = 1 - e^(-si_i de_i) $
   - 其中 $si_i$ 是从 SDF 转化来的 density（使用 VolSDF 的技术），$de_i$ 是 ray 上样本点之间的距离
   - 基于类似的方法也可以渲染出 normal maps（把积分的对象从预测出的 RGB 换成 normal）和 depth maps（怎么来的没说）
 - 训练方法则是挑几个 side views，渲染 image $hat(bx) in RR^(h times w times 3)$, depth maps $hat(bd) in RR^(h times w)$, normal maps $hat(bn) in RR^(h times w)$，最小化以下 loss

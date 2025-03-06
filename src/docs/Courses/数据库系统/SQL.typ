@@ -143,7 +143,7 @@ limit 3； # limit 0,3
 ==== 集合操作：
 - 可以用 `union/intersect/except` 等集合运算来*连接两条不同的查询*
 - 和查询不同，集合操作默认会自动去重，加 `all` 表示多重集
-- 例子 union($union$)、intersect($sect$)、except($-$)
+- 例子 union($union$)、intersect($inter$)、except($-$)
 ```sql
 # Find courses that ran in Fall 2009 but not in Spring 2010
 (select course_id from section where sem = "Fall" and year = 2009)

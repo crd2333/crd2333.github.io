@@ -73,13 +73,13 @@
     - 使用 orientations ${Ga_w^t}$ 把预测出的 local velocities $v^t_root$ 转化到 world coordinate system 下，然后累加起来
     $ ta_w^t = cases(
       [0,0,0]^T\, & t = 0 \
-      sum_(i=0)^(t-1) Ga_w^i v^i_root\, ~~~ & t > 0
+      sum_(i=0)^(t-1) Ga_w^i v^i_root\, ~~~~ & t > 0
     ) $
     - [ ] $v_root$ 是什么？
   - 世界坐标系下人物朝向的轨迹
     $ Ga_w^t = cases(
       Ga_GV^0\, & t = 0 \
-      (Pi_(i=1)^t R_DGV^i) dot Ga_GV^t ~~~ & t > 0
+      (Pi_(i=1)^t R_DGV^i) dot Ga_GV^t ~~~~ & t > 0
     ) $
   - [ ] TODO: 这里的推导我有些似懂非懂，先不写出来误人子弟了
 - 这样的 GV 坐标系有什么益处呢？
@@ -121,7 +121,7 @@
   - 对上述自注意力的 softmax 处添加 mask
     $
     o_i &= sum_(i in T) softmax(a^ts + m^ts) W_v f_token^i \
-    m^ts &= cases(0\, &"if" -L < t - s < L, - infty\, ~~~ &"otherwise")
+    m^ts &= cases(0\, &"if" -L < t - s < L, - infty\, ~~~~ &"otherwise")
     $
   - 于是 token $t$ 只会对相对 $L$ 步内的位置有影响，赋予模型泛化到任意长序列的能力（而不需要自回归预测如 sliding window 的方式）
 - *Network outputs*
