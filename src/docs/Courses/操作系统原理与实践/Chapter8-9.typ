@@ -344,7 +344,7 @@
     #fig("/public/assets/Courses/OS/2024-11-13-16-25-55.png")
     - 这样，右图的 user stack 就处在连续的虚拟地址下，但它们经页表映射后的帧并不连续，而且不一定都在内存中
   ],
-  fig("/public/assets/courses/OS/2024-11-19-14-27-31.png", width:50%)
+  fig("/public/assets/Courses/OS/2024-11-19-14-27-31.png", width:50%)
 )
 
 == Demand Paging
@@ -470,7 +470,7 @@
   + 将所需页读入空闲帧，更新页表
   + 重启引发 trap 的指令
   - 一次 page fault 可能发生 2 次 page I/O，一次 out（可能要把脏页写回）一次 in
-  #fig("/public/assets/courses/os/2024-11-19-14-44-37.png",width:40%)
+  #fig("/public/assets/Courses/OS/2024-11-19-14-44-37.png",width:40%)
 
 === Page Replacement Algorithms
 - 就像 Scheduling 一样，这里我们也需要对 page 研究算法好坏
@@ -558,18 +558,18 @@
     - Global replacement 可以抢其它线程的帧
       - 可能导致进程执行时间变化剧烈（取决于它人），但吞吐量更好因此更常见
       - 其中一种实现是 Reclaiming Pages：如果 free list 里的帧数低于阈值，就根据 OOM score aggressively Kill some processes。这个策略希望保证有充足的自由内存来满足新的需求
-      #fig("/public/assets/courses/os/2024-11-19-15-34-24.png",width:50%)
+      #fig("/public/assets/Courses/OS/2024-11-19-15-34-24.png",width:50%)
     - Local replacement 只能从自己的帧里选择替换
       - 每个进程性能更一致但可能不充分利用内存
 - Non-Uniform Memory Access
   - 不同 CPU 跟不同内存的距离不同，因此访问时间也不同
-  #fig("/public/assets/courses/os/2024-11-19-15-37-44.png",width:40%)
+  #fig("/public/assets/Courses/OS/2024-11-19-15-37-44.png",width:40%)
 
 == Thrashing
 - 简单解释
   - 如果我们的进程一直在换进换出页，那么 CPU 使用率会降低
   - 因为进程越多，可能发生一个进程的页刚加载进来又被另一个进程换出去，最后大部分进程都在 sleep
-  #fig("/public/assets/courses/os/2024-11-19-15-40-04.png",width:40%)
+  #fig("/public/assets/Courses/OS/2024-11-19-15-40-04.png",width:40%)
 - 更本质的解释
   - demand paging 之所以起效就是因为 *locality*
   - 所以当进程过多，*total size of locality $>$ total memory size*，即 locality 没有被 load 到 frames 里，导致频繁换进换出，自然就发生了 thrashing
@@ -577,7 +577,7 @@
   - Option I: 使用 local page replacement
   - Option II: 根据进程的需要分配 locality，使用*工作集模型 (working set model)*来描述
 - Working Set Model
-  #fig("/public/assets/courses/os/2024-11-20-16-27-26.png",width:50%)
+  #fig("/public/assets/Courses/OS/2024-11-20-16-27-26.png",width:50%)
   - *Working-set window* $Delta$：固定数目的页引用
     - 太小不能包含整个局部；太大包含多个局部；无穷包含整个进程（接触到的所有页）
   - *Working-set* $WS(t_i)$：$t_i$ 时刻前 $Delta$ 内页的引用情况
@@ -596,7 +596,7 @@
     - 通过增加历史位的位数和中断频率可以降低不确定性，但是开销也会变大
 - Page-Fault Frequency
   - 每当进程到了一个新的 locality，page fault rate 就会变高
-    #fig("/public/assets/courses/os/2024-11-20-16-22-35.png", width:30%)
+    #fig("/public/assets/Courses/OS/2024-11-20-16-22-35.png", width:30%)
   - 上述方法开销还是略大，很自然地我们会想，用 page fault rate(frequency) 来间接反映 working set。而且对于减少 thrashing 而言这更直接
     - 可以为所期望的页错误设置一个上限和下限，如果太低，说明给资源太多；反之给的资源太少
   - 怎么实现？跟 LRU 很像
@@ -659,12 +659,12 @@
 == Virtual Memory in Linux
 - 前面我们讲了那么多，大部分是说 user space 下的实现机制与优化。现在我们回到最开始的 topic，从整体的角度来看，virtual memory 长什么样？它跟 physical memory 的关系如何？
 - 对 64bit 架构，完整的虚拟地址空间（实际上没有空间，只是个范围）如下
-  #fig("/public/assets/courses/os/2024-11-26-14-45-22.png",width:60%)
+  #fig("/public/assets/Courses/OS/2024-11-26-14-45-22.png",width:60%)
   - 每个进程有自己的这样一个虚拟地址空间，由各自独立的 Page Table 实现
 - 回忆之前的内容，我们现在知道一个程序是以 page 为单位加载的，那为什么程序还有 segment 的概念？
   - 这里的 segment 对应于 elf 的分段，但每个 segment 也是以 page 为单位加载的
   - 或者说，page 是比 segment 更细粒度的分级
-  #fig("/public/assets/courses/os/2024-11-27-16-28-00.png",width:80%)
+  #fig("/public/assets/Courses/OS/2024-11-27-16-28-00.png",width:80%)
 - *$32 bits$ and $64 bits$ 地址空间*
   - 对于 $32 bits$ 架构，一共能 handle $4GB$ 的内存，默认情况下 Kernel 使用顶部的 $1GB$，User 使用底部的 $3GB$ (`0 ~ 0xC0000000`)
   - 对于 $64 bits$ 架构，它太大了一般用不完，常用的有 $39, 48, 57$ 版地址空间
@@ -705,5 +705,5 @@
   - *Kernel Virtual Address* 在虚拟上连续，物理上不连续，它需要 walk page table 进行转换
   - *kernel Logical Address* 在虚拟和物理上都连续，可以直接减去 `VA_PA_OFFSET` 得到物理地址，也可以 walk page table
   - 后二者实际上很多时候并不区分，只是在做 coding 的时候我们需要保持清醒（到底能否直接减 `VA_PA_OFFSET`）
-  #fig("/public/assets/courses/os/2024-11-27-16-17-27.png",width:60%)
+  #fig("/public/assets/Courses/OS/2024-11-27-16-17-27.png",width:60%)
 

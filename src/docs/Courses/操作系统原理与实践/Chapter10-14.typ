@@ -120,16 +120,16 @@
   - 根据固定的 striped size 把数据分散在不同的磁盘，没有做任何 redundancy
   - Improves performance, but not reliability
   - e.g. 5 files of various sizes, 4 disks
-  #fig("/public/assets/courses/os/2024-12-03-14-34-00.png",width:30%)
+  #fig("/public/assets/Courses/OS/2024-12-03-14-34-00.png",width:30%)
 - RAID 1
   - 也被称为 mirroring，存在一个主磁盘，一个备份磁盘。主磁盘写入数据后，备份磁盘进行完全拷贝
   - A little improves performance（可以从两个读）, but too expensive
   - e.g. 5 files of various sizes, 4 disks
-  #fig("/public/assets/courses/os/2024-12-03-14-35-48.png",width:30%)
+  #fig("/public/assets/Courses/OS/2024-12-03-14-35-48.png",width:30%)
 - RAID 2
   - stripes data at the bit-level; uses Hamming code(4bit data + 3bit parity) for error correction
   - 没有被实际应用，因为粒度太小，现在无法单独读出来一个比特，至少读出一个字节
-  #fig("/public/assets/courses/os/2024-12-03-14-37-07.png",width:30%)
+  #fig("/public/assets/Courses/OS/2024-12-03-14-37-07.png",width:30%)
 - RAID 3
   - Bit-interleaved parity: 纠错码单独存在一个盘里
 - RAID 4, 5, 6
@@ -139,7 +139,7 @@
     - parity bit 被分散地存到了不同的磁盘里。相比于 RAID 4，每个盘的读写比较均衡
   - RAID 6: extends RAID 5 by adding an additional parity block
     - 又加了一个 parity bit，也是分散存储（P+Q 冗余，差错纠正码）
-  #fig("/public/assets/courses/os/2024-12-03-14-42-45.png",width:40%)
+  #fig("/public/assets/Courses/OS/2024-12-03-14-42-45.png",width:40%)
 - 注意：RAID 只能 detect/recover from disk failures，但无法 prevent/detect data corruption
   - 只能检测磁盘失效，并不知道哪个文件失效
 - ZFS adds checksums to all FS data and metadata
@@ -155,8 +155,8 @@
 = I/O Systems
 - I/O 设备是 OS 的一个 major 组成部分，比下面左图画的大得多
   #grid2(
-    fig("/public/assets/courses/os/2024-12-03-14-48-07.png"),
-    fig("/public/assets/courses/os/2024-12-03-14-48-12.png")
+    fig("/public/assets/Courses/OS/2024-12-03-14-48-07.png"),
+    fig("/public/assets/Courses/OS/2024-12-03-14-48-12.png")
   )
 - Common concepts: signals from I/O devices interface with computer
   - bus: 部件之间的互联（包括 CPU）
@@ -175,19 +175,19 @@
     - 当线/进程 $T_1$ 需要等待 device 时，被加入到 device 的 waiting queue 上，然后 scheduling 到别的线/进程 $T_2$ 继续工作（跟 polling 相比，这时它没在 sleep 而在做别的工作）
     - 收到 interrupt 后，$T_1$ 被加回到 ready queue 上
     - interrupt 这里也会有一个 interrupt table
-    #fig("/public/assets/courses/os/2024-12-03-15-17-13.png",width:50%)
+    #fig("/public/assets/Courses/OS/2024-12-03-15-17-13.png",width:50%)
     - 所以如果中断发生的频率很高，那么上下文切换会浪费很多 CPU 时间
 - DMA(Direct Memory Access)
   - 对于大量 I/O 的设备，为了减少 CPU 的负担，我们可以让 I/O 设备直接访问内存，而不需要 CPU 介入
   - 于是就把权限下放到 device driver, drive controller, DMA controller, memory controller, bus controller
     - 所有 driver 在 CPU 上跑，controller 在设备上跑
-  #fig("/public/assets/courses/os/2024-12-03-15-29-14.png",width:70%)
+  #fig("/public/assets/Courses/OS/2024-12-03-15-29-14.png",width:70%)
 
 == Application I/O Interface
 - IO 系统调用把设备行为封装成通用类
   - Linux 中设备能以 *files* 的形式访问；最底层为 `ioctl`
 - 设备驱动层对 kernel 隐藏了 I/O controllers 之间的差异，做了一层抽象（统一接口）
-  #fig("/public/assets/courses/os/2024-12-03-15-40-43.png",width:60%)
+  #fig("/public/assets/Courses/OS/2024-12-03-15-40-43.png",width:60%)
 - Devices vary in many dimensions
   #tbl(
     columns:3,
@@ -215,10 +215,10 @@
   - Kernel Data Structures
     - Kernel keeps state info for I/O components
     - Some OS uses message passing to implement I/O (e.g. Windows)
-    #fig("/public/assets/courses/os/2024-12-04-16-26-37.png",width:40%)
+    #fig("/public/assets/Courses/OS/2024-12-04-16-26-37.png",width:40%)
       - 所有东西都被抽象成 file，后面我们会讲
 - I/O Requests to Hardware
-  #fig("/public/assets/courses/os/2024-12-04-16-25-53.png",width:60%)
+  #fig("/public/assets/Courses/OS/2024-12-04-16-25-53.png",width:60%)
 - 总之，这里如果细细展开的话也会很复杂（kernel 和 I/O 的数据结构与交互等），但不是重点
 
 == Performance
@@ -319,17 +319,17 @@
 - *Directory*
   - 是一组节点，包含所有文件的信息
   - 可以把 directory 当成特殊的 file，其内容是 file 的集合
-  #fig("/public/assets/courses/os/2024-12-04-17-09-17.png",width:50%)
+  #fig("/public/assets/Courses/OS/2024-12-04-17-09-17.png",width:50%)
   - Operations Performed on Directory: Create / delete a file, list a directory, search for a file, traverse the file system
   - target: 要能快速定位文件 (efficient)；要便于用户使用、便于按一些属性聚合 (Naming)
 - Directories implementation
   #grid(
     columns: 2,
-    fig("/public/assets/courses/os/2024-12-04-17-15-36.png",width:80%),
-    fig("/public/assets/courses/os/2024-12-04-17-15-43.png",width:80%),
-    fig("/public/assets/courses/os/2024-12-04-17-16-05.png",width:80%),
-    fig("/public/assets/courses/os/2024-12-04-17-16-12.png",width:80%),
-    fig("/public/assets/courses/os/2024-12-04-17-26-41.png",width:80%)
+    fig("/public/assets/Courses/OS/2024-12-04-17-15-36.png",width:80%),
+    fig("/public/assets/Courses/OS/2024-12-04-17-15-43.png",width:80%),
+    fig("/public/assets/Courses/OS/2024-12-04-17-16-05.png",width:80%),
+    fig("/public/assets/Courses/OS/2024-12-04-17-16-12.png",width:80%),
+    fig("/public/assets/Courses/OS/2024-12-04-17-26-41.png",width:80%)
   )
   + *Single-Level Directory*
     - 所有文件包含在同一目录中，存在重名和分组问题
@@ -392,7 +392,7 @@
 #wrap-content(
   align: right,
   column-gutter: 2em,
-  fig("/public/assets/courses/os/2024-12-04-17-45-28.png",height:25em)
+  fig("/public/assets/Courses/OS/2024-12-04-17-45-28.png",height:25em)
 )[
   - OS 对文件系统做这样的层次化封装，主要是为了通过接口来隔离不同层，降低每一层的复杂度和冗余性，但是增加开销、降低性能
     - Logical file system

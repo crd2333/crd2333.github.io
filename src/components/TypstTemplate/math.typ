@@ -1,4 +1,4 @@
-#import "@preview/quick-maths:0.2.0": shorthands
+#import "@preview/quick-maths:0.2.1": shorthands
 #import "@preview/mitex:0.2.5": *
 
 #let dcases(..args) = math.cases(..args.pos().map(math.display)) // cases with display style
