@@ -5,6 +5,28 @@
 #import "@preview/zebraw:0.4.3": *
 #import "@preview/timeliney:0.2.0": timeline as timeliney, headerline, group, taskgroup, task, milestone
 
+// 一些图标
+#let icon(path) = box(
+  baseline: 0.125em,
+  height: 1.0em,
+  width: 1.25em,
+  align(center + horizon, image(path))
+)
+#let faAngleRight = icon("/public/assets/icons/fa-angle-right.svg")
+#let faAward = icon("/public/assets/icons/fa-award.svg")
+#let faBuildingColumns = icon("/public/assets/icons/fa-building-columns.svg")
+#let faCode = icon("/public/assets/icons/fa-code.svg")
+#let faEnvelope = icon("/public/assets/icons/fa-envelope.svg")
+#let faGithub = icon("/public/assets/icons/fa-github.svg")
+#let faGraduationCap = icon("/public/assets/icons/fa-graduation-cap.svg")
+#let faLinux = icon("/public/assets/icons/fa-linux.svg")
+#let faPhone = icon("/public/assets/icons/fa-phone.svg")
+#let faWindows = icon("/public/assets/icons/fa-windows.svg")
+#let faWrench = icon("/public/assets/icons/fa-wrench.svg")
+#let faWork = icon("/public/assets/icons/fa-work.svg")
+#let falink = icon("/public/assets/icons/fa-link.svg")
+#let fajumplink = icon("/public/assets/icons/fa-jumplink.svg")
+
 // 插入图片
 #let fig(alignment: center, ..args) = figure(
   kind: image,

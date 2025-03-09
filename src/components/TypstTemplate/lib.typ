@@ -35,7 +35,10 @@
   set math.vec(delim: "[")
   // 引用与链接字体蓝色显示
   show ref: set text(colors.blue)
-  show link: set text(colors.blue)
+  show link: it => {
+    set text(fill: colors.blue)
+    it + h(2pt) + text(size: 7pt, fajumplink)
+  }
   // 设置字体与语言
   set text(font: 字体.宋体, size: 字号.小五, lang: lang)
   set par(first-line-indent: 0em)
