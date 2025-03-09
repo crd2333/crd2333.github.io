@@ -79,19 +79,19 @@ order: 6
 - 包括两种线路：控制线路和数据线路
 - 总线事务：input, output
   - `output` operation
-  #fig("/public/assets/Courses/计组/img-2024-05-27-09-25-21.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-27-09-25-21.png")
   - `input` operation
-  #fig("/public/assets/Courses/计组/img-2024-05-27-09-25-51.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-27-09-25-51.png")
 - Types of buses:
   - processor-memory (short, high speed, custom design)
   - backplane (high speed, often standardized, e.g. PCI)
   - I/O (lengthy, different devices, standardized, e.g. SCSI)
   - 在最开始，Backplane bus 不仅控制 Processor 和 Memory，还要支持不同的 I/O 设备
-    #fig("/public/assets/Courses/计组/img-2024-05-27-09-29-53.png")
+    #fig("/public/assets/Courses/CO/img-2024-05-27-09-29-53.png")
   - ...
-    #fig("/public/assets/Courses/计组/img-2024-05-27-09-30-18.png")
+    #fig("/public/assets/Courses/CO/img-2024-05-27-09-30-18.png")
   - ...
-    #fig("/public/assets/Courses/计组/img-2024-05-27-09-30-39.png")
+    #fig("/public/assets/Courses/CO/img-2024-05-27-09-30-39.png")
 - Synchronous vs. Asynchronous
   - Synchronization buses 使用同步时钟和同步协议，快且小但是需要不同设备工作速度一致，并且不适合长距离(clock skew)
   - Asynchronous buses 使用 handshake 协议
@@ -100,9 +100,9 @@ order: 6
   - DataRdy，数据准备好
   - Ack(acknowledge)，接受信息的那一方给确认信号
   - 一共七个步骤如下，红色线是接受方，黑色线是 memory
-    #fig("/public/assets/Courses/计组/img-2024-05-29-10-08-35.png")
+    #fig("/public/assets/Courses/CO/img-2024-05-29-10-08-35.png")
   - 使用 FSM 实现握手协议
-  #fig("/public/assets/Courses/计组/img-2024-05-29-10-13-36.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-29-10-13-36.png")
 - Obtaining Access to the Bus
   - 一般都是多个设备共享一条总线进行数据通信，其中如果多个设备同时发送接收数据的话，从而产生总线竞争，会导致通信冲突导致通信失败，所以在总线上要引入一个仲裁机制(Bus Arbitration)来决定什么时间谁来占用总线的通信
   - 部分仲裁机制需要有一个 bus master 来控制总线的访问权，不然会产生混乱
@@ -134,12 +134,12 @@ order: 6
 - I/O system data transfer control mode
   - Polling：processor 定期查看 status bit 来确定是否到下个 I/O 操作的时刻
   - interrupt：用的最多，I/O 有需求的时候给 CPU 一个中断，CPU 处理完之后就可以去做自己的事情
-  #fig("/public/assets/Courses/计组/img-2024-05-29-10-56-39.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-29-10-56-39.png")
   - DMA(direct memory access)：适合高速的数据传输设备，需要三步
     + processor 启动 DMA
     + DMA 负责传输
     + DMA 做完之后请求 processor 中断，让其进行检查
-  #fig("/public/assets/Courses/计组/img-2024-05-29-11-00-19.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-29-11-00-19.png")
   - compare:
     + polling：需要 processor 不停查看是否需要传输，浪费了 processor time，只适用于查询率较低的 I/O 设备
     + Interrupt：只在执行和检查的时候占用 processor time
@@ -152,11 +152,11 @@ order: 6
   - File System I/O Benchmarks: MakeDir, Copy, ScanDir, ReadAll, Make
 - Performance analysis of Synchronous versus Asynchronous buses
   - Synchronization
-  #fig("/public/assets/Courses/计组/img-2024-05-29-11-14-28.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-29-11-14-28.png")
   - Asynchronous
     - 主要是说阶段 2,3,4 可以和 memory access time overlap
     - 只快 20% 是因为（？）
-  #fig("/public/assets/Courses/计组/img-2024-05-29-11-14-58.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-29-11-14-58.png")
   - Increasing the Bus Bandwidth 的计算
   - polling, interrupt, DMA 的计算
 

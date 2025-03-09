@@ -59,7 +59,7 @@ order: 1
 
 == Below Your Program
 - 一种简化视角
-#fig("/public/assets/Courses/计组/img-2024-02-28-11-29-52.png", width: 40%)
+#fig("/public/assets/Courses/CO/img-2024-02-28-11-29-52.png", width: 40%)
 - 计算机语言
   - 机器语言：二进制编码
   - 汇编语言：符号化的机器语言
@@ -70,14 +70,14 @@ order: 1
 
 == Computer Organization and Hardware System
 - 计算机的可分解性
-#fig("/public/assets/Courses/计组/img-2024-02-28-11-43-13.png", width: 59%)
+#fig("/public/assets/Courses/CO/img-2024-02-28-11-43-13.png", width: 59%)
 - Display
   - CRT(raster Cathode Ray Tube) display，不怎么用了
   - LCD(Liquid Crystal Display) display
   - The display principle
     - Hardware support for graphics -- raster refresh buffer(frame buffer) to store bit map
     - Goal of bit map -- to faithfully represent what is on the screen
-#fig("/public/assets/Courses/计组/img-2024-02-28-11-54-09.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-02-28-11-54-09.png", width: 70%)
 - Motherboard（主板）：主板以及硬件附加在其上
 - CPU
 - Memory
@@ -85,7 +85,7 @@ order: 1
 
 == Integrated Circuits
 - Cost
-#fig("/public/assets/Courses/计组/img-2024-02-28-11-58-17.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-02-28-11-58-17.png", width: 70%)
 
 == Performance
 - Response Time and Throughput
@@ -97,22 +97,22 @@ order: 1
 === Measuring Execution Time
 - Elapsed Time：总响应时间，包括所有方面如 I/O, OS overhead, idle time
 - CPU Time(Execution time)：CPU 执行时间，再细可以分成 user CPU time 和 system CPU time
-#fig("/public/assets/Courses/计组/img-2024-02-28-12-07-05.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-02-28-12-07-05.png", width: 70%)
   - Clock rate, or Clock frequency
   - 计算例
-#fig("/public/assets/Courses/计组/img-2024-02-28-12-10-22.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-02-28-12-10-22.png", width: 70%)
 - Instruction Count and CPI：以上假定每个指令均只用一个时钟周期，下面考虑更复杂的情况
   - CPI(Cycles Per Instruction)：每条指令的平均时钟周期数
-#fig("/public/assets/Courses/计组/img-2024-02-28-12-16-32.png", width: 70%)
-#fig("/public/assets/Courses/计组/img-2024-03-04-08-14-23.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-02-28-12-16-32.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-04-08-14-23.png", width: 70%)
   - 计算例
     - Same ISA(Instruction Set Architecture)，指的是 Instruction Count 相同
-#fig("/public/assets/Courses/计组/img-2024-03-04-08-03-38.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-04-08-03-38.png", width: 70%)
   - 三个因素实际上是互相影响的，最终用 CPU Time 来衡量性能好坏
 - CPI in more details
-#fig("/public/assets/Courses/计组/img-2024-03-04-08-08-53.png", width: 65%)
+#fig("/public/assets/Courses/CO/img-2024-03-04-08-08-53.png", width: 65%)
   - 计算例
-#fig("/public/assets/Courses/计组/img-2024-03-04-08-09-29.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-04-08-09-29.png", width: 70%)
 
 == Incredible performance improvement
 - CPU 单核性能过去提升迅速，现在增速放缓，three walls
@@ -142,5 +142,5 @@ $
 - Fallacy: Low Power at Idle
 - 陷阱: MIPS as a Performance Metric
   - MIPS(Million Instructions Per Second)
-#fig("/public/assets/Courses/计组/img-2024-03-04-08-45-03.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-04-08-45-03.png", width: 70%)
 

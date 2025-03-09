@@ -58,7 +58,7 @@ order: 3
     - Fixed Point Number
     - Floating Point Number
 - 符号数：Sign Magnitude, One's Complement, Two's Complement, biased notation（移码，加一个最高位1的偏移量，常用于排序）
-#fig("/public/assets/Courses/计组/img-2024-03-04-09-22-59.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-04-09-22-59.png", width: 70%)
 - sign extension
   - lbu v.s. lb，lbu 会将高位补0，lb 会将高位补符号位
 
@@ -73,7 +73,7 @@ order: 3
   - Logical AND, OR, XOR
 #wrap-content(
   align: right,
-  fig("/public/assets/Courses/计组/img-2024-03-06-10-29-33.png", width: 106%)
+  fig("/public/assets/Courses/CO/img-2024-03-06-10-29-33.png", width: 106%)
 )[
 - Constructing an ALU
   - 两种方法
@@ -97,25 +97,25 @@ order: 3
 - Multiplier V1: 用多次的左右移与加法实现
   - 左移被乘数 A，右移乘数 B
   - 以 64 bit 为例
-#fig("/public/assets/Courses/计组/img-2024-03-06-10-41-48.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-06-10-41-48.png", width: 70%)
   - Big, slow, expensive!
 - Multiplier V2
   - 不左移被乘数 A，而是右移结果，移出去的低位就是已经算完的结果；乘数 B 跟 V1 相同
-#fig("/public/assets/Courses/计组/img-2024-03-06-10-54-00.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-06-10-54-00.png", width: 70%)
 - Multiplier V3
   - 注意到结果和乘数 B 都是右移，可以把它们放在一起共同移动，降低空间消耗
-#fig("/public/assets/Courses/计组/img-2024-03-06-10-59-16.png", width: 70%)
-#fig("/public/assets/Courses/计组/img-2024-03-06-10-59-30.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-06-10-59-16.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-06-10-59-30.png", width: 70%)
 - Signed multiplication
 - 基本想法：把符号位提出来，然后用上述无符号方法计算，最后根据符号位进行处理
 - 改进方法: Booth's Algorithm(Multiplication: V4)
   - 基本思想：把一连串（连续）的加法转换为一次加法和一次减法
-#fig("/public/assets/Courses/计组/img-2024-03-06-11-05-12.png", width: 70%)
-#fig("/public/assets/Courses/计组/img-2024-03-06-11-05-53.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-06-11-05-12.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-06-11-05-53.png", width: 70%)
   - 实际上对于没有那么多连续 1 的数据并没有加速太多，但好处在于一起处理了符号位
 - Faster Multiplication
   - 循环展开，用成本换性能
-#fig("/public/assets/Courses/计组/img-2024-03-06-11-18-37.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-06-11-18-37.png", width: 70%)
 - RISC-V Multiplication
   - 64 位寄存器
   1. mul: 给出低 64 位的结果
@@ -126,16 +126,16 @@ order: 3
 
 == Division
 - Division V1: 同乘法的思路，模拟实际除法
-#fig("/public/assets/Courses/计组/img-2024-03-06-11-26-47.png", width: 35%)
+#fig("/public/assets/Courses/CO/img-2024-03-06-11-26-47.png", width: 35%)
   - 64 bit 除法示意图
-#fig("/public/assets/Courses/计组/img-2024-03-06-11-27-01.png", width: 60%)
+#fig("/public/assets/Courses/CO/img-2024-03-06-11-27-01.png", width: 60%)
 - Dicision V2: 相当于直接走了乘法的两步
   - Divisor 右移改成结果左移
   - 结果直接放在 Remainder 里
   - 上来先整体左移一次，最后结果的左半边还要右移一次回去
-#fig("/public/assets/Courses/计组/img-2024-03-06-11-36-40.png", width: 65%)
+#fig("/public/assets/Courses/CO/img-2024-03-06-11-36-40.png", width: 65%)
   - 例子：0111/0010 (7/2)
-#fig("/public/assets/Courses/计组/img-2024-03-06-11-39-00.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-06-11-39-00.png", width: 70%)
 - 初始先左移一次，然后左移位数次，最后右移左半部分
 - Signed division
   - 规定余数符号与被除数 A 保持一致，商的符号就是数学意义上的符号
@@ -152,7 +152,7 @@ order: 3
 - Floating Point Standard，由 IEEE Std 754-1980 定义
   - fraction，省掉一位；exponent，用移码表示
   - 比较，按次序，先比符号位，再比 exponent，最后比 fraction
-    #fig("/public/assets/Courses/计组/img-2024-03-13-10-09-49.png")
+    #fig("/public/assets/Courses/CO/img-2024-03-13-10-09-49.png")
 - 单精度浮点数的表示范围（双精度类似）
   - Exponents $00000000$ and $11111111$ reserved
   - Smallest Value
@@ -169,8 +169,8 @@ order: 3
 - 非规格化的数字
   - 当 exponent 为全零（之前保留的），则表示非规格化数字，此时首位数字定义为 0，exponent 为 $1-"Bias"$
   - 当 exponent 为全一（之前保留的），也表示非规格化数字，分为 infinities 和 NaNs
-#fig("/public/assets/Courses/计组/img-2024-03-13-10-34-50.png", width: 70%)
-#fig("/public/assets/Courses/计组/img-2024-03-13-10-40-48.png", width: 75%)
+#fig("/public/assets/Courses/CO/img-2024-03-13-10-34-50.png", width: 70%)
+#fig("/public/assets/Courses/CO/img-2024-03-13-10-40-48.png", width: 75%)
 
 === 浮点数的计算
 ==== 加法
@@ -179,14 +179,14 @@ order: 3
   3. Addition of significands
   4. Normalization of the result
   5. Rounding
-#fig("/public/assets/Courses/计组/img-2024-03-13-10-55-07.png")
+#fig("/public/assets/Courses/CO/img-2024-03-13-10-55-07.png")
 - 在硬件中的实现
-#fig("/public/assets/Courses/计组/img-2024-03-13-11-01-19.png")
+#fig("/public/assets/Courses/CO/img-2024-03-13-11-01-19.png")
 
 ==== 乘法与除法
 - 乘法相对简单，只需要分开计算把 exponents 相加，fractions 相乘，最后规格化
-#fig("/public/assets/Courses/计组/img-2024-03-13-11-12-50.png", width: 65%)
-#fig("/public/assets/Courses/计组/img-2024-03-13-11-13-14.png", width: 65%)
+#fig("/public/assets/Courses/CO/img-2024-03-13-11-12-50.png", width: 65%)
+#fig("/public/assets/Courses/CO/img-2024-03-13-11-13-14.png", width: 65%)
 - 除法类似，分开计算把 exponents 相减，fractions 相除，最后规格化
 
 === 浮点数计算讨论
@@ -197,7 +197,7 @@ order: 3
     - $32$ 个浮点寄存器，这里 $f_0$ 没有必须为 0 的要求
     - flw, fld, fsw, fsd
   - 运算指令
-#fig("/public/assets/Courses/计组/img-2024-03-13-11-24-42.png", width: 60%)
+#fig("/public/assets/Courses/CO/img-2024-03-13-11-24-42.png", width: 60%)
 
 - PPT114 $~$ 117，讲解汇编语言
 
@@ -209,9 +209,9 @@ order: 3
 - Round modes
   - Round to $0$; Round to $+infty$; Round to $-infty$; Round to next even number (default)
     - 舍入到最近偶数指的是两边距离相同时
-#fig("/public/assets/Courses/计组/img-2024-04-02-11-29-30.png", width: 60%)
+#fig("/public/assets/Courses/CO/img-2024-04-02-11-29-30.png", width: 60%)
 - Guard and round
-#fig("/public/assets/Courses/计组/img-2024-04-02-11-04-02.png", width: 60%)
+#fig("/public/assets/Courses/CO/img-2024-04-02-11-04-02.png", width: 60%)
 - Sticky bit（粘滞位）：如果 round bit 的右侧有任何 nonzero 的数，则设为 1
-#fig("/public/assets/Courses/计组/img-2024-03-13-12-03-55.png", width: 60%)
+#fig("/public/assets/Courses/CO/img-2024-03-13-12-03-55.png", width: 60%)
 

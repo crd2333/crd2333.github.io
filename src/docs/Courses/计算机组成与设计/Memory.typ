@@ -40,7 +40,7 @@ order: 5
   - copy more recently used data to SRAM (cache)
 - hit, hit time, miss, miss penalty 等指标
 - 我们将讨论 cache(SRAM and DRAM) 和 virtual memory(DRAM and DISK)
-#fig("/public/assets/Courses/计组/img-2024-05-13-09-20-54.png")
+#fig("/public/assets/Courses/CO/img-2024-05-13-09-20-54.png")
 
 == Memory Technology
 - SRAM technology
@@ -53,7 +53,7 @@ order: 5
   - 读写损耗，remap 技术
 - Disk storage
   - disk sectors and access
-#fig("/public/assets/Courses/计组/img-2024-05-13-09-04-11.png")
+#fig("/public/assets/Courses/CO/img-2024-05-13-09-04-11.png")
 
 == The basics of Cache
 - 可以将 cache 内容分门别类（建立 map），这样，在 cache 中寻找数据的时间(hit time)就缩短了；但同时，如果这一类别的位置满了，需要替换（这又减小了 hit 的概率）；最后，还需要考虑写数据的操作，如果只更改 cache 中的数据而不改 main memory，会发生 inconsistency，否则，如果两个都改，速度会变慢。
@@ -64,7 +64,7 @@ order: 5
   + 写操作策略
 - direct mapped
   - 内存的每个地址固定映射到 cache 的某个位置（可能跟其他地址共享）
-  #fig("/public/assets/Courses/计组/img-2024-05-13-09-29-36.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-13-09-29-36.png")
   - 给定内存中的地址，根据映射直接可以知道它在 cache 中的位置，但还需要知道 tag 才能确定是否命中
     - 把内存中地址高位作为 tag
     - 还有 valid bit 来标识这个位置是否有数据
@@ -73,14 +73,14 @@ order: 5
     - address 一共 64 bit，块内偏移量为 4 bit(4 word per block)，再减去 10 bits 的 index，剩下 50 bits 作为 tag
     - 一共 $2^10$ 个 Cache block，每个需要 128 存储数据，$50+1$ 存储 valid bit 和 tag
   #grid(columns: 2,
-    fig("/public/assets/Courses/计组/img-2024-05-15-10-09-10.png"),
-    fig("/public/assets/Courses/计组/img-2024-05-15-10-26-58.png")
+    fig("/public/assets/Courses/CO/img-2024-05-15-10-09-10.png"),
+    fig("/public/assets/Courses/CO/img-2024-05-15-10-26-58.png")
   )
   - 缺失率与块大小的关系
     - 块太小，一次搬过来的数据太少，会导致更多的缺失
     - 块太大，搬来的数据不一定全都是有用的，可能就其中某一段有用，导致 cache 能容纳的块数就少，也会导致更多的缺失
     - 因此是一个 trade-off
-  #fig("/public/assets/Courses/计组/img-2024-05-15-11-05-29.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-15-11-05-29.png")
 - Handling Cache reads hit and Misses
   - 对读操作，比较简单，当遇到 miss 时，需要 Control_Stall CPU
   - 对写操作，更复杂，对 hit 和 miss 各有两种策略
@@ -93,25 +93,25 @@ order: 5
       + write-allocate: 先读 cache，再写，write-back 一般会 allocate
       + no-write-allocate: 直接写 main memory
       - 是否 allocate 会影响后续的 miss rate
-    #fig("/public/assets/Courses/计组/img-2024-05-15-11-00-29.png")
+    #fig("/public/assets/Courses/CO/img-2024-05-15-11-00-29.png")
 - Intrinsity FastMATH
   - 通过 address 找 cache 中数据的路线图，这里 address 细化到 byte（我们实验中 lhw, lb 就是细化到 byte）
-  #fig("/public/assets/Courses/计组/img-2024-05-15-11-18-28.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-15-11-18-28.png")
 - Memory 组织方式的影响：wide memory(more words per block) and banks
-  #fig("/public/assets/Courses/计组/img-2024-05-15-11-25-17.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-15-11-25-17.png")
   - 原本的方式
     - $1$ 个 cycle 发送地址；$15$ 个 cycles 寻找到数据；$1$ 个 cycle 发送一个 word 数据
     - $17$ 的计算可以不看，是单个 word 的情况
     - $65$ 的计算，$1$ 发送地址，随后等待总线准备好 $1$ 个 block $4$ 个 word 的数据，一共 $4 times (15+1)$
     - 最后带宽为 $4$ 个 clock $1$ 个 word
-  #fig("/public/assets/Courses/计组/img-2024-05-15-11-31-11.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-15-11-31-11.png")
   - 使用宽 block 的方式
     - $1$ 个 block $4$ 个 word 的数据只用两次或一次查找
-    #fig("/public/assets/Courses/计组/img-2024-05-15-11-31-25.png")
+    #fig("/public/assets/Courses/CO/img-2024-05-15-11-31-25.png")
     - 但是这要求 BUS 和 Cache 的宽度与之相同，实际情况总线做不到太宽，我们可以用 bank 的方式来解决
   - 使用 bank 组织方式
     - 最好将同一块内的数据分散到不同的 bank，提高并行度
-  #fig("/public/assets/Courses/计组/img-2024-05-15-11-31-52.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-15-11-31-52.png")
 
 == Measuring and improving cache performance
 - 涉及很多公式运算，直接看 PPT
@@ -124,17 +124,17 @@ order: 5
 - The disadvantage of a direct-mapped cache $=>$ set-associative, fully-associative（组相连、全相连）
   - 实际上三种相连方式就是一个 set 内 block 数量的极端和中间态
   - 之前是一个 cache 块对应多个 memory 块，现在是多个 cache 块对应多个 memory 块
-  #fig("/public/assets/Courses/计组/img-2024-05-15-11-55-32.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-15-11-55-32.png")
 - The basics of a set-associative cache
   - 简单看一下它的效果
   #grid(columns: 2,
-    fig("/public/assets/Courses/计组/img-2024-05-15-12-02-35.png"),
-    fig("/public/assets/Courses/计组/img-2024-05-15-12-03-22.png")
+    fig("/public/assets/Courses/CO/img-2024-05-15-12-02-35.png"),
+    fig("/public/assets/Courses/CO/img-2024-05-15-12-03-22.png")
   )
   - 在 SPEC2000 指令数据集上测试结果显示，2 路组相连提升很多，再多下去并不明显
 - set-associative 的查找方式
   - 每个 index 对应一个 set，每个 set 有多个 cache block
-  #fig("/public/assets/Courses/计组/img-2024-05-30-15-32-28.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-30-15-32-28.png")
 - 组相连 Cache 的计算
   - PPT 66 \~ 67
 - Replacement Policy
@@ -185,7 +185,7 @@ order: 5
   - 不同程序之间共享主存且进行保护，每个程序得到自己的虚拟地址空间
   - “扩展”主存的大小，减轻程序员为了适应主存大小分割程序的负担（现在没那么必要）
 - 通过地址转换实现
-  #fig("/public/assets/Courses/计组/img-2024-05-20-08-55-56.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-20-08-55-56.png")
 - Page faults
   - huge miss penalty, thus pages should be fairly *large* (e.g. 4KB)
   - reducing page faults is important (*LRU* is worth the price)
@@ -193,17 +193,17 @@ order: 5
   - using write-through is too expensive so we use *write back*
 - Page Tables（PT，页表）
   - 采用全相连策略（miss 的代价远大于在主存中查询的代价）
-  #fig("/public/assets/Courses/计组/img-2024-05-20-09-10-58.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-20-09-10-58.png")
 - 每当 OS 创建一个进程，就会创建一个页表，这个页表会被存储在主存中（但由于页表非常大，朴素实现肯定是无法接受的，有一些技术来减小，比如多级页表，不作要求）
 - Making Address Translation Fast（TLB，快表）
   - 把页表的常用部分搬到 Cache 中，Translation Look-aside Buffer (TLB)
-  #fig("/public/assets/Courses/计组/img-2024-06-01-13-22-21.png")
+  #fig("/public/assets/Courses/CO/img-2024-06-01-13-22-21.png")
   - 有点像是为页表建立一个 cache
   - 快表 miss 后去页表中查找，有两次机会
-  #fig("/public/assets/Courses/计组/img-2024-05-20-09-33-58.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-20-09-33-58.png")
   - 流程图
     - 发生 TLB miss exception 后，从 main memory 查找 PT 并 load 到 TLB 中，得到物理地址，之后跟 TLB hit 一样
-  #fig("/public/assets/Courses/计组/img-2024-05-22-10-08-20.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-22-10-08-20.png")
 - 三种数据结构的 miss 和 hit
 #tbl_white(
   columns: 4,

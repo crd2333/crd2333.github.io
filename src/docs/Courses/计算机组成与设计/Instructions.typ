@@ -86,15 +86,15 @@ order: 2
 
   #register_tbl
   - RISC-V operands
-    #fig("/public/assets/Courses/计组/img-2024-03-18-08-35-48.png", width: 60%)
+    #fig("/public/assets/Courses/CO/img-2024-03-18-08-35-48.png", width: 60%)
 - Memory Operands
   - 优势：可以存更多数据、可以存更复杂更灵活的数据结构
   - 需要 load / store 跟 register 交互
   - Memory is byte addressed: Each address identifies an 8-bit byte
   - 大端与小端（相对主流），RISC-V is Little endian
-    #fig("/public/assets/Courses/计组/img-2024-03-18-08-39-19.png", width: 84%)
+    #fig("/public/assets/Courses/CO/img-2024-03-18-08-39-19.png", width: 84%)
   - Memory Alignment
-    #fig("/public/assets/Courses/计组/img-2024-03-18-08-53-14.png", width: 80%)
+    #fig("/public/assets/Courses/CO/img-2024-03-18-08-53-14.png", width: 80%)
     - 不过 RISC-V 没有对齐的要求
 - Constant or Immediate Operand
   - 对于常数或立即数，如果放在 memory 中，每次都要 load，效率低，为此定义了立即数指令，如 addi
@@ -106,19 +106,19 @@ order: 2
 
 == Representing Instructions in the Computer
 - 从汇编指令到机器码(machine code)
-  #fig("/public/assets/Courses/计组/img-2024-03-18-09-18-59.png")
+  #fig("/public/assets/Courses/CO/img-2024-03-18-09-18-59.png")
   - 上面这种例子是 R-format
-  #fig("/public/assets/Courses/计组/img-2024-03-18-09-20-46.png", width: 60%)
+  #fig("/public/assets/Courses/CO/img-2024-03-18-09-20-46.png", width: 60%)
 - #redt[Design Principle 4]: Good design demands good compromises（好的设计需要折中）
 - 对于立即数，可以看到 R-format 只有 5 位来表示，范围太小了，因此定义了 I-format，范围变为 $+- 2^11$
-  #fig("/public/assets/Courses/计组/img-2024-03-18-09-25-07.png", width: 60%)
+  #fig("/public/assets/Courses/CO/img-2024-03-18-09-25-07.png", width: 60%)
 - 对 store 操作有 S-format，把不需要的目标寄存器 rd 空出来给立即数，这里图片有错，应为$"imm"[11:5]$, #redt[$5"bits"$]
-  #fig("/public/assets/Courses/计组/img-2024-03-18-09-28-18.png", width: 70%)
+  #fig("/public/assets/Courses/CO/img-2024-03-18-09-28-18.png", width: 70%)
 - 归纳：
-  #fig("/public/assets/Courses/计组/img-2024-03-18-09-34-46.png")
+  #fig("/public/assets/Courses/CO/img-2024-03-18-09-34-46.png")
 - Stored-program
 
-#wrap-content(fig("/public/assets/Courses/计组/img-2024-03-20-10-13-14.png", width: 48%))[
+#wrap-content(fig("/public/assets/Courses/CO/img-2024-03-20-10-13-14.png", width: 48%))[
 - 当今计算机的两个 key principle
   - Instructions are represented as numbers
   - Programs can be stored in memory like numbers
@@ -147,7 +147,7 @@ EXIT:
 ```
 - 如果没有 blt 和 bge，可以用这样的方式曲线救国
   - RISC-V 是有的，不过不一定有这种分拆的方式快
-#fig("/public/assets/Courses/计组/img-2024-03-20-10-42-08.png", width: 59%)
+#fig("/public/assets/Courses/CO/img-2024-03-20-10-42-08.png", width: 59%)
 - 界限检查的小 trick
   - `If (x20>=x11 | x20 < 0) goto IndexOutofBounds`
   - 用 `bgeu x20, x11, IndexOutofBounds`，当做无符号数处理（当 x11 为正数）
@@ -160,7 +160,7 @@ switch (k) {
   case 3 : f = i - j ; break ; /* k = 3 */
 }
 ```
-#fig("/public/assets/Courses/计组/img-2024-03-20-11-13-01.png", width:60%)
+#fig("/public/assets/Courses/CO/img-2024-03-20-11-13-01.png", width:60%)
 
 == Supporting Procedures in Computer Hardware
 - Procedure/function --- be used to structure programs
@@ -239,7 +239,7 @@ Return: add sp, sp, 8
   - Global pointer (x3 or gp)
     - static
 - 内存布局
-#fig("/public/assets/Courses/计组/img-2024-03-20-12-08-58.png")
+#fig("/public/assets/Courses/CO/img-2024-03-20-12-08-58.png")
 
 == Communicating with People
 - Byte-encoded character sets
@@ -258,18 +258,18 @@ Return: add sp, sp, 8
 - lui (load upper immediate)指令 (belong to U-format)
   - lui: ```assembly lui rd, constant```，将 constant 的高 20 位放到 rd 中
   - 剩下的低 12 位用 addi 补充（注意符号，可能要用 addiu 或 or）
-#fig("/public/assets/Courses/计组/img-2024-03-27-10-24-35.png", width: 80%)
+#fig("/public/assets/Courses/CO/img-2024-03-27-10-24-35.png", width: 80%)
 - Branch Addressing（分支指令跳转）
   - SB-Format(B-format)
     - 在相对当前指令 $+-2^12$ bits 的范围内跳转
-#fig("/public/assets/Courses/计组/img-2024-03-27-10-33-24.png", width: 80%)
+#fig("/public/assets/Courses/CO/img-2024-03-27-10-33-24.png", width: 80%)
 - branch 跳转在循环中常用，因为循环体一般不会写太大。而函数调用这种需要更大的跳转范围:
 - Jump Addressing（无条件跳转）
   - UJ-Format(J-format)
     - 20-bit immediate, 12-bit offset
     - 在相对当前指令 $+-2^20$ bits 的范围内跳转
     - 如果 beq(B-format)不够，化为 bne+jal；如果还不够，用 lui+ jalr
-#fig("/public/assets/Courses/计组/img-2024-03-27-10-38-41.png", width: 80%)
+#fig("/public/assets/Courses/CO/img-2024-03-27-10-38-41.png", width: 80%)
 - 例子：```C while (save[i]==k) i=i+1;``` in c
 ```assembly
 Loop: slli x10, x22, 3  // temp reg x10 = 8 * i
@@ -280,7 +280,7 @@ Loop: slli x10, x22, 3  // temp reg x10 = 8 * i
       beq x0, x0, Loop  // go to Loop
 Exit:
 ```
-#fig("/public/assets/Courses/计组/img-2024-03-27-11-00-51.png", width: 80%)
+#fig("/public/assets/Courses/CO/img-2024-03-27-11-00-51.png", width: 80%)
 - 反汇编，先看后 7 位确定 opcode，再 $dots$
 
 == Parallelism and Instructions: Synchronization
@@ -309,7 +309,7 @@ again: lr.d x10,(x20)     // read lock
 ```
 
 == Translating and Starting a Program
-#fig("/public/assets/Courses/计组/img-2024-03-27-11-30-00.png")
+#fig("/public/assets/Courses/CO/img-2024-03-27-11-30-00.png")
 - Compiling & Assembling
 - Obeject File & Linking Object Modules（静态）
 - Loading a Program 的步骤
@@ -370,7 +370,7 @@ bltu x5,x7,loop2 // if (p<&array[size])
 
 == Real Stuff: MIPS Instructions
 - MIPS: commercial predecessor to RISC-V
-#fig("/public/assets/Courses/计组/img-2024-04-01-08-20-00.png", width: 89%)
+#fig("/public/assets/Courses/CO/img-2024-04-01-08-20-00.png", width: 89%)
 - 大致相同的基本指令集，但 conditional branches 不同
   - For <, <=, >, >=
   - RISC-V: blt, bge, bltu, bgeu

@@ -65,16 +65,16 @@ order: 4
       - Branch comparison
     - 再后面就都不一样了
   - Overview
-#fig("/public/assets/Courses/计组/img-2024-04-01-09-34-40.png")
+#fig("/public/assets/Courses/CO/img-2024-04-01-09-34-40.png")
 - 各个部件
-#fig("/public/assets/Courses/计组/img-2024-04-01-09-27-57.png")
+#fig("/public/assets/Courses/CO/img-2024-04-01-09-27-57.png")
 - Rigister
   - 一个时钟周期内先写后读
   - Register Files--Built using D flip-flops
-#fig("/public/assets/Courses/计组/img-2024-04-01-09-30-50.png")
+#fig("/public/assets/Courses/CO/img-2024-04-01-09-30-50.png")
 - Immediate generation unit
   - 两个功能：输入指令产生立即数的逻辑、转移指令偏移量左移位（B和J type末尾添0，lui 左移 12 位）
-#fig("/public/assets/Courses/计组/img-2024-04-01-09-35-15.png", width: 90%)
+#fig("/public/assets/Courses/CO/img-2024-04-01-09-35-15.png", width: 90%)
 - 只考虑 I-type, S-type, B-type, J-type 指令的话，用 ImmSel (Immediate Select)控制
   - 为了 lui 需要再加一位
 #tbl_white(
@@ -89,21 +89,21 @@ order: 4
   []
 )
 - 在先前的 CPU overview 中加入控制组件
-#fig("/public/assets/Courses/计组/img-2024-04-03-10-14-10.png", width: 75%)
+#fig("/public/assets/Courses/CO/img-2024-04-03-10-14-10.png", width: 75%)
 - 时钟控制方法
   - 每个周期内的操作通过 Combinational logic 完成（不能有多步操作）
   - 因此像是 Add 这种部件在一个周期内多次用到，就需要复制多个
-  #fig("/public/assets/Courses/计组/img-2024-04-03-10-20-15.png")
+  #fig("/public/assets/Courses/CO/img-2024-04-03-10-20-15.png")
 
 == Building a datapath
 - 对六种指令分别解释在上面 CPU overview 中的数据流转（还要加 jalr, lui, bne 等）
-  #fig("/public/assets/Courses/计组/img-2024-04-03-11-19-52.png", width: 110%)
+  #fig("/public/assets/Courses/CO/img-2024-04-03-11-19-52.png", width: 110%)
   - 思考不同指令在图中的流转路径
 
 == A Simple Implementation Scheme
 - Building Controller
   - There are $7+4$ signals
-    #fig("/public/assets/Courses/计组/img-2024-04-03-11-24-57.png", width: 90%)
+    #fig("/public/assets/Courses/CO/img-2024-04-03-11-24-57.png", width: 90%)
   - 根据下表中蓝色部分生成控制信号
 #tbl_white(
   white_row: 2,
@@ -133,9 +133,9 @@ order: 4
   [OR],[0#redt[0]00000],[#redt[110]],[OR],[0001],
   [SLT],[0#redt[0]00000],[#redt[010]],[Slt],[0111],
 )
-#fig("/public/assets/Courses/计组/img-2024-04-03-11-32-05.png")
+#fig("/public/assets/Courses/CO/img-2024-04-03-11-32-05.png")
 - 为不同指令解释控制信号（画错了？实现不了 jalr 和 lui）
-#fig("/public/assets/Courses/计组/img-2024-04-10-10-30-25.png")
+#fig("/public/assets/Courses/CO/img-2024-04-10-10-30-25.png")
 - 性能分析
   - 分支指令的计算是并行的，不怎么耗时间
   - 假设 memory(200ps), ALU and adders(200ps), register file access(100ps)
@@ -212,24 +212,24 @@ order: 4
   - xIE 控制全局的中断使能
   - xPIE 表示从上层跳过来，原本的中断使能
   - xPP 表示从什么调过来
-#fig("/public/assets/Courses/计组/img-2024-04-15-08-28-43.png",width:97%)
+#fig("/public/assets/Courses/CO/img-2024-04-15-08-28-43.png",width:97%)
 - mie/mip
   - 相比相比 status 是更细粒度的中断控制
   - xyIE 表示 x 模式下 y 类型的中断使能(E: exception)
   - xyIP 表示 x 模式下 y 类型是否有悬挂着的未处理中断(P: pending)
-#fig("/public/assets/Courses/计组/img-2024-04-15-08-32-37.png",width:97%)
+#fig("/public/assets/Courses/CO/img-2024-04-15-08-32-37.png",width:97%)
 - mtvec
   - 分两种模式，direct 和 vectored，用低两位指示
   - 所有的 exception 使用 direct 模式；只有 interrupt 才会使用 vectored 模式
-#fig("/public/assets/Courses/计组/img-2024-04-15-08-35-32.png",width:97%)
+#fig("/public/assets/Courses/CO/img-2024-04-15-08-35-32.png",width:97%)
 - mepc
   - 存储处理 exception 或 interrupt 完后的 PC 值
   - Exception 是 +0，需要回来前更改 mepc，否则会陷入循环；interrupt 是 +4
-#fig("/public/assets/Courses/计组/img-2024-04-15-08-37-01.png",width:97%)
+#fig("/public/assets/Courses/CO/img-2024-04-15-08-37-01.png",width:97%)
 - mcause
-  #fig("/public/assets/Courses/计组/img-2024-04-15-08-38-50.png")
+  #fig("/public/assets/Courses/CO/img-2024-04-15-08-38-50.png")
   - 从这张图也可以看出 exception 和 interrupt 的区别
-  #fig("/public/assets/Courses/计组/img-2024-04-24-20-20-40.png")
+  #fig("/public/assets/Courses/CO/img-2024-04-24-20-20-40.png")
 - 中断优先级
   - 优先级高的先处理，低的 pending 悬挂
   - External interrupt > Software interrupt > Timer interrupt
@@ -246,7 +246,7 @@ order: 4
 )
 - Interrupts Instruction
   - MRET: m-return
-#fig("/public/assets/Courses/计组/img-2024-04-15-09-02-29.png")
+#fig("/public/assets/Courses/CO/img-2024-04-15-09-02-29.png")
 - 中断处理
   - RISC-V处理器检测到异常，开始进行异常处理：
     - 停止执行当前的程序流，转而从 CSR 寄存器 mtvec 定义的PC地址开始执行；
@@ -284,16 +284,16 @@ order: 4
   - 根据资源划分阶段
   - 流水线的加速比最大能达到*流水线的阶段数*，即 $5$ 倍（理想情况下）
     - 后面会说明，由于流水线之间有 overhead，所以不可能达到这个值，也说明并不是阶段数越多越好
-  #fig("/public/assets/Courses/计组/img-2024-04-24-10-08-51.png")
+  #fig("/public/assets/Courses/CO/img-2024-04-24-10-08-51.png")
   - 标蓝表示占用，半标蓝表示占用一半（读右，写左）
-  #fig("/public/assets/Courses/计组/img-2024-04-24-10-28-46.png")
+  #fig("/public/assets/Courses/CO/img-2024-04-24-10-28-46.png")
 - Pipelined CPU DataPath
   - 用蓝线画出的叫做 hazard（冒险），导致数据依赖，会影响流水线的顺序执行
   - 显然是简化的，非所有指令；而且是有错的，比如 load、R-type 指令的写回还需要让 rd 也一起跟着流水线走（后面会改）
-  #fig("/public/assets/Courses/计组/img-2024-04-24-10-21-46.png")
+  #fig("/public/assets/Courses/CO/img-2024-04-24-10-21-46.png")
   - 需要 pipeline registers 来存储中间结果，寄存器需要足够宽才能存下所有信息
     - PC 也可以看作是一个流水线寄存器
-  #fig("/public/assets/Courses/计组/img-2024-04-24-10-33-33.png")
+  #fig("/public/assets/Courses/CO/img-2024-04-24-10-33-33.png")
 - Pipeline的问题
   + Latency
   + Imbalance，如浮点计算所需的时间明显比一般指令长
@@ -311,10 +311,10 @@ order: 4
   - structure hazard: 两个指令同时用到了同一个硬件资源，一般较好解决，不考虑
     - 假设 Instr_mem 和 Data_mem 是同一个硬件，那么就会有冲突
     - register file 也会有冲突，使用 double bump 技术，上升沿和下降沿各自控制读写
-    #fig("/public/assets/Courses/计组/img-2024-04-24-11-28-24.png")
+    #fig("/public/assets/Courses/CO/img-2024-04-24-11-28-24.png")
   - data hazard: 两个指令之间有数据依赖，需要等待前一条指令完成
     - 后面的 add 用到前面 add 的结果，需要等待（但是 IM 可以执行）
-    #fig("/public/assets/Courses/计组/img-2024-04-24-11-35-50.png")
+    #fig("/public/assets/Courses/CO/img-2024-04-24-11-35-50.png")
   - control hazard: branch 或 jump 指令
 - 解决所有 hazard 的最简单方法就是 stall，即等待前一条指令完成
   - Control hazard:
@@ -332,19 +332,19 @@ order: 4
   - Multiple accesses to memory
   -  Multiple accesses to the register file(double bump)
   - fully pipelined function unit
-    #fig("/public/assets/Courses/计组/img-2024-04-24-12-06-30.png")
+    #fig("/public/assets/Courses/CO/img-2024-04-24-12-06-30.png")
   - 实际情况下 structural hazard 往往不会被处理
     + To reduce cost
     + To reduce latency of the unit
 
 === Data Hazard
 - 后一条指令用到前一条指令的结果
-#fig("/public/assets/Courses/计组/img-2024-05-08-10-08-51.png")
+#fig("/public/assets/Courses/CO/img-2024-05-08-10-08-51.png")
 - 使用 forwarding(also called bypassing) 来解决
   - 从 EX/MEM 前递
-  #fig("/public/assets/Courses/计组/img-2024-05-08-10-11-13.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-08-10-11-13.png")
   - 从 MEM/WB 前递，仍需要一个 stall
-  #fig("/public/assets/Courses/计组/img-2024-05-08-10-17-47.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-08-10-17-47.png")
 - 下面是一个略复杂的例子
 #grid(
   columns: (.7fr, 1fr),
@@ -359,7 +359,7 @@ order: 4
     - 蓝线往前指说明产生了 Data Hazard；同一层级可以用 double bump 解决；往后指不会产生 hazard
     - `and` 和 `or` 可以用 forwarding 解决，红线标出
   ],
-  fig("/public/assets/Courses/计组/img-2024-05-08-10-25-08.png")
+  fig("/public/assets/Courses/CO/img-2024-05-08-10-25-08.png")
 )
 - Detecting the Need to Forward
   - Data hazards when
@@ -378,12 +378,12 @@ order: 4
       add x1,#bluet[x1],x4
     ])
 - DataPath for forwarding 简图（没画 Imm_Gen 等）
-#fig("/public/assets/Courses/计组/img-2024-05-08-10-43-05.png")
+#fig("/public/assets/Courses/CO/img-2024-05-08-10-43-05.png")
 - Load-Use Dependency
   - Dependence between load and the following instructions
-  #fig("/public/assets/Courses/计组/img-2024-05-08-11-05-22.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-08-11-05-22.png")
   - 之前说到，一个 ALU 相关指令的前一条指令是 load 且恰好用到其寄存器时，需要 stall 一个周期，可以 Reorder code to avoid use of load result in the next instruction（编译器优化）
-    #fig("/public/assets/Courses/计组/img-2024-05-08-10-58-19.png")
+    #fig("/public/assets/Courses/CO/img-2024-05-08-10-58-19.png")
   - Load-use hazard when
     -  ID/EX.MemRead and
       - ID/EX.RegisterRd = IF/ID.RegisterRs1 or ID/EX.RegisterRd = IF/ID.RegisterRs2
@@ -394,14 +394,14 @@ order: 4
 - How to Stall the Pipeline
   - 锁定 pipeline registers，让它们不被更改（相当于下个周期继续做这条指令）
   - 这个周期内用到的数据可以用 MUX 设为无效值（即这个周期随便做一做）
-  #fig("/public/assets/Courses/计组/img-2024-05-08-11-15-15.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-08-11-15-15.png")
 - DataPath for Hazard-detection and reg-disable
-  #fig("/public/assets/Courses/计组/img-2024-05-08-11-18-16.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-08-11-18-16.png")
 
 === Control Hazards
 - 控制指令依赖于先前的指令，比如 Branches
   - 中间的三条指令白做了，需要 flush 掉（流水线*冲掉*流水），相当于 $3$ 次 stall
-  #fig("/public/assets/Courses/计组/img-2024-05-08-11-23-34.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-08-11-23-34.png")
 - 解决方法
   - stall，碰到 branch 就停 $3$ 拍，简单无脑但比较浪费
   - Static Prediction
@@ -427,18 +427,18 @@ order: 4
 - Solution: Reducing Branch Delay
   - Move the Branch Computation Forward，用硬件换时间，在 IF/ID 阶段算 branch 结果
   - Target address adder & Register comparator
-  #fig("/public/assets/Courses/计组/img-2024-05-08-11-44-39.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-08-11-44-39.png")
   - 例子：
     - 当前周期为：\<old inst(not taken)\>, beq, sub, before\<1\>, before\<2\>
     - 下一个周期为：\<new inst(taken)\>, Bubble(nop), beq, sub, before\<1\>
-  #fig("/public/assets/Courses/计组/img-2024-05-08-11-48-47.png")
+  #fig("/public/assets/Courses/CO/img-2024-05-08-11-48-47.png")
   - 然而实际情况会更复杂，考虑 branch 指令跟前面指令的 data hazard
     + branch 是先前指令后的第二第三条，用 forwarding
-      #fig("/public/assets/Courses/计组/img-2024-05-08-11-54-33.png")
+      #fig("/public/assets/Courses/CO/img-2024-05-08-11-54-33.png")
     + branch 是先前 ALU 指令后紧跟的一条或 load 指令后的第二条，要 stall 一个周期
-      #fig("/public/assets/Courses/计组/img-2024-05-08-11-57-23.png")
+      #fig("/public/assets/Courses/CO/img-2024-05-08-11-57-23.png")
     + branch 是先前 load 指令后紧跟的一条，要 stall 两个周期
-      #fig("/public/assets/Courses/计组/img-2024-05-08-11-58-06.png")
+      #fig("/public/assets/Courses/CO/img-2024-05-08-11-58-06.png")
 - More-Realistic Branch Prediction
   - Static branch prediction
     - Based on typical branch behavior; Example: loop and if-statement branches
@@ -447,7 +447,7 @@ order: 4
   - Predictors
     - 1 bit: 每次错了都改变结果，错误率较高（墙头草是这样的）
     - 2 bit: 错两次之后改变结果
-      #fig("/public/assets/Courses/计组/img-2024-05-08-12-05-25.png")
+      #fig("/public/assets/Courses/CO/img-2024-05-08-12-05-25.png")
   - 为实现时的简单起见，我们假定不跳转，即 predict-not-taken
 
 == Pipelining with Exceptions
