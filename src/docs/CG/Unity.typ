@@ -145,8 +145,7 @@ Unity 中许多数据需要*序列化*成字符串，进而才能显示在 Inspe
   - *HDRP* 也是 SRP 的一种实现，为了提高画质而推出，更多针对高端设备和主机
 - SRP Batcher
   - SRP Batcher 是 SRP 的一个特性，用于减少 CPU 到 GPU 之间的数据传输，提高性能
-  - 具体除了看上面第一篇文章外，还可以参考这篇 #link("https://zhuanlan.zhihu.com/p/165574008")[Unity SRP Batcher的工作原理]
-
+  - 具体除了看上面第一篇文章外，还可以参考这篇 #link("https://zhuanlan.zhihu.com/p/165574008")[Unity SRP Batcher 的工作原理]
 
 === Shader
 - Unity Shader 部分的资料，我主要参考了
@@ -200,4 +199,52 @@ Unity 的着色器使用自定义 ShaderLab 声明性语言，充当一个容器
   + #link("https://zhuanlan.zhihu.com/p/378781638")[【Unity】SRP 底层渲染流程及原理]
   + #link("https://zhuanlan.zhihu.com/p/362941227")[Unity 的内存管理与性能优化]
   + #link("https://zhuanlan.zhihu.com/p/381859536")[【笔记】Unity 内存分配和回收的底层原理]
+
+=== Animation
+Unity 提供了一套强大灵活的动画系统，包括 2D, 3D，不过这里我们还是聚焦于 3D 动画系统。Unity 一共有两套动画系统，分别为 “Legacy” 和 “Mecanim”，其中前者是 Unity 早期的动画系统，功能有限但依然支持；一般来说更推荐使用后者。
+
+
+
+- Mecanim 动画系统通过以下这几个组件来实现，其关系稍微有点绕：
+  + *Animation Clip*：顾名思义是一个个动画片段
+  + *Animator Controller*：类似可以自定义规则的容器，可以将 Animation Clip 放入 Animator Controller 中
+  + *Avatar*：相对特殊，只针对人形动画
+  + *Animator*：以上三个组件通过 Animator 组件一起附加到某个游戏对象上
+- 此外还有一些概念
+  + *Generic* and *Humanoid*：涉及骨骼动画中的两种类型，前者通用，后者针对人形动画
+  + *Playable API*：面向代码层的用于控制动画的 API，可以更直接的访问底层动画系统的接口，允许我们在运行时动态地创建和修改动画，它也可以创建 Graph。层级关系上大概跟 Animator 类似，是一套并列、独立的系统，它的门槛和灵活度会更高，一般来说只会在 Animator 无法满足需求时使用（比如动作、射击游戏等高度动画需求的项目，或有高度定制动画需求倾向，亦或者动画性能瓶颈等）
+- 可以参考
+  + #link("https://www.cnblogs.com/HalfDog/p/18007606")[Unity Animation 动画系统概述]
+  + #link("https://blog.csdn.net/weixin_52402845/article/details/144270243")[Unity 新版动画系统 (Mecanim) 基础 个人笔记向]
+  + #link("https://zhuanlan.zhihu.com/p/492136094")[【Unity动画系统】汇总篇]
+  + #link("https://blog.csdn.net/milu_ELK/article/details/143330428")[【Unity 学习笔记】3D 模型的骨骼，动画使用以及使用Humanoid 在不同骨骼下的素材复用]、#link("https://zhuanlan.zhihu.com/p/104615381")[Unity 骨骼动画的总结]
+- 一个 Animator 的例子如下
+  #fig("/public/assets/CG/2025-03-09-23-23-08.png", width: 90%)
+  - 其中，Clip 是基本的动作单元，它们来自外部导入或 Unity 内部创建
+  - Clip 显示在 Animator Controller 中，而 Animator 的窗口中显示 Animator Controller 的视图（状态机）
+  - Avatar 作为导入角色模型的一部分资源在 Project 窗口中显示，并跟 Controller 并列显示在 Animator 组件中
+
+#q[不过由于个人需求，下面我将主要了解 Playable API 的使用，Animator 之类就先搁置吧。]
+
+简单的说，Playable 可以通过一组 API 来创建一个 Graph，而每个 Graph 可以由多个树形结构组成，每个树状结构都由一个 Output 节点作为根节点，叶子结点则由各种 Playable 组成。适用于一个角色有大量动画和状态的项目，或者想把 Animator 混合树功能和 Animation 混着用，总之是一种程序友好的接口，比如《永劫无间》完全通过 Playable API 来自定义了一套动作和运动系统。另外，Playable API 不止是用于动画系统，也可以用于音频等其它方面。
+
+- Playable API 的优势和目的
+  + *结构简单*，不会有庞大的、蜘蛛网一般的状态机
+  + *运行时创建，添加和删除*，动画状态机是不允许的
+  + *功能强大*，比如直接控制动画的各种属性（播放速度、权重、更新频率）、强大的融合特性、骨骼分部混合和加法混合、性能好。一句话，Animator 能做的 Playable API 都能做，且能做更多的内容
+  + *程序友好*，适合扩展并构建自定义动画系统，也更方便（其他引擎上的）更高层的动画控制系统进行适配
+- Playable 的具体用法介绍，参看下面几篇文章（尤其第三四篇）
+  + #link("https://zhuanlan.zhihu.com/p/386710404")[Unity Playable API 自定义动画系统]
+  + #link("https://mp.weixin.qq.com/s?__biz=MzkyMTM5Mjg3NQ==&mid=2247535622&idx=1&sn=b96a2d8ac55b49e74261d91bbffa944c")[Playable API：定制你的动画系统]
+  + #link("https://zhuanlan.zhihu.com/p/380124248")[【Unity】简单使用 Playable API 控制动画]、#link("https://zhuanlan.zhihu.com/p/380710676")[【Unity】自定义 Animation Playable 与 Timeline 结合]
+  + 看完上面的文字教程后可以看这个 #link("https://www.bilibili.com/video/BV1Er421t7vT")[【Unity 学习之路】一小时速通 Playable]
+  + 以及这一系列视频 #link("https://www.bilibili.com/video/BV1SP4y177YQ")[【咕咕の Unity 学习】Playable 动画系统]
+- RootMotion？
+- 资源
+  + #link("https://docs.unity3d.com/cn/current/Manual/Playables-Examples.html")[官方文档]
+  + #link("https://zhuanlan.zhihu.com/p/631392835")[Bug 汇总]
+
+==== 动作进阶
+- 参考
+  + #link("https://zhuanlan.zhihu.com/p/371165024")[“《永劫无间》的动作与运动系统” 笔记]
 
