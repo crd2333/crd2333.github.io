@@ -29,7 +29,7 @@ order: 2
   + 网格处理、阴影图
 ]
 - 主要分为两类：隐式几何、显式几何，显式几何又可以把参数化表示单独拿出来
-- 可以部分参考我的 #link("http://crd2333.github.io/note/AI/3DV/Representations")[三维重建笔记]（从 CV 的角度）
+- 可以部分参考我的 #link("http://crd2333.github.io/note/CV/Representations")[三维重建笔记]（从 CV 的角度）
 
 == 隐式几何
 - 隐式几何：不告诉点在哪，而描述点满足的关系，generally $f(x,y,z)=0$

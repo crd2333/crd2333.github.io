@@ -86,6 +86,7 @@ order: 2
       - 一般需要通过大量数据训练来使得模型看过足够多数据，具有 generalization 能力
       - 或者引入一些先验知识，比如用 SMPL 引入 geometry prior，或者用图片生成模型 (e.g. Diffusion Model) 引入 appearance (texture) prior
     - 如果要更难一点，那就不仅仅希望能从 single image 恢复高质量 geometry + texture，还希望重建的人体是 animatable 的
+    - 总之，虽然各个论文都声称自己效果很好，但截至目前 (2024.11) 为止尚没有一个通用、鲁棒模型来较好地解决这些问题
 
 === From Single Image
 - 很自然地，人体重建作为三维重建的子问题、子领域，3D Representation and Reconstruction 下的各种 Implicit and Explicit 方法都可以使用，无非是效果好坏的区别，如果从这种角度来分类的话：
@@ -95,15 +96,19 @@ order: 2
     - *NeRF* 要求多视角输入，这里指可泛化的能从单张图片重建人体的 NeRF，从 Optimization-based 变成 Learning-based，可以想见这对数据量的要求会比较高，以及对信息提取、先验融合的要求也会比较高
   - *Explicit* 方面，用得最多的是 Voxel, Point Cloud, Mesh, 3DGS
     - *Voxel* 和 *Point Cloud* 同样一般作为中间表示（毕竟你不能指望一堆小立方体或者稀疏点能够很好地表示人体）
-    - [ ] *3DGS*，待补充（其在人体重建领域的优势亟待探索）
+    - *3DGS*
+      - 3DGS 在人体重建领域到底有哪些优势、能解决哪些困难。我的一些浅显的思考是：
+        + 建模和训练比 NeRF 快得多，可以实时渲染
+        + 模型有明确物理意义，类似 Mesh 一样可以做各种物理特性的改变和驱动。3DGS 的重建结果可以直接被蒙皮权重驱动；而以往方法一般是先重建 Occupancy Field，然后 Marching Cube 出 Mesh，进一步才能驱动和改变，相对不够端到端
+        + 对于 SMPL-prior 模型受 loose clothes 困扰的问题，3DGS 可能会有更好的表现。因为高斯之间的离散性、独立性允许我们对服装和身体之间显式地施加更弱的约束，而基于隐式函数的方法终归是连续的，可能不够灵活
     - *Mesh* 是人体重建这个领域用的最多的表示，大多数工作即使是用隐式表示，到最后都要把人体转化成 mesh
       - 我觉得原因可能在于，首先人体重建跟 animatable 这个属性绑得比较紧，而 mesh 这种表示方法、以及附带的蒙皮、骨骼动画等技术跟图形渲染管线非常契合
       - 另外也可能是受到 SMPL (mesh-based) 模型的影响。而且 SMPL 已经脱胎于普通的 mesh 表示，成为人体重建领域的基础 geometry prior，基于统计分布把人体变形分解为几组低维的参数化表示，大大缩小了合理的解空间，用来对抗单目数据的歧义性（反过来，如果不依赖与 SMPL，就要直接预测出那么多 vertices 的位置，而且还要满足正确拓扑关系，这是非常困难的）
 - 不过如前所述，人体重建有几何、纹理颜色、高精度要求、训练数据稀缺等的复杂性
-  - 这就导致这一领域的方法往往比较复杂，需要引入各种先验知识，包含很多 handcrafted 特征和模块（还没到能用大量数据进行 end-to-end 训练的地步），各种方法的混合使用非常普遍（比一般三维重建 topic 更加 hybrid），仍没有一个较好的范式来一统江湖。鉴于该领域的方法五花八门，个人觉得再用 Implicit 和 Explicit 来区分感觉不那么现实了
-  - 单视图重建人体这一任务信息很少，对未见部分、遮挡部分力有未逮。一般需要通过大量数据训练来使得模型看过足够多数据，具有 generalization 能力，基本不太能采取 “过拟合到某一视频的人体” 这种做法了（当然，为了最终效果而做一些 optimization-based refinement 还是很常见的）
-  - 此外，SMPL 人体模型的引入对结构先验非常有帮助，提高了泛化性，在下面的方法中使用得很普遍。但它的参数预测不准会导致后续有误差累计，也会使得模型对 loose clothes 的支持不佳，属于是一种 trade-off。此外，SMPL 定义的蒙皮权重可以用来驱动人体运动
-  - 这一任务实际上已经不止是重建而更多是一个生成问题，于是生成模型那边的进展也能很自然地应用过来，比如 Diffusion Model，对结果的 appearance 尤其有帮助。最浅显的应用自然是生成出多视角图片，进而转化为多视角人体重建任务，但这算是比较粗暴的做法，应该追求更深度的融合
+  - 如前所述的复杂性导致这一领域的方法往往比较复杂，需要引入各种先验知识，包含很多 handcrafted 特征和模块（还没到能用大量数据进行端到端自监督训练的地步），各种方法的混合使用非常普遍（比一般三维重建领域更加hybrid），仍没有一个较好的范式来一统江湖
+  - 单视图重建人体这一任务信息很少，对未见部分、遮挡部分力有未逮。一般需要通过大量数据训练来使得模型看过足够多数据，具有 generalization 能力，从而幻化出未见部分，基本不太能采取原始 NeRF, 3DGS 那种 “过拟合到某一视频的人体” 的做法了（当然，为了最终效果而做一些 optimization-based refinement 还是很常见的）
+  - 此外，SMPL 人体模型的引入对结构先验非常有帮助，提高了泛化性，在以往模型中使用得很普遍。但它的参数预测不准会导致后续有误差累计。并且 SMPL 建模的是 naked-body，会使得模型对穿衣人体尤其是 loose clothes 的支持不佳。此外，SMPL 定义的蒙皮权重可以用来驱动人体运动
+  - 这一任务实际上已经不止是重建而略带生成性质，于是生成模型那边的进展也能很自然地应用过来，比如 Diffusion Model，对结果的 appearance 尤其有帮助。最浅显的应用自然是生成出多视角图片，进而转化为多视角人体重建任务，但这算是比较粗暴的做法，应该追求更深度的融合
 - 下面梳理一遍从 PIFu, PIFuHD, PaMIR 到 ICON, ECON, SHERF 再到 GTA, SIFU 这些工作的发展脉络
   - PIFu 没有引入任何 geometry prior，它单纯使用 image encoder 得到的 2D feature，对 3D 空间的任意点进行投影得到对应 feature，连带着深度送入 MLP 去预测 occupancy + color；PIFuHD 跟 PIFu 差不多，也没有引入 geometry prior，但它在 (a) 多了个从 input image 猜 normal map 的过程（打开了后续*法向图*路线的潘多拉魔盒x），从而进行 coarse-to-fine 的重建
   - PaMIR 开始引入 SMPL prior，先用跟 PIFu 差不多的方法提取 2D feature，用 input image 估计出 SMPL body mesh，然后用 3D global encoder 提取 volume feature，把投影得到的 2D feature 和 volume feature 一起送入 MLP

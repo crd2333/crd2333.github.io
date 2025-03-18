@@ -44,7 +44,7 @@ order: 4
 #q[
   首先，明确 ICON 的任务：给一张彩色图片，将二维纸片人，还原成拥有丰富几何细节的三维数字人。围绕这一任务，之前有许多基于显式表达的方法 (expliclit representation: mesh, voxels, depth map & point cloud, etc)，但直到三年前 PIFu (ICCV'19) 第一个把隐式表达 (implicit representation) 用到这个问题，衣服的几何细节才终于好到 —— 艺术家愿意扔到 Blender 里面玩一玩的地步。但 PIFu 有两个严重的缺陷，速度慢 + 姿势鲁棒性差。我们在 MonoPort(ECCV'20) 中一定程度上解决了 “速度慢” 这个问题，整个推理到渲染加一块，普通显卡，可以做到 15FPS 的速度，后来我们把重建和 AR 做了一个结合，用 iPad 陀螺仪控制渲染的相机位姿，最后有幸获得 SIGGRAPH Real-Time Live 的 Best Show Award (#link("https://www.zhihu.com/question/415544564/answer/1436374579")[SIGGRAPH 2020 有哪些不容错过的内容？])
 ]
-- 显式表示和隐式表示可以参考 #link("http://crd2333.github.io/note/AI/3DV/Representations")[我之前的笔记]
+- 显式表示和隐式表示可以参考 #link("http://crd2333.github.io/note/CV/Representations")[我之前的笔记]
 - 关于 PIFu 因为比较经典所以还是去了解一下，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/PIFu%20&%20PIFuHD")[PIFu 笔记]
 - 至于 ICON 作者的 MonoPort: Octree surface localization Hard Negative Mining，算是比较简单，从名字基本就了解了
   + 一是用 Octree 减少无用空间的点 query

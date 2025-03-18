@@ -80,7 +80,7 @@ order: 4
 - 动作捕捉(Motion capture)
   - 在真人身上放置许多控制点，在不同时刻对人进行拍照，记录控制点的位置，同步到对应的虚拟人物上
 
-== 动画技术（粘贴自我的 #link("http://crd2333.github.io/note/AI/3DV/Human")[人体三维重建笔记]）
+== 动画技术（粘贴自我的 #link("http://crd2333.github.io/note/CV/Human")[人体三维重建笔记]）
 - 在正式进入人体三维重建的领域之前，我们可以先看看工业界是如何表示人体并做动画的。*主要*是基于骨骼动画(Skeletal Animation) + 蒙皮(skinning)来实现（可以看 #link("https://www.bilibili.com/video/BV1jr4y1t7WR?share_source=copy_web&vd_source=19e6fd31c6b081ac5b8486c112eafa1f")[08.游戏引擎的动画技术基础(上) | GAMES104-现代游戏引擎：从入门到实践]）
 - 模型是由大量顶点(Vertex)组成的，或者每三个一组称为网格(Mesh)，一般来自 blender 或 Maya 这种专门的建模软件。我们知道图形渲染管线是基于 mesh，密集 mesh 构成 geometry，再往 mesh 上面进行纹理映射，为模型添加 appearance
 - 但如果想移动任何网格，显然直接移动那么多网格的顶点到指定位置是不实际的，需要添加骨骼(Skeleton)，有时也叫骨架(Armature)，就像现实世界一样人体由一根根骨头(Bone)组成骨骼
