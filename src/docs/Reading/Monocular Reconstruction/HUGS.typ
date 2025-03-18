@@ -1,6 +1,5 @@
 ---
-order: 1
-draft: true
+order: 2
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *
@@ -29,7 +28,7 @@ draft: true
 - 用 LBS 权重驱动，渲染得到 human-only 图像，也结合场景高斯一起渲染得到 scene + human 图像
 - 优化上，允许人体高斯进行密度控制 (clone, split, and prune)，做以下 loss
   + 跟 ground-truth 的 human-only (by segmentation model) 图像做 human-only loss
-  + 跟 ground-truth 的 scene + human 图像做 scene
+  + 跟 ground-truth 的 scene + human 图像做 loss
   + 对学出来的 LBS 权重做正则化，具体做法是对每个高斯，检索其 $k=6$ 近邻做 distance-weighted 平均得到 $hat(W)$，计算 $||W - hat(W)||_F^2$
 
 == 总结

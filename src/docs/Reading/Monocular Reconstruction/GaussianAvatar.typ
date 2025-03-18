@@ -1,6 +1,5 @@
 ---
-order: 2
-draft: true
+order: 3
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *
@@ -39,7 +38,7 @@ draft: true
     + 三平面或其它带空间信息的表示 + 投影
     + 局部小 MLP
     + ……
-  - 这里采用前两种方法的结合，使用一个动态外观网络（动态意为 pose-dependent），包括一个姿态编码器 U-Net 和一个高斯参数解码器 MLP，学习动作信号与动态高斯参数的映射瓜系，是一个从 2D manifold 到 3D Gaussians 的映射
+  - 这里采用前两种方法的结合，使用一个动态外观网络（动态意为 pose-dependent），包括一个姿态编码器 U-Net 和一个高斯参数解码器 MLP，学习动作信号与动态高斯参数的映射关系，是一个从 2D manifold 到 3D Gaussians 的映射
     $ f_phi: cS^2 in RR^3 -> RR^7 $
     - 这个 2D manifold 可以理解为人体不同位姿下的集合，它是通过 UV positional map 实现的，在 SMPL 的 posed body points 上采样并存储 $(x,y,z)$ 得到 $I in RR^(H times W times 3)$。实际上跟三平面表示 + 投影的思路差不多，这里可以理解为以 UV map 的形式做了特殊的 “投影” 到二维图像上，不过每个点带有空间坐标信息
     - 预测的参数是 $De hat(bx) in RR^3$, color $hat(bc) in RR^3$, scale $hat(s) in RR$。相比起原始的 3DGS，这里有几个变化

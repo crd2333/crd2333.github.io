@@ -1,6 +1,5 @@
 ---
-order: 5
-draft: true
+order: 4
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *
@@ -28,7 +27,7 @@ draft: true
 - 跟后面的 ECON 是同一个作者的工作
 
 == 摘要 & 相关工作
-- 摘要：当前学习 realistic 且 animatable 的 3D clothed avatars 的方法，要么基于需要 posed 3D scans，要么是用 2D 图像但只适用于“精心控制的姿态”（换句话说，姿势鲁棒性差）。相比之下，作者的目标是仅从 2D 图像中学习一个 avatar，并且是在 unconstrained poses 下。给定一组图像，作者的方法是从每张图像中估计 detailed 3D surface，然后将它们结合成一个 animatable avatar。implicit functions 非常适合完成第一个任务，因为可以捕捉到头发和衣服等细节。当前的方法姿势鲁棒性差，常常生成 broken or disembodied limbs, non-human shapes，或者缺失细节的表面。问题在于这些方法使用对 global pose 敏感的 global feature encoder。为了解决这个问题，作者提出 ICON("Implicit Clothed humans Obtained from Normals")使用局部特征。ICON 有两个主要模块，均利用了 SMPL(-X) body 模型。首先，ICON 以 SMPL(-X) normals 为条件来推断出 detailed clothed-human normals(front/back)。其次，用一个 visibility-aware 的 implicit surface regressor 生成一个人体 occupancy field（进而得到等值面即人体表面）。很重要的一点是，在推理时，一个反馈循环交替进行 —— 使用推断出的 clothed normals 优化 SMPL(-X) mesh，然后又用其优化 normals。用这种方法生成一个主体在不同姿态下的多个重建帧后，作者进一步使用 SCANimate 的修改版来生成一个 animatable avatar。数据集评估表明，即使在训练数据很少的情况下，ICON 在重建方面也优于 SOTA。此外，它对分布外样本（e.g. 野外场景下的姿态/图像和框外裁剪）更加鲁棒。ICON 向“从野外图像中重建鲁棒的 3D 穿衣人体”迈出了一步。这使得我们可以直接从视频中创建 avatar，并且 personalized 的衣服可以随着姿态而变化。模型和代码在 #link("https://icon.is.tue.mpg.de")
+- 摘要：当前学习 realistic 且 animatable 的 3D clothed avatars 的方法，要么基于需要 posed 3D scans，要么是用 2D 图像但只适用于“精心控制的姿态”（换句话说，姿势鲁棒性差）。相比之下，作者的目标是仅从 2D 图像中学习一个 avatar，并且是在 unconstrained poses 下。给定一组图像，作者的方法是从每张图像中估计 detailed 3D surface，然后将它们结合成一个 animatable avatar。implicit functions 非常适合完成第一个任务，因为可以捕捉到头发和衣服等细节。当前的方法姿势鲁棒性差，常常生成 broken or disembodied limbs, non-human shapes，或者缺失细节的表面。问题在于这些方法使用对 global pose 敏感的 global feature encoder。为了解决这个问题，作者提出 ICON (Implicit Clothed humans Obtained from Normals) 使用局部特征。ICON 有两个主要模块，均利用了 SMPL(-X) body 模型。首先，ICON 以 SMPL(-X) normals 为条件来推断出 detailed clothed-human normals (front / back)。其次，用一个 visibility-aware 的 implicit surface regressor 生成一个人体 occupancy field（进而得到等值面即人体表面）。很重要的一点是，在推理时，一个反馈循环交替进行 —— 使用推断出的 clothed normals 优化 SMPL(-X) mesh，然后又用其优化 normals。用这种方法生成一个主体在不同姿态下的多个重建帧后，作者进一步使用 SCANimate 的修改版来生成一个 animatable avatar。数据集评估表明，即使在训练数据很少的情况下，ICON 在重建方面也优于 SOTA。此外，它对 out-of-distribution 样本（e.g. 野外场景下的姿态 / 图像和框外裁剪）更加鲁棒。ICON 向 “从野外图像中重建鲁棒的 3D 穿衣人体” 迈出了一步。这使得我们可以直接从视频中创建 avatar，并且 personalized 的衣服可以随着姿态而变化。模型和代码在 #link("https://icon.is.tue.mpg.de")
 - 相关工作
   - Mesh-based statistical models
   - Deep implicit representations
@@ -36,13 +35,14 @@ draft: true
 
 == 阅读作者的解读
 - #link("https://zhuanlan.zhihu.com/p/477379718")[原作者的解读]
-- 原作者的解读讲了很多来龙去脉、insights、概括及延展，我这里就记录阅读作者的解读时的一些困惑，以及倒回去看相关工作中的论文（精读！）
-  - 包括 PIFu, ARCH++, PaMIR, SCANimate, PIFuHD
-#q[围绕“姿势水平(洋文: pose robustness)“，我会用“我今天算是得罪你们一下”，“为什么要提高姿势水平”，“如何提高姿势水平的”，“把我批判一番”，“历史的进程”这五个章节，来讲一下 ICON 的过去现在和将来。]
+- 原作者的解读讲了很多来龙去脉、insights、概括及延展，我这里就记录阅读作者的解读时的一些困惑
+  - 以及倒回去看相关工作中的论文（毕竟是想要精读论文），包括 PIFu, ARCH++, PaMIR, SCANimate, PIFuHD
+  - 下面灰色块中的内容为作者解读的原话（仅略修改格式）
+#q[围绕“姿势水平（洋文: pose robustness）“，我会用“我今天算是得罪你们一下”，“为什么要提高姿势水平”，“如何提高姿势水平的”，“把我批判一番”，“历史的进程”这五个章节，来讲一下 ICON 的过去现在和将来。]
 
 === 我今天算是得罪你们一下
 #q[
-  首先，明确 ICON 的任务：给一张彩色图片，将二维纸片人，还原成拥有丰富几何细节的三维数字人。围绕这一任务，之前有许多基于显式表达的方法(expliclit representation: mesh, voxels, depth map & point cloud, etc)，但直到三年前PIFu (ICCV'19)第一个把隐式表达(implicit representation)用到这个问题，衣服的几何细节才终于好到 —— 艺术家愿意扔到 Blender 里面玩一玩的地步。但 PIFu 有两个严重的缺陷，速度慢+姿势鲁棒性差。我们在 MonoPort(ECCV'20) 中一定程度上解决了“速度慢”这个问题，整个推理到渲染加一块，普通显卡，可以做到 15FPS 的速度，后来我们把重建和AR做了一个结合，用 iPad 陀螺仪控制渲染的相机位姿，最后有幸获得 SIGGRAPH Real-Time Live 的 Best Show Award (SIGGRAPH 2020 有哪些不容错过的内容？)
+  首先，明确 ICON 的任务：给一张彩色图片，将二维纸片人，还原成拥有丰富几何细节的三维数字人。围绕这一任务，之前有许多基于显式表达的方法 (expliclit representation: mesh, voxels, depth map & point cloud, etc)，但直到三年前 PIFu (ICCV'19) 第一个把隐式表达 (implicit representation) 用到这个问题，衣服的几何细节才终于好到 —— 艺术家愿意扔到 Blender 里面玩一玩的地步。但 PIFu 有两个严重的缺陷，速度慢 + 姿势鲁棒性差。我们在 MonoPort(ECCV'20) 中一定程度上解决了 “速度慢” 这个问题，整个推理到渲染加一块，普通显卡，可以做到 15FPS 的速度，后来我们把重建和 AR 做了一个结合，用 iPad 陀螺仪控制渲染的相机位姿，最后有幸获得 SIGGRAPH Real-Time Live 的 Best Show Award (#link("https://www.zhihu.com/question/415544564/answer/1436374579")[SIGGRAPH 2020 有哪些不容错过的内容？])
 ]
 - 显式表示和隐式表示可以参考 #link("http://crd2333.github.io/note/AI/3DV/Representations")[我之前的笔记]
 - 关于 PIFu 因为比较经典所以还是去了解一下，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/PIFu%20&%20PIFuHD")[PIFu 笔记]
@@ -50,25 +50,25 @@ draft: true
   + 一是用 Octree 减少无用空间的点 query
   + 二是集中精力攻克难关，加大复杂纹理处的采样密度
 #q[
-  但是“姿态鲁棒性”一直没有得到很好的解决。PIFuHD 将 PIFu 做到了 4K 图片上，把数字人的几何细节又提了一个档次，但还是只能在站立/时装姿势(fashion pose)下得到满意的结果。ARCH 以及 ARCH++ 尝试把问题从姿态空间(pose space)转换到标准空间（canonical space, 把人摆成“大”字）来解决，但这种转换，首先很依赖于姿态估计(HPS)的准确性，其次，由于转换依赖于 SMPL 自带的蒙皮骨骼权重(skinning weights)，这个权重是写死的且定义在裸体上，强行用到穿衣服的人上，由动作带动的衣服褶皱细节就不那么自然。
+  但是“姿态鲁棒性”一直没有得到很好的解决。PIFuHD 将 PIFu 做到了 4K 图片上，把数字人的几何细节又提了一个档次，但还是只能在站立 / 时装姿势 (fashion pose) 下得到满意的结果。ARCH 以及 ARCH++ 尝试把问题从姿态空间 (pose space) 转换到标准空间（canonical space, 把人摆成“大”字）来解决，但这种转换，首先很依赖于姿态估计 (HPS) 的准确性，其次，由于转换依赖于 SMPL 自带的蒙皮骨骼权重 (skinning weights)，这个权重是写死的且定义在裸体上，强行用到穿衣服的人上，由动作带动的衣服褶皱细节就不那么自然。
 ]
-- PIFuHD 是 PIFu 原作者的新作，发于 CVPR2020(oral)，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/PIFu%20&%20PIFuHD")[PIFuHD 笔记]
-- *Human Pose and Shape estimation(HPS)*，一般都是以 SMPL 为基础去优化它的那个参数化表示，然后重建出一个 body mesh（body 的意思是不包含衣服细节和纹理）。为了理解这段话，我去详细阅读了 SMPL(2015) 并写了 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/SMPL")[SMPL 笔记]
+- PIFuHD 是 PIFu 原作者的新作，发于 CVPR2020 (oral)，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/PIFu%20&%20PIFuHD")[PIFuHD 笔记]
+- *Human Pose and Shape estimation(HPS)*，一般都是以 SMPL 为基础去优化它的那个参数化表示，然后重建出一个 body mesh（body 的意思是不包含衣服细节和纹理）。为了理解这段话，我去详细阅读了 SMPL (2015) 并写了 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/SMPL")[SMPL 笔记]
 - 并简单看了看 #link("https://zhuanlan.zhihu.com/p/443392971")[ARCH++ 的解读]，*ARCH++* 的核心思路是为每个点找到其 spatial feature 和 apperance feature
-  #fig("/public/assets/Reading/human/2024-11-06-21-58-09.png",width: 90%)
-  - 对 spatial feature，文章首先预测出一个带有 blending weight 的 mesh template，且可以实现 posed space 和 canonical space 的双向变换（这可以用 SMPL 或者作者之前工作 ARCH 的 "semantic deformation field"）。将 posed mesh(pose space) 变换到 template mesh(canonical space) 下，在后者的 mesh 表面均匀采点，输入到 Pointnet++ 中为每个采样点 encode 出 spatial feature。空间中任意点 $(x,y,z)$ 的特征根据这些采样点插值得到（找距离最近的 k 个点，结合距离插值）
+  #fig("/public/assets/Reading/Human/2024-11-06-21-58-09.png",width: 90%)
+  - 对 spatial feature，文章首先预测出一个带有 blending weight 的 mesh template，且可以实现 posed space 和 canonical space 的双向变换（这可以用 SMPL 或者作者之前工作 ARCH 的 "semantic deformation field"）。将 posed mesh (pose space) 变换到 template mesh (canonical space) 下，在后者的 mesh 表面均匀采点，输入到 Pointnet++ 中为每个采样点 encode 出 spatial feature。空间中任意点 $(x,y,z)$ 的特征根据这些采样点插值得到（找距离最近的 k 个点，结合距离插值）
   - 对 appearance feature，过一个 encoder 得到 feature map，再将 pose space 中的点 $(x',y',z')$ 投影到 feature map 上，查找到该点的 appearance 特征
   - 注意到 $(x,y,z)$ 和 $(x',y',z')$ 分别是 canonical space 和 pose space 下的点，两者通过 semantic deformation field 联系在一起，共同反映了同一个人体。理论上来说只需要用这两者的 feature 训练一个反映该人物几何的 occupancy field 即可（canonical space 或 pose space 都行，用 semantic deformation field 双向转换）。但可能训练难度略大或是依然不太对齐，ARCH++ 对每个人都训练了两个空间下的 occupancy filed（结构相同，参数不同的 MLP），分别用所在 space 下的 ground truth mesh 进行监督
 - 不是很理解 semantic deformation field 是什么意思，找了一篇 #link("https://blog.csdn.net/weixin_42145554/article/details/119925616")[ARCH 的解读] 没看懂，自己去看了看原论文发现写得也不是很清楚，而且还不开源，服了
 #q[
-  另外一个思路，就是加几何先验(geometric prior)，通俗点说，就是我给你一个粗糙的人体几何，然后根据图像信息，来雕琢出来一个细致的人体几何。GeoPIFu (+estimated voxel), PaMIR (+voxelized SMPL), S3(+lidar) 都有做尝试。我尝试过直接把准确的几何先验(ground truth SMPL)灌给 PaMIR，但 PaMIR 依旧不能在训练集中没见过的姿态上（比如舞蹈，运动，功夫，跑酷等）重建出满意的结果。
+  另外一个思路，就是加几何先验 (geometric prior)，通俗点说，就是我给你一个粗糙的人体几何，然后根据图像信息，来雕琢出来一个细致的人体几何。GeoPIFu (+estimated voxel), PaMIR (+voxelized SMPL), S3 (+lidar) 都有做尝试。我尝试过直接把准确的几何先验 (ground truth SMPL) 灌给 PaMIR，但 PaMIR 依旧不能在训练集中没见过的姿态上（比如舞蹈，运动，功夫，跑酷等）重建出满意的结果。
 ]
 - PaMIR 是 TPAMI2020 的工作，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/PaMIR")[PaMIR 笔记]
 
 === 为什么要提高姿势水平
-#q[那么，有没有可能，扔掉昂贵且费时费力的扫描流程，用 PIFu 从视频中做逐帧重建(Images to Meshes)，然后把重建结果直接扔给 SCANimate 做建模呢(Meshes to Avatar)？]
-- 参考 SCANimate(CVPR2021 oral) 的 #link("https://zhuanlan.zhihu.com/p/392907185")[这篇解读]
-  - SCANimate 的输入是一系列穿着衣物的人体原始扫描数据(raw scans)，换句话说就是需要一个在时间域上动作各异的 ground truth mesh，*如果 ICON 重建的同一个人不同动作的 mesh 足够好*，当然就可以丢给它去输出一个 animatable avatar
+#q[那么，有没有可能，扔掉昂贵且费时费力的扫描流程，用 PIFu 从视频中做逐帧重建 (Images to Meshes)，然后把重建结果直接扔给 SCANimate 做建模呢 (Meshes to Avatar)？]
+- 参考 SCANimate (CVPR2021 oral) 的 #link("https://zhuanlan.zhihu.com/p/392907185")[这篇解读]
+  - SCANimate 的输入是一系列穿着衣物的人体原始扫描数据 (raw scans)，换句话说就是需要一个在时间域上动作各异的 ground truth mesh，*如果 ICON 重建的同一个人不同动作的 mesh 足够好*，当然就可以丢给它去输出一个 animatable avatar
   - SCANimate 主要就是定义了 canonical space 和 posed space，以及从前者到后者的 *LBS* 权重和后者到前者的 *逆 LBS* 权重，分别用 forward skinning net 和 inverse skinning net 去拟合
     $
     w(bx_i^c) = g^c (bx_i^c; Theta_1) : RR^3 |-> RR^K \
@@ -82,13 +82,13 @@ draft: true
 
 === 如何提高姿势水平
 #hline()
-- 这里先打断一下，我们总结一下 ICON 以前的方法大概是怎么做的(PIFu, PIFuHD, PaMIR, #strike[GeoPIFu, S3], ...)
+- 这里先打断一下，我们总结一下 ICON 以前的方法大概是怎么做的 (PIFu, PIFuHD, PaMIR, #strike[GeoPIFu, S3], ...)
   #fig("/public/assets/Reading/Human/2024-11-07-21-59-34.png",width: 70%)
   - 对于 PIFu，它大致是用一个 2D CNN 抽图像特征。对场景中的 3D 点，其 $x,y$ 去取出对应特征，和 $z$ concate 在一起送入 MLP 预测 Occupacy 或 SDF
-  - 对于在 PIFu 基础上引入 shape 先验(SMPL)的方法，大致是先重建一个糙一点的 mesh，用 3D CNN 抽场景特征，用 $x,y,z$ 去取出对应特征，代替之前的 $z$ 送入 MLP
+  - 对于在 PIFu 基础上引入 shape 先验 (SMPL) 的方法，大致是先重建一个糙一点的 mesh，用 3D CNN 抽场景特征，用 $x,y,z$ 去取出对应特征，代替之前的 $z$ 送入 MLP
   - 这样子做，首先这个 encoder 就挺巨大的，不好训练；其次更重要的是它们是 global encoder，模型设计的内含的 prior 压根就不适合这个任务
     - 比方说人的左手移动一下，我们当然希望提出的特征只在左手区域变一点，而其它比如脚的区域特征没什么变化。否则，“牵一发而动全身”会导致模型需要大量数据而且很难泛化
-    - 但对于 global encoder，无论是 2D 还是 3D CNN，它们的感受野都不是 $1$ 而是还挺大的（SHM 网络，先变小后变大），整个模型设计就决定了它不那么 local
+    - 但对于 global encoder，无论是 2D 还是 3D CNN，它们的感受野都不是 $1$，相反还挺大的（SHM 网络，先变小后变大），整个模型设计就决定了它不那么 local
 #hline()
 
 #q[
@@ -100,9 +100,9 @@ draft: true
     + 直接从图像中预测的 SMPL body 如果不准确该怎么办？
     + SMPL body 这个几何约束，该怎么用？
   - 这是三个独立的问题吗？不是，它们其实是高度相关的。
-    + *SMPL 辅助 normal 预测*。pix2pix 地从 RGB 猜 normal，要在不同姿态上做到足够泛化，就需要灌进去大量的训练数据。但，既然 SMPL body 已经提供了粗糙的人体几何，这个几何也可以渲染成 body normal 的形式，那么，如果我们把这个 body normal 和 RGB 合并一下，一块扔进网络作为输入，原来 pix2pix 的问题就可以转化为 —— 用 RGB 的细节信息对粗糙的 body normal 进行形变(wraping)和雕琢(carving)最后获得 clothed normal —— 这样一个新问题，而这个问题的解决，可以不依赖于大量训练数据。
+    + *SMPL 辅助 normal 预测*。pix2pix 地从 RGB 猜 normal，要在不同姿态上做到足够泛化，就需要灌进去大量的训练数据。但，既然 SMPL body 已经提供了粗糙的人体几何，这个几何也可以渲染成 body normal 的形式，那么，如果我们把这个 body normal 和 RGB 合并一下，一块扔进网络作为输入，原来 pix2pix 的问题就可以转化为 —— 用 RGB 的细节信息对粗糙的 body normal 进行形变 (wraping) 和雕琢 (carving) 最后获得 clothed normal —— 这样一个新问题，而这个问题的解决，可以不依赖于大量训练数据。
     + *normal 帮助优化 SMPL*。既然 clothed normal 可以从图像中攫取到 SMPL body 没有的几何细节，那么有没有可能用这些信息去反过来优化 SMPL body？这样，SMPL body 和 clothed normal 就可以左右手互搏，相互裨益迭代优化，body mesh 准了，normal image 就对，normal image 对了，反过来还可以进一步优化 body mesh，1+1>2，双赢，就是赢两次。
-    + *扔掉 global encoder*。最后，SMPL body 和 clothed normal 都有了，即人大致的体型和衣服几何细节都有了，我们真的需要像 S3, PaMIR, GeoPIFu 那样，怼一个巨大的全局卷积神经网络(2D/3D global CNN)来提特征，然后用 Implicit MLP 雕琢出穿衣人的精细外形吗？ICON 的答案是，不需要，SDF is all you need
+    + *扔掉 global encoder*。最后，SMPL body 和 clothed normal 都有了，即人大致的体型和衣服几何细节都有了，我们真的需要像 S3, PaMIR, GeoPIFu 那样，怼一个巨大的全局卷积神经网络 (2D/3D global CNN) 来提特征，然后用 Implicit MLP 雕琢出穿衣人的精细外形吗？ICON 的答案是，不需要，SDF is all you need
   - 下面这张图，展示了 ICON 整个处理管线。先从图像中预测 SMPL body，渲染出正反 body normal，与原始图像合并起来，过一个法向预测网络，出正反 clothed normal，然后对于三维空间中的点，clothed normal 取三维，body normal 上取三维（注意，这里是从 SMPL mesh 上用最近邻取的，而不是从 body normal image 中取的），SDF 取一维，一共七维，直接扔进 implict MLP，Marching Cube 取一下 $0.5$ level-set 等值面，打完收工
 ]
 - 终于！来到 ICON 正文方法部分！
@@ -112,7 +112,7 @@ draft: true
     - 这里 ICON 支持 PyMAF, PARE, PIXIE, HybrlK, BEV 等。PARE 对遮挡好一些，PIXIE 手和脸准一些，PyMAF 最稳定，但依旧对一些很难的 case 束手无策
     - 论文中，作者用 PyMAF 预测出 $beta in RR^10, th in RR^(3 times K)$，其中 $N = 6890$ vertices 并且 $K = 24$ joints。另外 ICON 也支持 SMPL-X
     - 对 SMPL-X 实现，为了增强鲁棒性，作者对 shape 和 pose 参数增加了经验性的 perturbed noise，不过由于 refinement module 的存在，即使添加了 noise 性能下降也不算太多，甚至能跟用 ground truth SMPL-X 的 PaMIR 相当。总之，这样做 slightly worse for in-distribution poses, but better for out-of distribution poses
-  + *SMPL body $->$ body normal*。在 weak-perspective camera 模型下(scale $s in RR$, translation $t in RR^3$)，使用 PyTorch3D differentiable renderer（记作 $DR$），把 $cM$ 渲染成正反(observable side and occluded side)两面的 body normal ${cN_front^b, cN_back^b}$
+  + *SMPL body $->$ body normal*。在 weak-perspective camera 模型下(scale $s in RR$, translation $t in RR^3$)，使用 PyTorch3D differentiable renderer（记作 $DR$），把 $cM$ 渲染成正反 (observable side and occluded side) 两面的 body normal ${cN_front^b, cN_back^b}$
     $ DR(cM) -> {cN_front^b, cN_back^b} $
   + *body normal $->$ clothed normal*。正反 body normal 和原始图片 $mI$ concat 起来，分别送入各自的法向预测网络 $cG_front, cG_back$，出正反 clothed normal
     $
@@ -125,7 +125,7 @@ draft: true
   #grid(
       columns: (42%, 58%),
       [
-        4. *Refining SMPL (if during inference)*。通过从 SMPL body 渲染出的 $cN^b$ 和预测出的 $hcN^c$ 之间的差异，以及从 $cN^b$ 和 $mI$ segmented (by #link("https://github.com/danielgatis/rembg")[rembg], a tool to remove background) 出来的轮廓(silhouette)之间的差异，来优化 $beta, th, t$
+        4. *Refining SMPL (if during inference)*。通过从 SMPL body 渲染出的 $cN^b$ 和预测出的 $hcN^c$ 之间的差异，以及从 $cN^b$ 和 $mI$ segmented (by #link("https://github.com/danielgatis/rembg")[rembg], a tool to remove background) 出来的轮廓 (silhouette) 之间的差异，来优化 $beta, th, t$
           $
           cL_"SMPL" = min_(th,beta,t)(la_(N_"diff")cL_(N_"diff") + cL_(S_"diff") ) \
           cL_(N_"diff") = abs(cN^b - hcN^c), cL_(S_"diff") = abs(cS^b - hat(cS)^c)
@@ -161,11 +161,11 @@ draft: true
 - 字面意思比较好理解，关于第一点，因为 SMPL 给的是 naked body 的先验，这个先验还是比较强的，于是对于那些 Loose clothing 就寄了
   - 在同样使用 SMPL 作为几何先验的其他工作中，比如 PaMIR，这个 trade-off 也普遍存在（虽然 PaMIR 用了一个 trick 打了个补丁）
   - PaMIR 在 body reference optimization 阶段（根据最后的 occupancy 预测值），用最终的 occupancy 反馈去修正 SMPL 参数的时候，有个表面内外惩罚不一样的细节，不过不好说效果有多少
-  - 而 ICON 是用从不完全观测(2D image)推断出的二手货 normal 去反馈 SMPL 参数，好像就没管内外的问题？不过作者后续的工作 ECON 说是更好地平衡了这个 trade-off
+  - 而 ICON 是用从不完全观测 (2D image) 推断出的二手货 normal 去反馈 SMPL 参数，好像就没管内外的问题？不过作者后续的工作 ECON 说是更好地平衡了这个 trade-off
 - 性能天花板受制于 HPS，比如 Extreme pose 或 Extreme perspective 下，同样也是由于比较依赖 SMPL 这种强先验
 - “几何比法向差” 这个不理解，作者不说是 bug 吗？怎么后续开源代码里是额外加了个模块去修复呢？
   #q[在 ICON 的开源代码中，我们引入了一个后处理模块(-loop_cloth)，对于 ICON 直出的 mesh，用从图像中估计的 normal 进行“二次抛光”，这个没写在论文中，但实际效果还不错，抛光后的 mesh 较 ICON 直出的结果，拥有了更加自然的褶皱细节，面片拓扑也更规整。当然，也额外多费一点时间。]
-  - 注：这个不是 bug，就是 SMPL body 和 normal map 之间 trade-off 的一个体现，所以既然 normal 更好，后续 ECON 就直接改为以 normal 为主了
+  - 后注：这个不是 bug，就是 SMPL body 和 normal map 之间 trade-off 的一个体现，所以既然 normal 更好，后续 ECON 就直接改为以 normal 为主了
 
 === 历史的进程
 #q[
@@ -186,7 +186,7 @@ draft: true
 == 论文十问
 - 作者自己也回答了一遍并上传了 ReadPaper（乐
 + 论文试图解决什么问题？
-  - PIFu, PIFuHD, PaMIR, ARCH, ARCH++，当下市面上主流的基于单张图像，使用 implicit function 进行三维穿衣人体重建的算法，虽然在站立/时装姿势下表现不错，但对于较难的人体姿态（e.g. 舞蹈，运动，功夫，跑酷），泛化性和鲁棒性极差，而单纯的对训练数据进行增广，费钱费卡，提升还很有限 $-->$ 希望能用很少一点数据，就训练出对人体姿态足够鲁棒的模型
+  - PIFu, PIFuHD, PaMIR, ARCH, ARCH++，当下市面上主流的基于单张图像，使用 implicit function 进行三维穿衣人体重建的算法，虽然在站立 / 时装姿势下表现不错，但对于较难的人体姿态（e.g. 舞蹈，运动，功夫，跑酷），泛化性和鲁棒性极差，而单纯的对训练数据进行增广，费钱费卡，提升还很有限 $-->$ 希望能用很少一点数据，就训练出对人体姿态足够鲁棒的模型
   - 另外，随着 NASA, SCANimate, SNARF, MetaAvatar, Neural-GIF 等一系列工作爆发，如何从动态的三维人体 scan 中学出来一个 animatable neural avatar 渐渐成为一个研究热点，但高质量的动态人体扫描费钱费人工，普通用户或者没有多视角采集设备的团队很难进入这个领域 $-->$ 希望直接从单目图像视频中重建高质量三维人体模型，直接扔进已有框架，得到质量尚可的可驱动数字人
   - 作者针对这两个问题，提出了 ICON
 + 这是否是一个新的问题？
@@ -225,13 +225,13 @@ draft: true
 === 思路和动机
 - 之前 ICON 提到过 稳定性 vs 自由度 的 trade-off，所以作者这里说
   #q[PIFu(HD) 的大火，导致整个领域内大家纷纷开始卷 Implicit Function (IF)，就是因为它能做到自由拓扑。以前 mesh-based 方法揪不出来的衣服褶皱、头发纹路、开衫夹克、宽松裙子等，上了 IF 就都能搞出来了。而 ICON 虽然号称比 PIFuHD 拥有更好的泛化性，但这仅仅体现在姿态上，却以牺牲宽松衣服重建效果为代价，相当于忘记了 Clothed Human Reconstruction 这个问题的“初心”。]
-- 所以作者就想有个办法，对 SMPL-X 取其精华去其糟粕，具体他是这么想的：
-  #q[如果让法向图(Normal map)来主导整个重建过程，而不仅仅用来做二次抛光呢？之前的抛光，“主”是粗糙的几何，“辅”是 normal。如果主辅易位，normal 作为“主”，而粗糙几何 SMPL body 作为“辅”，这个问题会不会有更好的解法？]
+- 所以作者就想有个办法，对 SMPL-X 取其精华去其糟粕，具体他是这么想的（联系 ICON “几何比法向差” 的问题）：
+  #q[如果让法向图 (Normal map) 来主导整个重建过程，而不仅仅用来做二次抛光呢？之前的抛光，“主”是粗糙的几何，“辅”是 normal。如果主辅易位，normal 作为“主”，而粗糙几何 SMPL body 作为“辅”，这个问题会不会有更好的解法？]
   - 其实呢，还有另一个解法，那就是直接抛弃 SMPL，把 setting 降低到骨骼，这是组里学长的工作，还不太了解（还没看x）
 
 === 技术细节
 - 总体 pipeline 如图，分 Normal Estimation, Front and Back Surface Reconstruction, Shape Completion 三步
-#fig("/public/assets/reading/human/2024-11-14-11-43-04.png",width: 80%)
+#fig("/public/assets/Reading/Human/2024-11-14-11-43-04.png",width: 80%)
 ==== Normal Estimation
 - 这部分跟 ICON 很像，或者说直接就是把 ICON 的 image-to-image translation network 搬过来
 - 不过 ICON 里面提到，由于图像缺失背面信息，预测出的背面法向 $hcN_B^c$ 往往过于平滑
@@ -249,17 +249,17 @@ draft: true
 ==== Front and Back Surface Reconstruction (Normal Integration)
 #q[
   这样就会很自然联想到 Normal Integration 这个技术路线，这是个挺古早的技术了，但本身是个 ill-posed problem，即如果
-    + normal map 有悬崖，即存在不连续区域(discontinuity)，这在关节几何(articulated objects)中很常见
+    + normal map 有悬崖，即存在不连续区域 (discontinuity)，这在关节几何 (articulated objects) 中很常见
     + 悬崖落差未知，即 boundary condition 不明确
     + normal map 本身又是有噪声的
   那么 normal 就很难通过优化过程，唯一确定 depth，换句话说，此时 normal 与 depth，是一对多的关系
 ]
 - 这个 normal integration 是什么意思呢？
   - 我们知道所谓 normal map 实质上就是一个 shape 为 $(3,H,W)$ 的以像素为粒度来表示 $(x,y,z)$ 法向的图像，我们把坐标对齐之后，对 $z$ 方向进行积分，自然可以得到一个 depth map，我自己画了个图来形象化展示这个过程
-  #fig("/public/assets/reading/human/2024-11-14-14-31-02.png",width: 40%)
+  #fig("/public/assets/Reading/Human/2024-11-14-14-31-02.png",width: 40%)
   - 思路大体是这样，但数学推导上复杂得多。ECON 这里提到的核心文章 #link("https://link.springer.com/chapter/10.1007/978-3-031-19769-7_32")[Bilateral Normal Integration] 就是考虑到 discontinuity 的问题，引入了半光滑（即表面在水平和垂直方向上单侧可微、单侧连续）的假设，引入所谓 Bilateral（双边）的概念，统一了正交和透视情况下的 normal integration 问题。具体的数学，看不懂
 #q[
-  但我们知道，人体是一个有很强先验信息的 articulated object。如果可以将人体先验，即 SMPL-X depth，作为一个几何软约束(soft geometric constrain)，加入到整个 Normal Integration 的优化方程中。那么不光悬崖落差有了一个大致的初始值，normal 中的噪声也被约束住了，避免因 normal noise 干扰整个积分过程，导致表面突刺 (artifacts)。同时，对于在 normal map 上连续，但 SMPL-X depth 上不连续的区域，比如两腿中间的裙子（有 normal 覆盖，没 SMPL-X depth 覆盖），可以仅在 normal 上积分的同时，尽量与 nearby surface 保持连贯性。这就是文章中提到的 d-BiNI (depth-aware BiNI)。
+  但我们知道，人体是一个有很强先验信息的 articulated object。如果可以将人体先验，即 SMPL-X depth，作为一个几何软约束 (soft geometric constrain)，加入到整个 Normal Integration 的优化方程中。那么不光悬崖落差有了一个大致的初始值，normal 中的噪声也被约束住了，避免因 normal noise 干扰整个积分过程，导致表面突刺 (artifacts)。同时，对于在 normal map 上连续，但 SMPL-X depth 上不连续的区域，比如两腿中间的裙子（有 normal 覆盖，没 SMPL-X depth 覆盖），可以仅在 normal 上积分的同时，尽量与 nearby surface 保持连贯性。这就是文章中提到的 d-BiNI (depth-aware BiNI)。
 ]
 
 - 这里我们希望把 clothed normal maps “提升”到 2.5D 表面，希望满足：
@@ -274,7 +274,7 @@ draft: true
   - 同样，这里利用 SMPL-X 先验，把 body mesh $cM^b$ 先渲染成 front-back depth map $cZ_F^b, cZ_B^b$，然后用 clothed normal maps 去雕琢
   - 优化的 loss 分别是：由 BiNI 提出的 $cL_n$，来自 SMPL-X 的 depth prior $cL_d$，以及 front-back silhouette consistency $cL_s$
   - 具体的前向计算方法和 loss 项公式在附录里，显式地用几个矩阵去表示 depth-normal 关系，然后用神经网络的前向反向方法去优化，并且实现了 CUDA 加速
-#q[整个优化过程，有一个更形象的解释——把裸体模特(SMPL-X body)慢慢地塞进一套做好的衣服(Normal map)中，把衣服撑起来。]
+#q[整个优化过程，有一个更形象的解释——把裸体模特 (SMPL-X body) 慢慢地塞进一套做好的衣服 (Normal map) 中，把衣服撑起来。]
 - 这时我们就可以理解前面说的 2.5D 是什么意思了
   - 我们得到的 front-back surface $cM_F, cM_B$ 已经超越了 clothed normal map，因为它有深度
   - 但是它还称不上是 3D，因为非正、背面的侧方向没有闭合，这就是下一步要做的事情
@@ -289,9 +289,9 @@ draft: true
 
   如果输入图片没有遮挡，我比较推荐 explicit 的策略 (use_ifnet: False)，因为快且稳定，而如果有遮挡，就不得不上 IF-Nets+ (use_ifnet: True)
 ]
-#fig("/public/assets/reading/human/2024-11-14-15-43-23.png",width: 70%)
+#fig("/public/assets/Reading/Human/2024-11-14-15-43-23.png",width: 70%)
 
-- 这里就是说设计了两种方法，一个快且稳定但泛化性差(EX)，一个慢且复杂(IF)
+- 这里就是说设计了两种方法，一个快且稳定但泛化性差 (EX)，一个慢且复杂 (IF)
   + EX:
     - 首先把 SMPL body mesh $cM^b$ 的可见部分的三角形都删掉，得到 mesh $cM^"cull"$，包含了正反面看不到的 side-view boundaries 和被遮挡区域
     - 结合前面得到的正反表面 $cM_F, cM_B$，过一个经典的 Poisson Surface Reconstruction，得到无懈可击的重建结果 $ECON_EX$
@@ -313,16 +313,16 @@ draft: true
   + 另外，ECON 确实把 encoder + implicit regressor 合并成一个 explicit optimizer 了，但这个 optimizer 内部的各个小步骤可不见得比原本少
   - 总之，如果从方法复杂度的角度来看，不完全认同这种用复杂步骤来实现各种约束实现效果增加的技术路线，如果说 ICON 给人感觉很精巧精致，那么 ECON 就个人感觉稍微有点过头了（我可能还得多看看别的论文是怎么做的，有没有更好的办法）。话虽这么说，效果确实好（
 - 但是的但是，从另外一个层面看，作者自己是怎么想的呢？
-  - 他更多的是想要去 Deep Learning 化，变得不那么 data-driven，摆脱强监督，也就能不用那么依赖数据
+  - 他更多的是想要*去 Deep Learning 化*，变得不那么 data-driven，摆脱强监督，也就能不用那么依赖数据
   - 比如下图，把 PUFu, PIFuHD, PaMIR, ICON, ECON 都抽象总结一下。后续的提 feature 和 predict 变成了非神经网络的方法，而剩下的 HPS 和 normal map 呢，可以考虑怎么把它转化到半监督、自监督的 setting 下
   #grid3(
     column-gutter: 10pt,
-    fig("/public/assets/reading/human/2024-11-14-21-15-00.png"),
-    fig("/public/assets/reading/human/2024-11-14-21-15-18.png"),
-    fig("/public/assets/reading/human/2024-11-14-21-16-37.png")
+    fig("/public/assets/Reading/Human/2024-11-14-21-15-00.png"),
+    fig("/public/assets/Reading/Human/2024-11-14-21-15-18.png"),
+    fig("/public/assets/Reading/Human/2024-11-14-21-16-37.png")
   )
   - 其实在 ECON 前后的这段时期 (22-23)，在不限于人体的各种领域比如场景表示，已经有从 implicit 又转回到 explicit 的趋势（包括基于 NeRF 的各种工作也是），这跟 ECON 背后的这种 general insight 不谋而合
-  - 而且在 ECON 发布几个月以后，3DGS 横空出世（有点佩服作者的预见性），从 implicit 又转回到 explicit 的这个过程，本身就有点 “把暴力黑盒的神经网络换成精细的、类神经网络的足够 powerful 的三维表示” 的感觉
+  - 而且在 ECON 发布几个月以后，3DGS 横空出世（有点佩服作者的预见性），从 implicit 又转回到 explicit 的这个过程，本身就有点 “*把暴力黑盒的神经网络换成精细的、类神经网络的足够 powerful 的三维表示*” 的感觉
 #q[
   不同于 implicit-based methods，$ECON_EX$ 没有任何 implicit 模块，这也是标题的立意，单目穿衣人重建这个问题，不是非要上 implicit 才能保住细节，explicit 也可以的，一个数字人，显式隐式各自表述。
 
@@ -332,12 +332,12 @@ draft: true
 ]
 - 所以，为什么 ECON 这样做可以更好地结合 SMPL-X body 和 clothed normal map 之间的那个 trade-off 呢？
   - 个人觉得，就是 Implicit 的方法更多是一个黑盒，输入给它 clothed normal map 和 body mesh normal 和 SDF 后，你也不知道它在返回输出之前做了什么，在人体的哪些部分对哪个输入比较看重等，都是未知的
-  - 与之相对的，改成 Explicit 之后，首先是引入了 “把衣服撑起来” 这个先验(Inductive biase)，而且过程中的变换、参数的设置都更好由我们控制，某种程度上使得表达变得更加 powerful
+  - 与之相对的，改成 Explicit 之后，首先是引入了 “把衣服撑起来” 这个先验 (Inductive biase)，而且过程中的变换、参数的设置都更好由我们控制，某种程度上使得表达变得更加 powerful
 - 这个三明治结构的提法倒是第一次见，感觉应该是指先集中精力克服大部分难关，然后补全小问题的这种思路
 - 随后，因为补全填缝的思路而天然能够处理多人遮挡、因为基于 SMPL-X 先验而能够做替换和动画，这都是意外之喜了
 
 #q[
-  尽管有各种问题，（但个人认为），ECON 依旧是目前为止，泛化性最好的，单图穿衣人重建算法，我们在 AMT 上花了六百欧做了上千组 perception study，最后的结论是——除了在 fashion images 上和 PIFuHD 打了个平手，其他所有的 hard cases，challenging poses or loose clothing，ECON 的重建质量一骑绝尘。
+  尽管有各种问题，（但个人认为），ECON 依旧是目前为止，泛化性最好的，单图穿衣人重建算法，我们在 AMT 上花了六百欧做了上千组 perception study，最后的结论是 —— 除了在 fashion images 上和 PIFuHD 打了个平手，其他所有的 hard cases，challenging poses or loose clothing，ECON 的重建质量一骑绝尘。
 
   而 fashion images 上打平手的主要原因，主要还是因为这个屈腿的问题，所以，只要 SMPL-X estimate 可以解决掉屈腿的问题（比如像 BEDLAM 那样造 synthetic data，然后用 perfect SMPL-X gt 而不是 pseudo SMPL-X gt 做训练），那么 ECON 就是六边形战士，单目穿衣人重建界的马龙（只要限定词足够多，就没人可以打败我）。
 ]
@@ -351,7 +351,7 @@ draft: true
   4. 极端宽松的衣服下，目前 normal 预估的质量无法保证，伴随着 ECON 的重建也会有破洞
   - 至于 3.，人体和衣服之间往往是有距离的，而 ECON 的优化过程，目前没有考虑衣服的紧合度 tightness（具体实现中，我们手工设定了 thickness=2cm），导致在一些极端的情况下，人会看起来扁扁的，这个问题，或许可以通过额外预测 tightness，并将其引入到 d-BiNI 优化过程中来解决。
 ]
-- 这些问题都挺好理解的，SMPL-X 本身的问题自然会影响到 ECON，以及极端宽松的情况本身就是很难的问题，不能苛责 ECON；至于 3. 这个问题也好解决，大不了“人肉梯度下降”手调超参（不过我感觉 3. 挺严重的，好多图片重建得都看起来很扁，尤其是考虑如果人体是侧着重建的，那岂不是要被压成一片了）
+- 这些问题都挺好理解的，SMPL-X 本身的问题自然会影响到 ECON，以及极端宽松的情况本身就是很难的问题，不能苛责 ECON；至于 3. 这个问题也好解决，大不了 “人肉梯度下降” 手调超参（不过我感觉 3. 挺严重的，好多图片重建得都看起来很扁，尤其是考虑如果人体是侧着重建的，那岂不是要被压成一片了）
 - 论文中给出的未来工作（除了解决上述问题以外）
   + *neural avatars*: 目前 ECON 重建的只是 3D geometry，可以进一步恢复出骨架和 skinning weights，得到 fully-animatable avatar（这点 ECON 后面其实已经做了）。另外，考虑如何生成人体背面 texture，也 avatar 构建也很有意义。以及，从重建的 geometry 中分离出衣服、发型、配饰等，可以用来做模拟、合成、编辑和风格迁移等任务。总而言之，ECON 的重建结果以及它底下的 SMPL-X body，可以作为 3D shape prior 来学习 neural avatars（就跟 ICON 后续丢给 SCANimate 一样）
   + *data augmentation*: 现有的 real clothed humans with 3D ground truth 数据集很有限，比如 RenderPeople 和 CAPE；而跟 3D 不搭边的 2D 图像数据集就数不胜数了。ECON 可以用来从图片中恢复出 normal maps 或者 3D humans，从而扩大数据集，比如作者在附录里对 SHHQ 做的那样。随着 ECON-like 的方法逐渐成熟，大量数据就可以赋能 generative models of 3D clothed avatars 的训练，在海量数据上 scale up
@@ -369,7 +369,7 @@ draft: true
 + 有哪些相关研究？如何归类？谁是这一课题在领域内值得关注的研究员？
   - 这个子领域，对作者启发比较大的几位研究者：Shunsuke Saito, Zerong Zheng, Zeng Huang。当然 #link("http://xiuyuliang.cn/")[作者本人] 也值得关注:)
 + 论文中提到的解决方案之关键是什么？
-  - 关键在于扫到了 Xu Cao 的 BiNI(Bilateral normal integration.” European Conference on Computer Vision. Springer, Cham, 2022) 这篇论文，作者将深度信息加入进去，增加了正反面联合优化，叫 d-BiNI，这是 ECON 的核心组件，其他的模块是赠送的
+  - 关键在于扫到了 Xu Cao 的 BiNI (Bilateral normal integration.” European Conference on Computer Vision. Springer, Cham, 2022) 这篇论文，作者将深度信息加入进去，增加了正反面联合优化，叫 d-BiNI，这是 ECON 的核心组件，其他的模块是赠送的
 + 论文中的实验是如何设计的？
   - 比了很多 SOTA，ECON 当然是新 SOTA，但我依然建议大家忽略这块，原因有二。一，论文放出来后，开源代码里面做了诸多优化升级，现在的算法跑出来的结果，比论文中提升了不止一点点，之后有时间可能会重新跑分数。二，目前的 metric 和人眼敏感度并不协调，分数并不能充分反映最后重建的质量，所以我建议大家还是跑出结果，自己拖到 meshlab 转着看一下，你就知道和之前的方法差距多么巨大
 + 用于定量评估的数据集是什么？代码有没有开源？

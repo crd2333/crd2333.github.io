@@ -1,6 +1,5 @@
 ---
 order: 4
-draft: true
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *

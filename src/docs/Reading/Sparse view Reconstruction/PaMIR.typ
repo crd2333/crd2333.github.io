@@ -1,6 +1,5 @@
 ---
 order: 3
-draft: true
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *
@@ -13,7 +12,7 @@ draft: true
 = PaMIR: Parametric Model-Conditioned Implicit Representation for Image-based Human Reconstruction
 - 时间：2020.7
 - 参考了 #link("https://www.slagworld.com/index.php/archives/63/")[这篇解读] 和 #link("https://blog.csdn.net/weixin_42145554/article/details/120050376")[这篇]
-#fig("/public/assets/Reading/human/2024-11-05-22-54-33.png", width: 70%)
+#fig("/public/assets/Reading/Human/2024-11-05-22-54-33.png", width: 70%)
 - PaMIR 用的还是 PIFu 的方法去预测体素化的 occupancy，只是加了几何信息的先验即 SMPL 信息（又因为这已经包括了深度信息，所以直接把 PIFu 原本的 $Z(X)$ 删了），随后将 SMPL 转换为体素，并通过 3D encoder 提取 Voxel-aligned Feature $bF_V$
   $
   F(C(p)): RR^3 |-> [0,1] \

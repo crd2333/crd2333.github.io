@@ -239,7 +239,6 @@ Unity 提供了一套强大灵活的动画系统，包括 2D, 3D，不过这里�
   + #link("https://zhuanlan.zhihu.com/p/380124248")[【Unity】简单使用 Playable API 控制动画]、#link("https://zhuanlan.zhihu.com/p/380710676")[【Unity】自定义 Animation Playable 与 Timeline 结合]
   + 看完上面的文字教程后可以看这个 #link("https://www.bilibili.com/video/BV1Er421t7vT")[【Unity 学习之路】一小时速通 Playable]
   + 以及这一系列视频 #link("https://www.bilibili.com/video/BV1SP4y177YQ")[【咕咕の Unity 学习】Playable 动画系统]
-- RootMotion？
 - 资源
   + #link("https://docs.unity3d.com/cn/current/Manual/Playables-Examples.html")[官方文档]
   + #link("https://zhuanlan.zhihu.com/p/631392835")[Bug 汇总]

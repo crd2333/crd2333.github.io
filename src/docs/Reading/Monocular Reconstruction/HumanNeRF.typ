@@ -1,6 +1,5 @@
 ---
-order: 4
-draft: true
+order: 1
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *
@@ -15,16 +14,19 @@ draft: true
 
 = HumanNeRF: Free-viewpoint Rendering of Moving People from Monocular Video
 - 时间：2022.1 (CVPR2022 oral)
-- 参考 #link("https://zhuanlan.zhihu.com/p/691329488")[Human-NeRF详细理解：从LBS到Human-NeRF] 和 #link("https://zhuanlan.zhihu.com/p/546465126")[论文随记 | HumanNeRF]
+- 参考 #link("https://zhuanlan.zhihu.com/p/691329488")[Human-NeRF 详细理解：从 LBS 到 Human-NeRF] 和 #link("https://zhuanlan.zhihu.com/p/546465126")[论文随记 | HumanNeRF]
 - 首先需要知道它干了什么
   - 输入一个单目、运动人体的视频，经过离线的逐帧分割（需要手动清理）和三维位姿估计，基于优化的方法去训练网络参数（过拟合到这个视频的人体表示），推理时在任意时刻暂停可以渲染出 360° 人体
   - 方法是数据驱动的，端到端的，需要 3D 位姿 refinement 但不需要 template model
-#fig("/public/assets/reading/human/2024-11-15-12-04-34.png",width:80%)
-- 基本思想是：target/observation space 下的采样点 $bx$，如果我们把它通过一个 motion field 逆变换回 canonical space $bx_c$，然后像 NeRF 那样过 MLP 得到密度和颜色，跟原本的采样点的密度和颜色应该是一一对应的
+#fig("/public/assets/Reading/Human/2024-11-15-12-04-34.png",width:80%)
+- 基本思想是：target /
+
+
+observation space 下的采样点 $bx$，如果我们把它通过一个 motion field 逆变 换回 canonical space $bx_c$，然后像 NeRF 那样过 MLP 得到密度和颜色，跟原本的采样点的密度和颜色应该是一一对应的
   $ F_o (bx,bp) = F_c (T(bx,bp)) $
   - 注：observation space 和 canonical space 下的点本身是一一对应，但实际上，NeRF 的一个像素对应空间中多个采样点，这就做不到一一对应了（回忆之前的 MipNeRF 等工作就是在缓解这件事情）。Anyway，虽然这是固有缺陷，但至少大方向上能用
 - motion field 如何实现？
-  - 第一，把 motion field 解耦成骨骼驱动的变形(Skeletal motion)和在其上的偏置(Non-rigid motion)
+  - 第一，把 motion field 解耦成骨骼驱动的变形 (Skeletal motion) 和在其上的偏置 (Non-rigid motion)
     $ T(bx,bp) = T_skel (bx,bp) + T_NR (T_skel (bx,bp),bp) $
     - 其中，$p = (J,Omega)$ 指 $K$ 个关节点的位置和局部关节旋转矩阵
   - 第二，参照 Vid2Actor 把 SMPL 写死的蒙皮权重改成 volume 的（与空间相关的）$w_o^i (bx)$，学习一个逆变换
@@ -83,6 +85,6 @@ draft: true
   + 方法比较依赖初始的位姿估计；
   + 如果包含运动模糊等比较难的 case 重建出的新视图可能会失败；
   + 非刚性运动比较依赖姿势，比如衣物宽松、长发飘飘就容易寄；
-  + 光照上假设漫反射，旋转一定角度后外观不会明显变化（原始 NeRF 好像也没怎么建模这方面）；
+  + 光照上假设漫反射，旋转一定角度后外观不会明显变化；
   + 最后，需要人工干预去分割视频，把那些没用或是离谱的帧给剔除掉，限制了应用的广度
 - 大体就是这样，不是很复杂，挺自然、符合直觉的一个把 NeRF 应用到人体的工作，下面回到 SHERF

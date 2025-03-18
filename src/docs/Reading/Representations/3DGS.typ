@@ -1,3 +1,7 @@
+---
+order: 5
+---
+
 #import "/src/components/TypstTemplate/lib.typ": *
 
 #show: project.with(
@@ -12,8 +16,8 @@
 == 前言
 - 初看 3DGS 感觉有点像是 Plenoxels
   - 二者都是完全不涉及神经网络的方法（当然你也可以说二者的前向和优化过程可以看作是某种特殊的“网络”）
-  - 所不同的是，Plenoxels 用来固化特征的体素网格依旧还是模拟 NeRF 的那个神经隐式场，只是把 RGB 的表达换成了球谐函数（3DGS 的这个想法应该也是从这里来的），并且仍旧是 Ray-Marching 逐像素采点进行 Volume Rendering 那一套(backward mapping)
-  - 而 3DGS 则完全脱胎于 NeRF，不仅摈弃了神经网络，创新出一种新的显式表示 —— 3D 高斯球，并且用 splatting(forward mapping) 代替了体渲染方法，实现了高速渲染
+  - 所不同的是，Plenoxels 用来固化特征的体素网格依旧还是模拟 NeRF 的那个神经隐式场，只是把 RGB 的表达换成了球谐函数（3DGS 的这个想法应该也是从这里来的），并且仍旧是 Ray-Marching 逐像素采点进行 Volume Rendering 那一套 (backward mapping)
+  - 而 3DGS 则完全脱胎于 NeRF，不仅摈弃了神经网络，创新出一种新的显式表示 —— 3D 高斯球，并且用 splatting (forward mapping) 代替了体渲染方法，实现了高速渲染
 
 == 摘要 & 引言 & 相关工作
 - 先回顾一下过去的方法
@@ -37,13 +41,13 @@
 - 首先从 SfM 产生的稀疏点云初始化（直接调用 COLMAP 库）或随机初始化（可以但不建议，效果会变差），随后为每个点赋予高斯属性值
 - 一个 3D 高斯属性（都是可学习的，并通过反向传播进行优化）包括
   + 中心位置 $(x,y,z)$，表示成 3D 高斯的均值 $μ$
-  + 3D 高斯的协方差矩阵 $Si$。协方差矩阵需要保持半正定性，但在梯度下降优化中难以保证，因此使用*沿坐标轴的放缩*($bs$)加上*用四元数表达的旋转*($bold(q)$)进行表示：$Si = R S S^T R^T$，一共 $7$ 个参数
+  + 3D 高斯的协方差矩阵 $Si$。协方差矩阵需要保持半正定性，但在梯度下降优化中难以保证，因此使用*沿坐标轴的放缩* $(bs)$ 加上*用四元数表达的旋转* $(bq)$ 进行表示：$Si = R S S^T R^T$，一共 $7$ 个参数
   + 不透明度 $al$
   + 颜色 $bc$，由球谐函数表示。球谐函数类似于傅里叶变换的基函数，比如使用 $4$ 阶，就需要 $16$ 个参数，对 RGB 分别而言就有 $48$ 个系数，它们描绘了这个高斯球在不用方向 $(th,phi)$ 看过去的颜色
 
 === splatting 和渲染
 - 我们先想象高斯球的属性都已经优化得很好，接下来给定位姿用 splatting 方法渲染图像
-- 所谓 splatting 中文翻译做抛雪球
+- 所谓 splatting 中文翻译做泼溅，可以想象成是抛雪球
   - 实际上就是把 3D 高斯椭球投射到 2D 平面上，记录它们的深度（用于排序前后）以及溅起雪的范围（对图像的贡献，显然中心最多，符合直觉）。然后，如果不考虑后续的优化，我们就是逐个像素地遍历所有雪球计算颜色贡献，最后得到像素值
   - 这里如果我们与 NeRF 做一个比较，就会发现二者几乎是一个逆过程
     - NeRF 从像素出发找采样点，用体渲染的方式积分得到像素值，如果要保证渲染质量、隐式几何连续性、细节还原度，往往需要大量采样需求
@@ -53,21 +57,22 @@
   - 给定指定的相机位姿，可以想象有些高斯球是看不到的，可以自然地把它们从后续计算中剔除
 - 投影
   - 我们希望 3D 高斯球在变换后依然保持 2D 高斯分布（不然光栅完和高斯没关系岂不是努力白费），这需要仿射性质
-  - 在图形学经典的 MVP 变换中，我们用到 View 和 Project 的透视变换（perspective，正交投影没体现出近大远小的变化来，直接 pass）
-    - view 变换 $W$ 涉及旋转和平移，都是仿射变换(affine)所以没什么问题；但 project 变换则不仿射了，这意味着不可能使用单一的线性变换矩阵来转换所有点的坐标（因为每个点在光线空间的坐标是一个以其在相机空间坐标为自变量的非线性函数，所以不存在一个通用的变换矩阵）
+  - 在图形学经典的 MVP 变换中，我们用到 View 和 Perspective Project（正交投影没体现出近大远小的变化来，直接 pass）
+    - view 变换 $W$ 涉及旋转和平移，都是仿射变换 (affine) 所以没什么问题；但 project 变换则不仿射了，这意味着不可能使用单一的线性变换矩阵来转换所有点的坐标（因为每个点在光线空间的坐标是一个以其在相机空间坐标为自变量的非线性函数，所以不存在一个通用的变换矩阵）
     - 于是论文用 $J$(Jacobian) 对 project 进行仿射近似：$ Si'=J W Si W^T J^T $
-    - 随后我们很粗暴地将第三行第三列去掉作为 2D 高斯的协方差矩阵，不需要额外计算。而 2D 高斯的中心点坐标通过除以第三维坐标 $u_2$ 来获得，即中心点坐标为$(u_0/u_2, u_1/u_2)$
+    - 随后我们很粗暴地将第三行第三列去掉作为 2D 高斯的协方差矩阵，不需要额外计算
+    - 至于 2D 高斯的均值即中心点坐标，通过除以第三维坐标 $u_2$ 来获得，即中心点坐标为 $ mu' = (u_0/u_2, u_1/u_2, 1) $
   - 另外，每个高斯球的不透明度需要调整
     $ al'_i = al_i times exp(- 1/2 (bx'-mu'_i)^T Si'_i^(-1) (bx' - mu'_i)) $
     - 即 3D 高斯的不透明度乘以概率密度分布，其中 $bx'$ 和 $mu'_i$ 是投影空间中的坐标。这也很符合直觉，椭球厚一点的位置当然要不透明一点
   - 通过投影，我们把世界坐标系下的 3D 高斯球投射到投影空间($[-1,1]^3$)，得到 $mu', Si', al'$
 - 渲染
   - 如果不考虑后续的优化，我们对每个像素逐个渲染。给定像素的位置 $bx$，可以通过视口变换 $W$ 计算出它与所有重叠高斯的距离，即这些高斯的深度，形成一个排序的高斯列表$cN$
-  - 使用 $al$-composition 计算这个像素的最终颜色，其中 $c_i$ 是利用球谐函数系数和方向算出来的颜色
+  - 使用 $al"-composition"$ 计算这个像素的最终颜色，其中 $c_i$ 是利用球谐函数系数和方向算出来的颜色
   $ C = sum_(i in cN) c_i al'_i Pi_(j=1)^(i-1) (1 - al'_j) $
 #fig("/public/assets/Reading/Representations/3DGS/2024-10-20-23-49-55.png")
 - tile 优化
-  - 在处理图像时，为了减少对每个像素进行排序的成本，论文将图片分成了砖块(tile)，每个砖块包括 $16 times 16$ 个像素
+  - 在处理图像时，为了减少对每个像素进行排序的成本，论文将图片分成了砖块 (tile)，每个砖块包括 $16 times 16$ 个像素
   - 接下来，会进一步识别出哪些砖块与特定的高斯投影相交（$99%$ 以上）。一个覆盖多个砖块的高斯投影被复制并分配唯一的标识符，即与之相交的 Tile 的 ID
   - 每个 tile 内独立进行上述排序、渲染的计算。这一过程非常适合并行计算，在 CUDA 编程中，令 tile 对应 block，像素对应 thread。并且每个 tile 的像素可以访问共享内存，共享统一的读取序列，从而提高渲染的并行执行效率
 
@@ -77,10 +82,10 @@
   $ cL = (1-la)cL_1 + la cL_"D-SSIM" $
 - 3DGS 可以直接通过反向传播优化参数，这也是为什么整个流程可以看作是一个特殊的神经网络，但要注意两点
   + 协方差矩阵的优化需要保证其半正定性，我们前面讲过通过 $Si = R S S^T R^T$ 来保证，优化那 $7$ 个参数
-  + 获得不透明度 $al$ 的计算图十分复杂，即 $ bold(q), bs arrow.r.bar Si arrow.r.bar Si' arrow.r.bar al$，因此这里不通过自动微分，而是直接推倒了梯度计算公式
+  + 获得不透明度 $al$ 的计算图十分复杂，即 $ bold(q), bs arrow.r.bar Si arrow.r.bar Si' arrow.r.bar al$，因此这里不通过自动微分，而是直接推导了梯度计算公式
 - 密度控制
-  - 点密集化：自适应地增加高斯的密度，以更好地捕捉场景的细节，重点关注缺失几何特征或高斯过于分散的区域，二者都在视图空间中具有较大位置梯度。其包括在未充分重建的区域克隆小高斯，创建高斯的复制体并朝着位置梯度移动；或在过度重建的区域分裂大高斯，用两个较小的高斯替换一个大高斯，按照特定因子减小它们的尺度
-  - 点的剪枝：移除冗余或影响较小的高斯（某种程度上算是一种正则化）过程，在保证精度的情况下节约计算资源。一般消除 $al < ep$ 和体积过大的高斯。此外，输入相机附近的高斯球在一定迭代次数后 $al$ 被设置为接近 $0$ 的值，避免不合理的密度膨胀
+  - *点密集化*：自适应地增加高斯的密度，以更好地捕捉场景的细节，重点关注缺失几何特征或高斯过于分散的区域，二者都在视图空间中具有较大位置梯度。其包括在未充分重建的区域克隆小高斯，创建高斯的复制体并朝着位置梯度移动；或在过度重建的区域分裂大高斯，用两个较小的高斯替换一个大高斯，按照特定因子减小它们的尺度
+  - *点的剪枝*：移除冗余或影响较小的高斯（某种程度上算是一种正则化）过程，在保证精度的情况下节约计算资源。一般消除 $al < ep$ 和体积过大的高斯。此外，输入相机附近的高斯球在一定迭代次数后 $al$ 被设置为接近 $0$ 的值，避免不合理的密度膨胀
 - 总的优化流程如下图
   #fig("/public/assets/Reading/Representations/3DGS/2024-10-21-00-03-46.png")
 
@@ -126,14 +131,14 @@
   + *改进优化过程*。3DGS 使用 SfM 生成初始化高斯，不可避免地受到无纹理表面密集初始化的挑战（尤其是在大规模场景中），并且使用的分割和克隆策略相对简单
     + GaussianPro 利用场景的现有重建几何形状的先验和补丁匹配技术来生成具有准确位置和方向的新高斯，应用渐进传播策略来指导 3D 高斯密集化
   + *优化中的松弛约束*。还是 SfM 的问题，依赖外部工具/算法可能引入错误，并限制系统可能的潜力
-    + #link("https://arxiv.org/abs/2312.07504")[Yang] 等人提出了COLMAP-Free 3D GS，它逐帧处理输入的连续视频并逐步增加 3D 高斯集，从而拜托对 COLMAP 的依赖
+    + #link("https://arxiv.org/abs/2312.07504")[Yang] 等人提出了COLMAP-Free 3D GS，它逐帧处理输入的连续视频并逐步增加 3D 高斯集，从而摆脱对 COLMAP 的依赖
     - 尽管 impressive，但现有方法主要集中在优化高斯以从头开始准确地重建场景，而忽略了一种具有挑战性但有前途的范式 —— 通过已建立的“元表示”以少量镜头的方式重建场景
 - *3D Gaussian with More Properties*，3D Gaussion 的属性都是为了新视图合成而设计的，但结合 linguistic, semantic/instance, spatial/temporal 等属性，可能能让 3DGS 胜任更多任务，比如
   + *语言嵌入式场景表示*，将自然语言与三维场景联系起来，支持用户通过语言与三维世界进行交互和查询。例如
     + 由于当前语言嵌入场景表示的计算和内存需求较高，#link("https://arxiv.org/abs/2311.18482")[Shi] 等人提出了一种量化方案，通过简化的语言嵌入（而不是原始的高维嵌入）来增强 3D 高斯，并且还减轻了语义歧义，通过在不确定性值的指导下平滑不同视图的语义特征来增强开放词汇查询的精度
-    + LangSplat，使用 SAM 基于输入的多视角图像集生成层次化语义(Hierarchical Semantics)，把这些分割的掩码图输入 CLIP，将图像和文本特征对齐并输出 language embeddings，压缩到低维空间（降低内存成本），最后让三维语言高斯模型基于低维 embeddings 反复执行有监督的渲染迭代训练，得到包含语义信息的高斯场景表示
+    + LangSplat，使用 SAM 基于输入的多视角图像集生成层次化语义 (Hierarchical Semantics)，把这些分割的掩码图输入 CLIP，将图像和文本特征对齐并输出 language embeddings，压缩到低维空间（降低内存成本），最后让三维语言高斯模型基于低维 embeddings 反复执行有监督的渲染迭代训练，得到包含语义信息的高斯场景表示
   + *场景理解和编辑*
-    + Feature-3DGS 将 3DGS 与从 2D 基础模型(e.g. SAM, CLIP-LSeg)蒸馏来的特征场相结合。通过学习低维特征场并应用轻量的卷积解码器进行上采样，Feature-3DGS 在实现高质量特征场蒸馏的同时实现了更快的训练和渲染速度，支持视图语义分割和语言引导编辑等应用
+    + Feature-3DGS 将 3DGS 与从 2D 基础模型 (e.g. SAM, CLIP-LSeg) 蒸馏来的特征场相结合。通过学习低维特征场并应用轻量的卷积解码器进行上采样，Feature-3DGS 在实现高质量特征场蒸馏的同时实现了更快的训练和渲染速度，支持视图语义分割和语言引导编辑等应用
   + *时空建模*，例如
     + #link("https://arxiv.org/abs/2310.10642")[Yang] 等人将时空概念化为一个统一的实体（即利用 4DGS 作为动态场景的整体表示，而不是对每个单独的帧应用 3DGS），并使用 4D 高斯的集合来近似动态场景的时空体积。所提出的 4D 高斯表示和相应的渲染管线能对空间和时间的任意旋转进行建模，并允许端到端训练
 - *3DGS with Structured Information*，除了使用额外属性来增强 3D 高斯，适应下游任务的另一个 promising 的途径是引入为特定应用定制的结构化信息(e.g. spatial MLPs and grid)。一些特定结构化信息加持下 3DGS 的用途例如
@@ -165,12 +170,12 @@
 - *3DGS for Robotics*，即 3DGS + 具身智能
   - 为了实现人形智能机器人，越来越需要它们以更直观和动态的方式 navigate and manipulate 环境
   - 目前的具身智能实现严重依赖于通过语义信息理解环境（识别对象及其属性），这种方法往往忽视了事物如何随时间移动和交互
-    - 据我所知目前大多是在用 VLM(Visual Language Model, VLA(Visual Language Action Model) 来做，而不是对整个场景进行理解。另外，目前的数据集中于 high-level reasoning，但缺少 low level control。或者说以综述中的例子，机器人知道这是什么（方块）、要做什么（堆叠方块），但它不知道具体应该怎么做（机械臂移动多少）、这些东西会怎么变（方块如何被动作影响，如何随时间变化），这之间有一个 gap
+    - 据我所知目前大多是在用 VLM (Visual Language Model, VLA(Visual Language Action Model) 来做，而不是对整个场景进行理解。另外，目前的数据集中于 high-level reasoning，但缺少 low level control。或者说以综述中的例子，机器人知道这是什么（方块）、要做什么（堆叠方块），但它不知道具体应该怎么做（机械臂移动多少）、这些东西会怎么变（方块如何被动作影响，如何随时间变化），这之间有一个 gap
   - 这种时候，3DGS 由于其显式表示的性质，除了在环境的语义和结构上的分析之外，还提供了场景如何随时间演变和对象如何交互的动态全面理解
-  - 尽管现在已经有一些基于 GS 的世界模型(#link("https://arxiv.org/abs/2406.10788v1")[Physically Embodied Gaussian Splatting], #link("https://arxiv.org/abs/2403.08321v2")[ManiGaussian])以及基于 GS 的强化学习(#link("https://arxiv.org/abs/2406.02370v2")[query-based Semantic Gaussian Field ...], #link("https://arxiv.org/abs/2404.07950v3")[RL with Generalizable GS])，但它们仅仅只是证明了可能性，该领域的进一步研究将增强机器人执行那些需要理解物理空间和其中时间变化的任务的能力
+  - 尽管现在已经有一些基于 GS 的世界模型 (#link("https://arxiv.org/abs/2406.10788v1")[Physically Embodied Gaussian Splatting], #link("https://arxiv.org/abs/2403.08321v2")[ManiGaussian]) 以及基于 GS 的强化学习 (#link("https://arxiv.org/abs/2406.02370v2")[query-based Semantic Gaussian Field ...], #link("https://arxiv.org/abs/2404.07950v3")[RL with Generalizable GS])，但它们仅仅只是证明了可能性，该领域的进一步研究将增强机器人执行那些需要理解物理空间和其中时间变化的任务的能力
 - *Modeling Internal Structures of Objects with 3DGS*
   - 尽管 3DGS 能够渲染出逼真的 2D 图像，但也正因为 splatting 的渲染方法主要着眼于这一点，导致对象的内部结构是不那么关注的；另外一点是，由于密度控制过程，3D 高斯倾向于集中在表面，而不是内部
-  - 因此，对对象的内部结构进行建模，将物体描绘成体积的任务(e.g. CT: computed tomography) 仍然是一个挑战。然而，3DGS 的无序性使得体积建模特别困难
+  - 因此，对对象的内部结构进行建模，将物体描绘成体积的任务 (e.g. CT: computed tomography) 仍然是一个挑战。然而，3DGS 的无序性使得体积建模特别困难
   - #link("https://arxiv.org/abs/2312.15676")[Li] 等人使用具有密度控制的 3D 高斯分布作为体积表示的基础，不涉及 splatting 过程。X-Gaussian 涉及用于快速训练和推理的 splatting 过程，但不能生成体积表示。使用 3DGS 来模拟物体的内部结构仍然没有标准答案，值得进一步探索
 - *3DGS for Simulation in Autonomous Driving*
   - 为自动驾驶收集真实世界数据集非常昂贵又困难，但对训练有效的图像感知系统至关重要，模拟成为一种经济高效、环境多样的替代方案
@@ -208,7 +213,7 @@
     + Surgical Scenes: several significant improvements
 + 用于定量评估的数据集是什么？代码有没有开源？
   - 原论文：Evaluation carried out on 3 real datasets: Mip-NeRF360(7 scenes), Tanks&Templates(2 scenes), Deep Blending(2 scenes) and 1 synthetic dataset: Blender。代码开源在 #link("https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/")[repo-sam.inria.fr/fungraph/3d-gaussian-splatting]
-  - 综述：多种任务上的多个数据集(Replica, D-NeRF, nuScences, ZJU-MoCap)，代码开源在 #link("https://github.com/guikunchen/3DGS_NOTES")[github.com/guikunchen/3DGS_NOTES]
+  - 综述：多种任务上的多个数据集 (Replica, D-NeRF, nuScences, ZJU-MoCap)，代码开源在 #link("https://github.com/guikunchen/3DGS_NOTES")[github.com/guikunchen/3DGS_NOTES]
 + 论文中的实验及结果有没有很好地支持需要验证的科学假设？
   - Performance proved, Ablation convincing
 + 这篇论文到底有什么贡献？

@@ -1,6 +1,5 @@
 ---
-order: 3
-draft: true
+order: 4
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *
@@ -27,7 +26,7 @@ draft: true
   - 为了解决它们，作者提出了 mesh 和 3D Gaussians 的混合表示方案，把每个 3D Gaussian 看作是 SMPL-X mesh 的一个顶点。这样就可以用 SMPL-X 的面部表情参数驱动 ExAvatar 的面部表情，另外由于遵循三角形的 topology 获得了额外的连接信息，可以用来正则化从而减少 artifacts
 - *Introduction*
   - 除了身体的运动，面部表情和手部动作也很重要巴拉巴拉。已经有一些方法去建模这种 whole body geometry，其中 SMPL-X 是应用最广的
-  - 为了超越那种仅穿着基本服装的参数化模型，personalized 3D human avatars 最近被广泛研究，它结合了 geometry 和特定人物的 appearance 并且要求可动画化、可渲染新姿势。然而，目前的从任意视频建模的方法都忽略了面部表情和手部动作。而最近虽然有一个可以建模这两者的方法(X-Avatar)，但 setting 比较高（需要 3D 扫码或 RGBD 图像），因此不是很实用
+  - 为了超越那种仅穿着基本服装的参数化模型，personalized 3D human avatars 最近被广泛研究，它结合了 geometry 和特定人物的 appearance 并且要求可动画化、可渲染新姿势。然而，目前的从任意视频建模的方法都忽略了面部表情和手部动作。而最近虽然有一个可以建模这两者的方法 (X-Avatar)，但 setting 比较高（需要 3D 扫码或 RGBD 图像），因此不是很实用
   - 于是作者提出了 ExAvatar，困难、解决方式同摘要。这里多了一句是说，现存的 volumetric avatars 没有用到这种 connectivity 信息（少了这种 geometry 先验的利用）
   - 使用这种 hybrid 方法之后，即使在训练帧中没有见过（缺少多样性），也可以凭借 SMPL-X 和 FLAME 的编码来驱动任何表情，另一个好处就是减少 artifacts (e.g. floating 3D Gaussians)
   - 总的来说，作者的贡献有三点
@@ -48,12 +47,12 @@ draft: true
     - 以 CV 社区的卷度，3DGS 从 2023.8 提出到本文 2024.7，肯定已经有 3DGS-based 的方法了，比如 #link("https://arxiv.org/abs/2312.02134")[GaussianAvatar]（#link("https://blog.csdn.net/soaring_casia/article/details/139952332")[参考解读]） 和 #link("https://arxiv.org/abs/2311.17910")[HUGS]（#link("https://blog.csdn.net/qq_40731332/article/details/138764116")[参考解读]）
     - 而且 SMPL-X 先验的使用在人体领域已经是一件很普遍的事情，我粗看了一下，它们都是一个顶点一个高斯球的驱动方法（说明这个 idea 还是比较好想的x）
     - 个人觉得从 high level 的角度它们以及这篇做的都差不太多，都是 SMPL mesh + 3D Gaussians 的混合表示并用 LBS 驱动。具体的高斯球特征表征，GaussianAvatar 是用的一个平面 UV map（怎么感觉看着就效果一般x），HUGS 用的跟本文差不多的 triplane 表征。我觉得本文做得比他们好的地方就是着重突出了 whole-body 的属性以及大量细节的处理（比如 offsets 的提出、FLAME 局部替代 SMPL-X、identity-dependent 和 pose-dependent 的解耦、connectivity 的正则化等等），最终效果上实现超越
-    - 但从后文方法部分的分析也可以看到，本文对 3DGS 的利用还处于一个较初级的阶段。从我个人#strike[的品味]来说，我可能会更希望探索 3DGS 更高级的特性在人体重建能否有用武之地（不过好难。。。）
+    - 但从后文方法部分的分析也可以看到，本文对 3DGS 的利用还处于一个较初级的阶段。从我个人#strike[的品味]来说，我可能会更希望探索 3DGS 更高级的特性在人体重建能否有用武之地
 
 == 方法 <method>
 === Accurate co-registration of SMPL-X <preprocess>
 #tldr[加入 joints $De bJ$ 和 face vertices $De bV_"face"$ 两个 offsets，更进一步把 SMPL-X 跟 FLAME 和 2D keypoints 对齐]
-- 所谓 short monocular video，假定是在 in-the-wild(one person in natural background)环境下拍摄的 30s 的 frames
+- 所谓 short monocular video，假定是在 in-the-wild (one person in natural background) 环境下拍摄的 30s 的 frames
 - 在训练 ExAvatar 之前，需要做前处理也就是用 SMPL-X regressor 粗估计每一帧的 SMPL-X 参数，即
   $ "poses" th in RR^(55 times 3), ~~ "shape" beta in RR^100, ~~ "facial code" psi in RR^50, "translation" t in RR^3 $
   - 其中 shape 参数对所有帧是共享的，而另外几个是 per-frame 的
@@ -93,7 +92,7 @@ draft: true
       - *注：*这里个人感觉会导致两边略 mis-aligned，或许是一个可以优化的点。怎么避免这个震荡问题或许可以限制每次更新的步长，让每次位置更新得很小；或者用强化学习的思路做进行平稳
   - 接下来就是常规的把 $oP$ 每个顶点（正交）投影到三平面并双线性插值得到 per-vertex feature
     - 三平面的表示很有用，因为它自然地强化了邻近 vertex 之间的 similarity
-    - 然后还有一个实践上的优化(practical trick)，由于面部在整个身体的占比很小，对应到 triplane 的 physical size 就不大，因此为脸部的 geometry 和 appearance 额外创建了一个 triplane 表示
+    - 然后还有一个实践上的优化 (practical trick)，由于面部在整个身体的占比很小，对应到 triplane 的 physical size 就不大，因此为脸部的 geometry 和 appearance 额外创建了一个 triplane 表示
   - 采样出的特征被 concatenated，标记为 $bF in RR^(N times 96)$（$96 = 3C$，$N$ 个顶点但脸部来自另外的 triplane），然后送入两个 MLP，分别回归出用于 3DGS 的：
     + 3D offset $De bV_tri in RR^(N times 3)$, scale $bS_tri in RR^(N times 1)$
     + RGB values $bC_tri in RR^(N times 3)$
@@ -130,7 +129,7 @@ draft: true
       $ oV_tri = oV + De V_tri + De V_"expr" $
       $ oV_pose = oV + De V_tri + De V_pose + De V_"expr" $
       - 其中 $De V_tri$ 和 $De V_pose$ 分别是 triplane 和 pose-dependent 的 vertex offsets（pose 引起的 canonical space 形体变化），$De V_"expr"$ 是 SMPL-X 的 facial expression offsets
-      - 从而所有这些偏移量（包括一开始 registration 阶段加入到 $oV$ 里的，以及这里优化预测的）都会参与 LBS 的牵引
+      - 从而所有这些偏移量（包括一开始配准 (registration) 阶段加入到 $oV$ 里的，以及这里优化预测的）都会参与 LBS 的牵引
   - 然后，对 body vertices，我们取自 downsampled $oV$ 的最近 vertices 的 skinning weight；而对 hand 和 face vertices，使用原始的 skinning weight。这是因为，对于 body vertices，由于 cloth geometry 的影响，它们的语义含义可能会发生变化
   - 最终的 animated geometry $V_tri$ and $V_pose$ 用下面的方程表示
     $ V_tri = LBS(oV_tri, th, W_tri), ~~ V_pose = LBS(oV_pose, th, W_pose) $

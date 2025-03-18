@@ -1,6 +1,5 @@
 ---
 order: 7
-draft: true
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *
@@ -33,7 +32,7 @@ draft: true
   - 疑问：但是感觉这里加入信息不够多啊？没有直接在这里加入 SMPL 先验，单单从 2D image 不见得能很好得学出三个平面的特征吧？
 
 == 具体方法
-#fig("/public/assets/reading/human/2024-11-18-22-02-31.png")
+#fig("/public/assets/Reading/Human/2024-11-18-22-02-31.png")
 - *Global-correlated 3D-decoupling Transformer*:
   - 把 image $I$ 的平面记作 xy-plane，从 2D 提取 3D 信息想想就难，需要额外指导信息。之前看的方法都是加先验 (SMPL, normal depth)，而这里的想法是，可以让模型学到脑子里 (embeddings)，用 cross-attention 来提取，自己指导自己。具体分为几个模块：
   - *Global-correlated Encoder*，很标准的 ViT，把图像拆成不重合的 $n times n$ patches，送入网络得到 latent $bh$
@@ -48,9 +47,9 @@ draft: true
     $
   - *Tri-plane Division*，在 channel 维度把每个特征图都分开，用于后续特征融合，一个用来做 spatial query（相当于 pixel-aligned），一个用来做 prior-enhanced query（相当于做 point-level）
 - *Hybrid Prior Fusion Strategy*:
-  - *Spatial Query*(pixel-aligned)，把空间中 3D 点投影到三平面，通过加和与 concate 合成（为什么不都 concate 呢？可能实验效果？）
+  - *Spatial Query* (pixel-aligned)，把空间中 3D 点投影到三平面，通过加和与 concate 合成（为什么不都 concate 呢？可能实验效果？）
     $ F^SQ (bx) = F_xy^SQ (bx) plus.circle (F_yz^SQ (bx) + F_xz^SQ (bx)) $
-  - *Prior-enhanced Query*(point-level)，把 SMPL body mesh 的顶点投影到三平面上并像上面一样融合，把它存储在每个顶点里面。然后对于每个 3D query point，找到它在空间中最近的三角面片，利用重心坐标插值得到特征
+  - *Prior-enhanced Query* (point-level)，把 SMPL body mesh 的顶点投影到三平面上并像上面一样融合，把它存储在每个顶点里面。然后对于每个 3D query point，找到它在空间中最近的三角面片，利用重心坐标插值得到特征
     $ R^PQ (bx) = u F^PQ (bv_0) + v F^PQ (bv_1) + w F^PQ (bv_2) $
   - *Hybrid Prior Fusion Strategy*，接下来就是把特征 concate 起来送入 MLP 了，然后可能因为继承 ICON, ECON 的代码，又加了个相对 SMPL body mesh 的 SDF $SDF_Prior (bx)$ 和 pixel-aligned normal feature $F_cN (bx)$ 模块进去。最终预测 occupancy 得到 human surface
   - 最终重建出来的表面可以表示成
@@ -72,9 +71,8 @@ draft: true
   - 大量实验证明，SIFU 在 geometry 和 texture 方面都超越了 SOTA，鲁棒性强，而且可以扩展到 3D 打印和场景搭建等实际应用
 - SIFU 认为，之前的单张图片重建 3D human 的方法的 limitation 在于
   - *Insufficient Prior Guidance in Translating 2D Features to 3D*
-    #fig("/public/assets/reading/human/2024-11-19-17-41-12.png",width:50%)
-    - 从 2D 图像特征到 3D 物体的重建通常包括三个主要步骤：(1) 提取 2D 图像特征；(2) 将 2D 特征转换为 3D
-      + 3D 特征用于重建
+    #fig("/public/assets/Reading/Human/2024-11-19-17-41-12.png",width:50%)
+    - 从 2D 图像特征到 3D 物体重建通常包括三个主要步骤：(1) 提取 2D 图像特征；(2) 将 2D 特征转换为 3D；(3) 3D 特征用于重建
     - 当前方法通常在第一步和最后一步中添加几何先验 (e.g. SMPL-X)，专注于比如说 normal map prediction, SMPL-guided SDF, volume features 的技术。但是第二步探索的还不够多，只用了一些基础的比如，把 2D feature 投影到 3D points 或者反过来把 3D point 投影到 2D feature 上 (e.g. PIFu, PIFu, PaMIR)，亦或者用固定的 learnable embeddings 生成 3D features (e.g. GTA)
   - *Lack of Texture Prior*
     - 当前方法在 unseen 区域的纹理预测还是不够准（特别是受限于训练数据，难以 scale up 让模型学会足够强的脑补能力），所以考虑加入更多的 texture 先验
@@ -88,7 +86,7 @@ draft: true
   + 在 geometry 和 Texture 重建方面均取得 SOTA，为 3D 打印和场景搭建等实际应用提供了可能性
 
 == Method
-#fig("/public/assets/reading/human/2024-11-19-20-09-09.png")
+#fig("/public/assets/Reading/Human/2024-11-19-20-09-09.png")
 - 模型运行可分为两个阶段
   + 第一阶段借助侧隐式函数重建人体的几何(mesh)与粗糙的纹理(coarse texture)
   + 第二阶段则借助预训练的扩散模型对纹理进行精细化
@@ -103,7 +101,7 @@ draft: true
       - 同时也解答了我在 GTA 那里，觉得 Global-correlated 3D-decoupling Transformer 部分没有用 SMPL 先验的问题
     - 具体做法还是很像，正面自己做 self-attention，三个侧面 (left, right, back) 做 cross-attention
 - *Hybrid Prior Fusion Strategy*
-  - 这里跟 GTA 几乎差不多，首先把四个视图的信息融合起来(pixel-aligned)
+  - 这里跟 GTA 几乎差不多，首先把四个视图的信息融合起来 (pixel-aligned)
     $ F^S (bx) = F^S_f plus.circle "avg"(F^S_l (bx),F^S_l (bx),F^S_b (bx),F^S_r (bx)) $
   - 加上 SMPL 的信息 (point-level)
     $ F^P (bx) = u F^S (bv_0) + v F^S (bv_0) + w F^S (bv_0) $

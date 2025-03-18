@@ -1,6 +1,5 @@
 ---
 order: 3
-draft: true
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *
@@ -49,7 +48,7 @@ draft: true
   - encoder: 从观测数据分布映射到简单分布，记作 $q(bz|bx)$
   - decoder: 从简单分布映射到观测数据分布，记作 $pth(bx)$
   - 训练时需要 encoder 和 decoder，推断时只需要 decoder
-  #fig("/public/assets/reading/Generation/2025-02-28-22-25-42.png", width: 25%)
+  #fig("/public/assets/Reading/Generation/2025-02-28-22-25-42.png", width: 25%)
 - 这个简单分布采用*高斯分布*
   - Why? 回忆*高斯混合模型*，一个复杂分布可以用多个高斯分布来表示
     $ pth(bx) = sumiK p(bz_i) pth(bx|bz_i) $
@@ -127,7 +126,7 @@ draft: true
         $
       #q[用 $xt, t$ 预估 $x0$，要是能估准的话，就直接一步到位了，用不着逐步采样了。因此可以相见，这个预估不会太准，至少开始的相当多步内都不准。*它仅仅起到了一个前瞻性的预估作用*。就是很多数值算法中的“预估-修正”思想，即我们用一个粗糙的解往前推很多步，然后利用这个粗糙的结果将最终结果推进一小步，以此来逐步获得更为精细的解 —— 苏剑林]
 - *综合前向扩散与反向生成的过程如下*
-  #fig("/public/assets/reading/Generation/2025-02-28-19-47-29.png", width: 80%)
+  #fig("/public/assets/Reading/Generation/2025-02-28-19-47-29.png", width: 80%)
   #q[注：图里为了对称都画成了逐步进行，实际上前向扩散是一步到位的]
 
 == 优化目标
@@ -212,15 +211,15 @@ draft: true
 == 训练与推理
 - *训练*
   - 训练时不必枚举每个 $t$，因为已经推导出每一时刻的加噪的封闭形式，可以直接均匀随机采样（也方便并行）
-  #fig("/public/assets/reading/Generation/2025-02-28-19-54-16.png", width: 80%)
+  #fig("/public/assets/Reading/Generation/2025-02-28-19-54-16.png", width: 80%)
 - *推理*
   - 推理时沿着马尔科夫过程反向模拟每一步（逐步进行）
   - 需要注意，模型预测的噪声实际上不是真的随机变量，可以看作是确定的值（只是均值中的一部分）而不是分布，需要加一个 $ep$ 使每一步结果都是高斯分布
-  #fig("/public/assets/reading/Generation/2025-02-28-19-55-00.png", width: 80%)
+  #fig("/public/assets/Reading/Generation/2025-02-28-19-55-00.png", width: 80%)
 - *模型结构*
   - 使用常见的 UNet 结构
   - time embedding 为标准的位置编码方式 (sinusoidal embedding)，加到 UNet 的每个 block 的输入上
-  #fig("/public/assets/reading/Generation/2025-02-28-19-58-22.png", width: 80%)
+  #fig("/public/assets/Reading/Generation/2025-02-28-19-58-22.png", width: 80%)
 
 == 总结
 - 前向扩散

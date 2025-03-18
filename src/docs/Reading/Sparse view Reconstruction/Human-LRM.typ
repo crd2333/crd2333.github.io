@@ -1,6 +1,5 @@
 ---
 order: 8
-draft: true
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *
@@ -48,7 +47,7 @@ draft: true
   - HMR 的前景激励了后续的工作来预测 3D offsets 或在 base body mesh 上构建另一层 geometry 来适应 clothed human shapes（但这种 "body+offset" 策略还是缺乏灵活性，难以表示各种各样服装类型）
 - *Implicit reconstruction*
   - Implicit-functions 提供了一种 topology-agnostic 的人体建模表示
-    - PiFU 定义了一个 Pixel-Aligned Implicit Function，对预定义 grid 中的采样来的每个 3D 点，用 FCN 抽取 pixel-aligned 图像特征，用相机内外参算投影位置，预测 3D occupancy 和颜色值
+    - PIFu 定义了一个 Pixel-Aligned Implicit Function，对预定义 grid 中的采样来的每个 3D 点，用 FCN 抽取 pixel-aligned 图像特征，用相机内外参算投影位置，预测 3D occupancy 和颜色值
     - 在此基础上，PIFuHD 开发了一个高分辨率模块来预测几何和纹理细节，并用额外的前后法向量作为输入
   - 这些模型对简单的输入（e.g. 干净背景下的站立人体）重建效果不错，但它们无法很好地泛化到野外场景，且通常在 challenging poses and lightings 下产生 broken and messy 的形状，这是由于其有限的模型容量和缺乏整体表示
 - *Hybrid reconstruction*
@@ -56,7 +55,7 @@ draft: true
     - ICON 以给定图像和估计的 SMPL mesh 为起点，从局部查询的特征中回归出形状以泛化到 unseen poses，基于此有工作用 GAN-based generative component 进一步拓展
     - ICON 原班人马又推出 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/ICON%20&%20ECON")[ECON]，利用 variational normal integration 和形状补全来保留松散衣物的细节
     - D-IF 通过自适应的不确定性分布函数额外建模了 occupancy 的不确定性
-    - GTA 使用 hybrid prior fusion 策略(3D spatial and SMPL prior-enhanced features)
+    - GTA 使用 hybrid prior fusion 策略 (3D spatial and SMPL prior-enhanced features)
     - SIFU 进一步使用 side-view conditioned features 增强 3D 特征
   - 所有这些方法都利用了 SMPL 先验，尽管确实增强了对 large poses 的泛化性，但也受到 SMPL 预测准确性的限制（估计出的 SMPL 参数的错误会对后续 mesh 重建阶段有连锁效应）
 - *Human NeRFs*（这篇论文把 NeRF 从 Implicit Representation 里单独摘出来了）
@@ -158,8 +157,6 @@ draft: true
       - 跟 SHERF 相比，定量实验显示出结果要好非常多。这个 gap 可能来自于 SHERF 严重依赖于跟 SMPL 像素层面对齐的 feature，把 GT 砍成 predicted 就效果大打折扣
   - 附录里面还比较了 Depth and Normal Estimation Methods，这里就不看了
 - 此外还有一些消融实验，不看了
-
-We introduced a novel approach for reconstructing human NeRFs from a single image. What sets our approach apart from previous implicit volumetric human reconstruction methods is its remarkable scalability, making it adaptable for training on large and diverse multi-view RGB datasets. Additionally, we proposed a coarse-to-fine reconstruction strategy guided by dense novel generations from a diffusion model. The dense novel views serve a strong geometry and texture guide that effectively enhances the overall quality of the final reconstruction.
 - 结论
   - 基于可泛化 NeRF 提出了一种从单幅图像重建人类的新方法，与以前的 implicit volumetric 人体重建方法的不同之处在于 scalability，使其适用于在大型和多样化的多视图 RGB 数据集上进行训练。此外，还提出了一种由扩散模型指导的 coarse-to-fine 重建策略，密集的新视图提供了强大的几何和纹理指导，有效地提高了最终重建的整体质量
   - 不足之处在于脸部和手部的细节还不太好，未来工作可能可以考虑利用比 triplane 更强的表征，或使用额外的 refinement 技巧

@@ -1,3 +1,8 @@
+---
+order: 6
+draft: true
+---
+
 #import "/src/components/TypstTemplate/lib.typ": *
 
 #show: project.with(
@@ -6,3 +11,4 @@
 )
 
 = 3DGS 进一步的论文
+- 待补充

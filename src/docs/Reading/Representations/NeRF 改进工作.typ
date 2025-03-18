@@ -1,3 +1,7 @@
+---
+order: 4
+---
+
 #import "/src/components/TypstTemplate/lib.typ": *
 
 #show: project.with(
@@ -118,10 +122,10 @@
   - 最后，用 3DGS 这种可以像点云一样无限扩展的显式表示方法，就不会有 NeRF 的这个问题
 
 === NeRF++
-- 具体来说，这篇文章首先讨论了几何-辐射模糊性(shape-radiance ambiguity)这一现象，并且分析了 NeRF 对于避免该现象的成功之处
+- 具体来说，这篇文章首先讨论了几何-辐射模糊性 (shape-radiance ambiguity) 这一现象，并且分析了 NeRF 对于避免该现象的成功之处
   - 在缺少正则化处理的情况下，本应该出现结果退化(degenerate solution)的情况，即不同的 shape 在训练时都可以得到良好的表现，但是在测试时效果会明显退化。但是 NeRF 却避免了这种情况的发生
   - 究其原因，作者提出两点（参考 #link("https://zhuanlan.zhihu.com/p/458166170")[NeRF++ 论文部分解读：为何 NeRF 如此强大？]）：
-    + 当预测的 geometry 与真实场景相差甚远时，其 surface light field 会变得十分复杂。而正确 geometry 下对应的 surface light field 一般较为 smooth(e.g. Lambertian case)，网络表征高频 surface light field 的局限性迫使其学习到正确的 geometry
+    + 当预测的 geometry 与真实场景相差甚远时，其 surface light field 会变得十分复杂。而正确 geometry 下对应的 surface light field 一般较为 smooth (e.g. Lambertian case)，网络表征高频 surface light field 的局限性迫使其学习到正确的 geometry
     + NeRF 特殊的 MLP 网络结构不对称地处理着位置信息 $bx$ 和方向信息 $bd$，后者的傅里叶特征（位置编码函数中的 $L_bd$）仅由较低频分量组成，且网络输入位置靠后。即对于一个固定的 $bx$，辐射场 $c(bx, bd)$ 对 $bd$ 表示性有限
 - 接下来，NeRF++ 引入一种全空间非线性参数化模型，解决无界 3D 场景下 NeRF 建模问题
   - 问题：对于 360 度 captures，NeRF 假设整个场景可以打包到一个有界的体积中。但对于大规模场景来说，要么我们将场景的一小部分装进体积中，并对其进行详细采样，但完全无法捕捉背景元素；或者我们将整个场景放入体积中，由于有限的采样分辨率，到处都缺少细节
@@ -135,7 +139,7 @@
 === Mip-NeRF
 - 参考 #link("https://blog.csdn.net/weixin_44292547/article/details/126315515")[NeRF神经辐射场学习笔记（四）——Mip NeRF论文创新点解读]，#link("https://blog.csdn.net/i_head_no_back/article/details/129419735")[NeRF必读：Mip-NeRF总结与公式推导]
 - Mip-NeRF 的 mip 跟 CG 里 mipmap 的那个 mip 是同一个东西，意思是“放置很多东西的小空间”，旨在解决 NeRF 原始方法由于远景近景的分辨率不同而出现模糊和锯齿的现象。主要创新点分为三个方面
-  + Mip-NeRF 的渲染过程是基于抗锯齿的圆锥体(anti-aliased conical frustums)，即 Cone Tracing
+  + Mip-NeRF 的渲染过程是基于抗锯齿的圆锥体 (anti-aliased conical frustums)，即 Cone Tracing
     - 当观察方向产生远近或者方向变化时，NeRF 基于 ray 的采样方式对此种变化不敏感，采样频率跟不上变化频率。而基于圆锥体采样的方式显示地建模了每个采样圆锥台的体积变化，从而解决了这种模糊性
     - 对于任意一个像素点，从相机中心 $bo$ 沿着像素中心的方向 $bd$ 投射出一个圆锥体，设在图像平面 $bo + bd$ 处的圆锥面的半径为 $dot(r)$，位于 $[t_0, t_1]$ 圆锥台之间的位置 $bx$ 的集合可以表示为（即径向和轴向分别表征）
     $ F(bx,bo,bd,dot(r),t_0,t_1) = 1{(t_0 < frac(bd^T (bx-bo), norm(d)^2) < t_1) and (frac(bd^T (bx-bo), norm(d)^2 norm(bx-bo)) > frac(1, sqrt(1+(dot(r)\/norm(d))^2)))} $
@@ -146,34 +150,34 @@
     $
     mu = bo + mu_t bd, Si = si_t^2 (bd^T bd) + si_r^2 (bI - frac(bd bd^T, norm(bd)^2))
     $
-  + Mip-NeRF 提出了新的位置编码的方法 —— IPE(Integrated Positional Encoding)
-    - 首先将位置编码改写为矩阵形式(Fourier feature)
+  + Mip-NeRF 提出了新的位置编码的方法 —— IPE (Integrated Positional Encoding)
+    - 首先将位置编码改写为矩阵形式 (Fourier feature)
     $ P = mat(1,0,0,2,0,0,,2^(L-1),0,0,;0,1,0,0,2,0,...,0,2^(L-1),0,;0,0,1,0,0,2,,0,0,2^(L-1))^T ga(bx) = vec(sin(bP bx), cos(bP bx)) $
     - IPE 为高斯分布的 positional encoding 的期望值
     $ ga(mu, Si) = EE_(bx wave cal(N)(bP mu, bP Si bP^T)) [ga(bx)] = vec(sin(bP mu) compose exp(- 1/2 "diag"(bP Si bP^T)), cos(bP mu) exp(- 1/2 "diag"(bP Si bP^T))) $
     - 有点难以理解，就把它依旧当成是一条射线，在其上 $t_n wave t_f$ 之间采样许多个高斯椭球就行了，后续渲染依旧是以射线为单位
     - IPE 的优点
-      + 平滑地 encode 一个 volume 的大小和形状，考虑了采样点的频率（为越远的点应当提供越少信息量，但 PE 编码违背了这一原则，导致走样），降低了带有锯齿 PE 特征的影响
+      + 平滑地 encode 一个 volume 的大小和形状，考虑了采样点的频率（越远的点应当提供越少信息量，但 PE 编码违背了这一原则，导致走样），降低了带有锯齿 PE 特征的影响
       + IPE 的高频维度收缩能够使其摆脱超参数 L 的限制
   + Mip-NeRF 使用 a single multiscale MLP
     - NeRF 使用层次抽样 —— fine 和 coarse。这在 NeRF 中是必要的，因为它的 PE 特性意味着它的 MLP 只能学习单一规模的场景模型
     - 但是 Mip-NeRF 服从高斯分布的位置编码可以自动在采样频率较低时（IPE 特征间隔较宽时）弱化高频特征，从而缓解 aliasing 现象。这种采样设计本身决定了其适用于多尺度情况，因此两个 MLP 可以合并为一个
 - 缺点
   + IPE 的计算较之 PE 更耗时，但单个 MLP 弥补了这一点
-  + Mip-NeRF 相比 NeRF 能够更有效且准确地构建 Multi-View 与目标物体的关系，但这也意味着相机 Pose 的偏差会更容易使 Mip-NeRF 产生混淆，出现更严重的失真。
+  + Mip-NeRF 相比 NeRF 能够更有效且准确地构建 Multi-View 与目标物体的关系，但这也意味着相机 Pose 的偏差会更容易使 Mip-NeRF 产生混淆，出现更严重的失真
   + 同理，当拍摄过程中存在 motion blur、曝光等噪声时，Mip-NeRF 也会很容易受到影响（只有当图片成像质量高且相机姿态准确时，Mip-NeRF 才能实现非常棒的效果）
 
 === Mip-NeRF 360
 - 在 Mip-NeRF 的基础上提出三个创新点
-  + 非线性场景参数化(non-linear scene parameterization)
+  + 非线性场景参数化 (non-linear scene parameterization)
     - 提出一种类似卡尔曼滤波的方式将超出一定距离的无界区域的高斯模型变换到非欧式空间中
     #fig("/public/assets/Reading/Representations/Improved_NeRF/2024-10-17-11-23-01.png", width: 80%)
     $ "contract"(bx) = cases(bx &norm(bx)=<1, (2-1/norm(bx)) (bx/norm(bx)) ~~~~ &norm(bx) > 1) $
     - 该函数将坐标映射到半径为 $2$（橙色）的球上，其中半径为 $1$（蓝色）内的点不受影响。并且其设计使得从场景原点的相机投射的光线在橙色区域具有等距间隔
-  + 在线蒸馏(online distillation)
+  + 在线蒸馏 (online distillation)
     - 使用一个小的 proposal MLP 和一个大的 NeRF MLP。前者只预测权重 $bw$（体渲染公式的那玩意儿），并用许多采样点反复重采样；后者真正预测隐式表征，只过一遍
     - 感觉就是把原始 NeRF 的 Hierarchical Volume Sampling 分得更开更细化
-  + 基于失真的正则项(novel distortion-based regularizer)
+  + 基于失真的正则项 (novel distortion-based regularizer)
     - 传统的 NeRF 经训练后表现出两种模糊现象
       + floaters：体积密集空间中的小而不相连的区域渲染后的结果像模糊的云一样（光线的 $w$ 分布是多峰的）
       + background collapse：远处的表面被错误地建模为靠近相机的密集内容的半透明云（光线的 $w$ 分布没有显著的峰）
@@ -200,8 +204,8 @@ $ int_ba^bb f(bx) dif x_i = Phi_th (bb) - Phi_th (ba) $
   - 前者被 NSVF 解决了，但后者没有，这也是后来 FastNeRF, Plenoxels, DVGO 的改进处
   - 但 NSVF 提出的一些技术后续依然得到广泛应用
     + *Early Termination*，即并不遍历完光线上所有的样本点，当 transparency $T$ 衰减到一定地步时就停止遍历
-    + *Empty Space Skipping*，对于 AABB(axis-aligned bounding box) 网络，可以用另一个更高分辨率的 AABB 网络来指示哪些区域是空的，从而跳过这些区域
-    + 网格表示和网格自剪枝(*self-pruning*)，在后续基于网格表示的工作中得到广泛的应用
+    + *Empty Space Skipping*，对于 AABB (axis-aligned bounding box) 网络，可以用另一个更高分辨率的 AABB 网络来指示哪些区域是空的，从而跳过这些区域
+    + 网格表示和网格自剪枝 (*self-pruning*)，在后续基于网格表示的工作中得到广泛的应用
 
 === FastNeRF
 - 核心方法是受图形学启发的因子分解，允许
@@ -219,7 +223,7 @@ $ int_ba^bb f(bx) dif x_i = Phi_th (bb) - Phi_th (ba) $
   - 换句话说，实际上整个场景中的点和方向没那么稀疏，是可以做到稠密地离散化的。可以理解为也是体素化了，把 inference 变成是 offline 的，不再需要过网络而是直接查值。查询时会进行 nearest neighbour interpolation for $F_"pos"$ and trilinear sampling for $F_"dir"$，把输入值规整到 cache 的 key 上去
 
 #note[
-  这种体素化的方法在同期和后期的许多工作中得到广泛应用。这种方法的思想，在图形学中被称作“烘焙”(bake, baking) —— 将颜色、法线、光照等需要大量计算的东西预先计算好，以某种形式存储起来，之后直接加载
+  这种体素化的方法在同期和后期的许多工作中得到广泛应用。这种方法的思想，在图形学中被称作“烘焙” (bake, baking) —— 将颜色、法线、光照等需要大量计算的东西预先计算好，以某种形式存储起来，之后直接加载
 
   套到 NeRF 里，就是把原本需要经过大 MLP 的结果提前算好然后固定到体素网格、八叉树、哈希表等，接下来介绍的许多工作都是沿着这个思路展开
 ]
@@ -234,7 +238,7 @@ $ int_ba^bb f(bx) dif x_i = Phi_th (bb) - Phi_th (ba) $
     + Evalution：把包围盒均匀划分成网格，然后预测这些网格点的 $si$。这个网格能够 auto scale 到适应场景的大小（通过调整包围盒大小使所有网格点的 $si$ 都大于一个阈值 $ta_a$）
     + Filtering：对每个网格点，计算它在所有训练视图渲染的 $w$ 最大值，然后利用阈值 $tau_w$ 过滤掉未被占用的点（它在任何一个视角下都是内部点）。以剩下的每个点为体素中心，作为叶节点来构建体素网格的八叉树（每个叶节点要么是体素要么是空节点）
     + Sampling：对于固定下来的叶节点体素，内部随机采 256 个点预测其 $si$ 和球谐函数系数更新该体素的值（反走样）
-    - 并且可以进行微调(tree structure fixed, finetune values to optimize)
+    - 并且可以进行微调 (tree structure fixed, finetune values to optimize)
 - 优缺点
   + 这样构建一个八叉树大概要用 $15$ min，但是后续就不用再过网络而是直接查八叉树的值，推理速度快得多
   + 渲染结果上看跟原始 NeRF 其实差不太多甚至好一点
@@ -272,11 +276,11 @@ $ int_ba^bb f(bx) dif x_i = Phi_th (bb) - Phi_th (ba) $
 #fig("/public/assets/Reading/Representations/Improved_NeRF/2024-10-19-19-42-38.png")
 - DVGO 应该是第一篇 hybrid NeRF 的工作，只是时运不济，被 InstantNGP 盖过了风头
 - DVGO 的主要贡献
-  + 用网格存取特征取代了 Encoding（和 Instant-NGP 的 hash encoding 是一个性质的，具体分析见下文）
+  + 用网格存取特征取代了 Encoding（和 InstantNGP 的 hash encoding 是一个性质的，具体分析见下文）
   + 三线性插值后过一个 SoftPlus，网格顶点的值可以学的更广，增强了网格拟合高频信号的能力
   + 分了两个阶段训练
     - 先 Coarse geometry searching 学出大概的 coarse density grid $V^(("density")(si))$ 和 coarse color grid $V^(("rgb")(c))$，一方面用来加大采样密度，另一方面做跳点加速（剪枝无效空间）
-    - 然后进行上采样 + 微调，对颜色的预测引入一个 MLP，结合了网格学习的特征和神经网络学习(hybrid)
+    - 然后进行上采样 + 微调，对颜色的预测引入一个 MLP，结合了网格学习的特征和神经网络学习 (hybrid)
   - 一句话概括：通过体素网格低密度初始化、插值后激活等训练策略直接优化体素表达的 NeRF 密度场与颜色特征场，实现分钟级别的训练收敛
 
 === InstantNGP
@@ -309,7 +313,7 @@ $ int_ba^bb f(bx) dif x_i = Phi_th (bb) - Phi_th (ba) $
 === MobileNeRF
 - 假如我们设计了这样一种 NeRF
   + 每条射线上的采样点位置和个数（且远少于原始 NeRF）是已知的
-  + 每个采样点的位置特征向量是预先存储好的(grid, bake)，仅执行 NeRF MLP 最后那一小部分（称作 Decoder）的推理
+  + 每个采样点的位置特征向量是预先存储好的 (grid, bake)，仅执行 NeRF MLP 最后那一小部分（称作 Decoder）的推理
   + 对于当前待渲染画面的每个像素，上述的计算是通过图形渲染 pipeline 在 GPU 上并行的
   - 那么这种新 NeRF，相比原始 NeRF，显然会大幅降低计算量。MobileNeRF 就是这样的设计，以至于可以在移动设备上实时运行
 - 为了实现上述过程，作者将训练分为三个阶段：
@@ -354,9 +358,9 @@ $ int_ba^bb f(bx) dif x_i = Phi_th (bb) - Phi_th (ba) $
   - 动机
     + 基于 Surface Rendering 的方法仅关注其与表面的交点部分，而基于 Volume Rendering 的方法的样本是光线上的很多采样点，所以后者能够更合理和全面地对隐式场进行监督
       - 换句话说，基于 Volume Rendering 能够使这个变形更“深入”，因为它能够在当前表面的远处也产生监督，而 Surface Rendering 与之相比则容易陷入到当前表面附近的局部最优解
-    + 但 NeRF 这种隐式表示也有其困难，因为我们最终的目的一般还是渲染刚体，从中提取高质量的表面是困难的，因为在表示中没有足够的表面约束（NeRF 本质上还是基于“体”的表达，在“面”上没有足够的约束，实际上跟上一点的）
+    + 但 NeRF 这种隐式表示也有其困难，因为我们最终的目的一般还是渲染刚体，从中提取高质量的表面是困难的，因为在表示中没有足够的表面约束（NeRF 本质上还是基于“体”的表达，在“面”上没有足够的约束，实际上跟上一点是 trade-off）
     + 隐式曲面场具有表示几何的优越性，但难以通过 NeRF 光线步进的方法渲染训练；若使用朴素方法将隐式曲面函数转换为密度函数，光线积分所估计的表面位置会略近于真实表面
-  - 比如，VolSDF(Volume rendering of neural implicit surfaces, NeurIPS 2021), NeuS(Learning neural implicit surfaces by volume rendering for multi-view reconstruction, NeurIPS 2021) 用 SDF 指导采样点的生成，数学公式推导比较多，不细看了
+  - 比如，VolSDF (Volume rendering of neural implicit surfaces, NeurIPS 2021), NeuS (Learning neural implicit surfaces by volume rendering for multi-view reconstruction, NeurIPS 2021) 用 SDF 指导采样点的生成，数学公式推导比较多，不细看了
   #fig("/public/assets/Reading/Representations/Improved_NeRF/2024-12-12-11-25-24.png",width:80%)
 - *弱纹理区域的重建*
   - MonoSDF: 使用 Monocular depth and normal 作为约束
@@ -377,7 +381,7 @@ $ int_ba^bb f(bx) dif x_i = Phi_th (bb) - Phi_th (ba) $
 - 原始的 NeRF 从静态场景进行学习，无法建模动态场景
 - 动态街景建模
   - Street Gaussians for Modeling Dynamic Urban Scenes
-  - 对场景进行解耦表示，对每个运动物体重建一个 NeRF（其实是说辐射场，用 3DGS 建模）
+  - 对场景进行解耦表示，对每个运动物体重建一个辐射场（用 3DGS 建模）
   - 对每个物体单独重建的另一个好处是，编辑变得很方便，比如换个车、改轨迹等
 - 任意动态场景建模
   - 动态场景中的物体移动导致无法进行多视图匹配

@@ -448,6 +448,11 @@ $ source /opt/Xilinx/14.7/ISE_DS/settings64.sh && ise
 > 后来发现并不用 `exec`，直接指定 bash 就好了。但为什么当时我不行呢？可能姿势出了点问题
 > 好像是因为我一直用 `source` 来启动脚本的原因，用 `.` 来另起一个 shell 就正常了
 
+## 2.7. WSL 的瘦身与空间转移
+- 转移就是把 wsl 虚拟映射文件压缩，然后创建到其它盘，参考 [轻松搬迁！教你如何将 WSL 从 C 盘迁移到其他盘区，释放存储空间！](https://zhuanlan.zhihu.com/p/621873601)
+- 瘦身就是释放 wsl 实际不再占用的空间，参考 [清理 WSL2 的磁盘占用](https://zhuanlan.zhihu.com/p/614993276)
+- 实际上，新的 wsl 有一个 `sparseVhd=true` 的功能，在 `.wslconfig` 里设置就可以了，这样能让 wsl 的映射文件随着实际使用空间的变化而变化
+
 ***
 
 # 3. Powershell 与 Windows CLI

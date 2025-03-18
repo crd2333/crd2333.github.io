@@ -1,6 +1,5 @@
 ---
 order: 5
-draft: true
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *
@@ -37,7 +36,7 @@ draft: true
     - 2022.10 Runway ML 发布 SD1.5
     - 2022.11 Stability Al 发布 SD2.0
     - 至今 ~~~~ 此后发布便一直以Stability AI名义发布模型
-    #fig("/public/assets/reading/Generation/2025-03-01-20-34-06.png", width: 80%)
+    #fig("/public/assets/Reading/Generation/2025-03-01-20-34-06.png", width: 80%)
 
 == LDM
 - LDM (latent diffusion mofel) 与 DDPM 的关系

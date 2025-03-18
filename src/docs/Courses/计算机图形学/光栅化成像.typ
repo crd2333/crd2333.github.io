@@ -234,7 +234,13 @@ order: 1
 - Super resolution
   - 把图片从低分辨率放大到高分辨率
   - 本质跟抗锯齿类似，都是采样频率不够的问题
-  - 使用 DLSS(Deep Learning Super Sampling) 技术
+  - 可以细分为
+    + 超级采样抗锯齿 (Super-Sampling Anti-Aliasing, SSAA)：直接在更高分辨率的图像上进行采样，然后缩小到目标分辨率，计算成本极高
+    + 多重采样抗锯齿 (Multi-Sampling Anti-Aliasing, MSAA)：只对边缘的像素进行超采样，混合不同采样点的颜色
+    + 时间性抗锯齿 (Temporal Anti-Aliasing, TAA)：每个像素只采样像素中心，将多帧的结果混合，通过连续帧之间的抖动来减少锯齿，在动态场景中可能会出现运动模糊的问题
+    + 快速近似抗锯齿 (Fast Approximate Anti-Aliasing, FXAA)：对图像进行边缘检测，然后对边缘进行模糊处理，是一种后期处理的抗锯齿方法，计算成本非常低
+    + 深度学习超采样 (Deep Learning Super Sampling, DLSS)：使用深度学习模型对图像进行超采样，可以在保持较低计算成本的情况下获得更好的效果
+    + ...
 
 = Shading 着色
 #info()[

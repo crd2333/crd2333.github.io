@@ -1,6 +1,5 @@
 ---
 order: 1
-draft: true
 ---
 
 = Generative Adversarial Nets

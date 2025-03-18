@@ -1,6 +1,5 @@
 ---
-order: 6
-draft: true
+order: 5
 ---
 
 #import "/src/components/TypstTemplate/lib.typ": *
@@ -37,8 +36,8 @@ draft: true
   + 第二类探索泛化模型，可以用少许 multi-view 图片在一次前向中快速重建人体，但是需要在 well-defined camera angles 下。MonoNHR 解决了这个问题，但它重建的人体不能动，应用受限
 - generalizable, single image, animatable 有两个挑战
   + missing information from partial observation。目前的 generalizable Human NeRF 太关注保护局部特征，在补足缺失信息上不足
-  + single image but animatable。需要连贯的(coherent)人体结构的理解
-- SHERF 如前所述提取并合并了 hierarchical features，可以在 visible 区域重建正确颜色，在 invisible 区域给出大概正确(plausible)的猜测。前者得益于 geometry and color details，后者得益于 global features。为了 animatablility，SHERF 在 canonical space 建模人体，用 SMPL prior 把 hierarchical features 转换到 canonical space 进行 encode
+  + single image but animatable。需要连贯的 (coherent) 人体结构的理解
+- SHERF 如前所述提取并合并了 hierarchical features，可以在 visible 区域重建正确颜色，在 invisible 区域给出大概正确 (plausible) 的猜测。前者得益于 geometry and color details，后者得益于 global features。为了 animatablility，SHERF 在 canonical space 建模人体，用 SMPL prior 把 hierarchical features 转换到 canonical space 进行 encode
 - 主要贡献
   + 第一个符合 generalizable, single image, animatable 三个属性的 Human NeRF
   + 提出 3D-aware hierarchical features，让 SHERF 能够恢复细节并补全缺失信息
@@ -76,12 +75,12 @@ draft: true
     - NeRF decoder 来自另一个 generalizable Human NeRF 的工作 MPS-NeRF（NHP 和 MPS-NeRF 作为前 SOTA 成为 SHERF 衡量的 benchmark），但是它们都专注于提取 local feature 导致不能很好地补全缺失信息，这也正说明 hierarchical feature extraction 的重要性
 - 下面我们一个个说明 Hierarchical Feature Extraction 是怎么做的
   + *Global Feature*: global structure 和 overall appearance 对单目人体重建这种 partial observation 任务很重要
-    - 利用 2D Encoder(ResNet18 backbone) 把输入图片压缩成 compact latent code $f in RR^512$
+    - 利用 2D Encoder (ResNet18 backbone) 把输入图片压缩成 compact latent code $f in RR^512$
     - 然后为了高效解码，采用 EG3D 的 tri-plane 式的体素分解策略（用 GAN 的 generator + discriminator 训练的）。用 Mapping Network 把 $f$ 映射到 512 维的 style vector，然后丢进 Style-Based Encoder 生成特征，再 reshape 到 tri-plane representation
     - 这样我们就能把变换到 canonical space 下的任何点 $bx^c$ 正交投影到三个平面上，提取 3D-aware global features $f_global (bx^c)$
   + *Point-Level Feature*: 利用 SMPL prior 搭建 global structure 和 local details 之间的桥梁
-    - 利用 2D Encoder(ResNet18 backbone) 提取输入图片特征得到 feature map $f in RR^(64 times 256 times 256)$，为了保留更多 low-level 细节，对 RGB 值做 positional encoding，然后拼接到 $f$ 上得到 $f in RR^(96 times 256 times 256)$
-    - 将 observation space 下的 SMPL vertices 投影到 feature map 上，只提取可见顶点(from the input view)的特征（make the point-level feature aware of occlusions），然后逆 LBS 转换到 canonical space
+    - 利用 2D Encoder (ResNet18 backbone) 提取输入图片特征得到 feature map $f in RR^(64 times 256 times 256)$，为了保留更多 low-level 细节，对 RGB 值做 positional encoding，然后拼接到 $f$ 上得到 $f in RR^(96 times 256 times 256)$
+    - 将 observation space 下的 SMPL vertices 投影到 feature map 上，只提取可见顶点 (from the input view) 的特征（make the point-level feature aware of occlusions），然后逆 LBS 转换到 canonical space
     - 体素化成 3D volume tensor，再用 $4$ layers of #link("https://github.com/traveller59/spconv")[sparse 3D convolutions] 处理，得到 canonical space 下的 96-dimensional point-level features，这样我们就可以从 encoded sparse 3D volume tensors 中提取 $f_point (bx^c)$
     - 相当于是说，把 2D feature 转存到 mesh 上的点里，再转化到 3D volume 上
   + *Pixel-Aligned Feature*: 前面 point-level 的信息由于 SMPL mesh resolution 和 voxel resolution 有限，可能会有信息丢失，所以我们进一步提取 pixel-aligned features
@@ -94,7 +93,7 @@ draft: true
 
 == 实验 & 分析 & 结论
 - 在 THuman, RenderPeople, ZJU_MoCap and HuMMan 这些数据集上做验证，把 MPS-NeRF 和 NHP 作为 benchmark 比较，定性和定量都表现出 SOTA 的实力
-- 接下来分析几个更细的指标(or settings)
+- 接下来分析几个更细的指标 (or settings)
   - *Training Protocols*。以前的 generalizable Human NeRF 方法大多会在训练的时候仔细选择 camera views 并固定它们，而 SHERF 用 free view inputs 训练。不过这里也分别用 Front View Input / Free View Input 去都训练了一遍，结果显示前者效果明显更好，但 SHERF 一开始就采用的 free view inputs 更符合现实，并且在两种 setting 上 SHERF 都更好
   - *Different Viewing Angles as Inputs*。输入视图在 $[0 deg, 360 deg]$ 角度之间均匀采样 $12$ 个视角，渲染其它 $11$ 个角度的图像，结果显示 SHERF 在不同视角输入下都比之前的 SOTA 表现得更好，而且对于不同的输入视角也表现得很稳定
   - *Viewing Angle Difference Between Target and Observation*。考虑输入视角和目标视角之间的角度差异对新视角合成的影响，发现差异越小，模型越容易合成新视角；而且 SHERF 在所有输入设置下都由于 baseline
@@ -111,7 +110,7 @@ draft: true
 
 == 论文十问
 + 论文试图解决什么问题？
-  - 从单视图(with SMPL and camera parameters)重建一个 animatable 3D 人体
+  - 从单视图 (with SMPL and camera parameters) 重建一个 animatable 3D 人体
 + 这是否是一个新的问题？
   - 不是，有基于 Implicit 特别是 NeRF 的，有基于 Explicit 而且效果很好的 ECON，这篇论文主要对比的是同 setting 的 generalizable Human NeRF
 + 这篇文章要验证一个什么科学假设？

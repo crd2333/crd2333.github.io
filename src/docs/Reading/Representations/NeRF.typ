@@ -17,8 +17,9 @@ order: 3
 - 参考 #link("https://zhuanlan.zhihu.com/p/512538748")[知乎：NeRF 及其发展]
 
 == 引言
-- 将静态场景表示为：一个连续的 5D 到 4D 的函数，输入为空间中每个点 $(x, y, z)$ 和每个方向 $(th, phi)$，输出是这个方向所发射的辐射，以及该点的 density（作用类似于不透明度，控制穿过光线的累积辐射量）。文章通过 MLP 来表示这个映射，从 $(x,y,z), (x',y',z')$ 回归到 $(R,G,B,si)$
+- 将静态场景表示为：一个连续的 5D 到 4D 的函数，输入为空间中每个点 $(x, y, z)$ 和每个方向 $(th, phi)$，输出是这个方向所发射的辐射，以及该点的 density（作用类似于不透明度，控制穿过光线的累积辐射量）
   - 说是 5D 是因为 $x, y, z, th, phi$ 的总自由度是 5，但是代码里为了表示方便，把方向编码成 3D 向量 $(x',y',z')$
+  - 文章通过 MLP 来表示这个映射，从 $(x,y,z), (x',y',z')$ 回归到 $(R,G,B,si)$
 - 为了渲染从特定角度的神经辐射场，我们：
   + 前处理：将相机光线穿过场景以生成一组采样的 3D 点
   + 模型训练和推理：使用这些点及其对应的 2D 观察方向作为神经网络的输入，以生成一组颜色和密度的输出
@@ -40,8 +41,8 @@ order: 3
   - 虽然这些方法有表示复杂和高分辨率形状的潜力，但是目前仍然只能表达简单的几何形状。
 
 === View synthesis and image-based rendering
-- 给定密集的采样视角，新视角可以通过 light field sample interpolation 技术得到。但如果是对于更稀疏的采样，就需要从观察到的图像中预测传统的几何和外观表
-- 一种流行的方法使用基于 mesh 的场景表示，具有漫反射或与视图相关的外观。
+- 给定密集的采样视角，新视角可以通过 light field sample interpolation 技术得到。但如果是对于更稀疏的采样，就需要从观察到的图像中预测传统的几何和外观表示
+- 一种流行的方法使用基于 mesh 的场景表示，具有漫反射或与视图相关的外观
   - Differentiable rasterizers 或 path tracers 可以使用梯度下降直接优化网格表示以重现一组输入图像
   - 然而，基于图像重投影的基于梯度的 mesh 优化通常很困难，可能是因为局部最小值或缺失的景观部分条件太差了。此外，该策略需要在优化之前提供模板网格作为初始化，这通常不适用于无约束的现实世界场景
 - 另一类方法使用 volumetric representations，能表示复杂的形状和材料，非常适合基于梯度的优化，并且比基于 mesh 的方法产生的视觉干扰更少
@@ -52,11 +53,11 @@ order: 3
 #fig("/public/assets/Reading/Representations/NeRF/2024-10-13-17-11-43.png", width: 70%)
 
 == Method
-- 这里原文分了好多章 Neural Radiance Field Scene Representation, Volume Rendering with Radiance Fields, Optimizing a Neural Radiance Field(Positional encoding & Hierarchical volume sampling)，这里将其整合到一起进行理解
+- 这里原文分了好多章 Neural Radiance Field Scene Representation, Volume Rendering with Radiance Fields, Optimizing a Neural Radiance Field (Positional encoding & Hierarchical volume sampling)，这里将其整合到一起进行理解
 - 整个任务的输入和输出
   - 输入：给定静止场景下的若干张图片
   - 输出：生成新的视角下的图片
-  - 模型本质是使用神经网络(MLP)来隐式地存储 3D 信息
+  - 模型本质是使用神经网络 (MLP) 来隐式地存储 3D 信息
   - 不具有泛化能力，一个模型只能存储一个 3D 信息
 - 模型的输入和输出
   - 模型输入是粒子的空间位置以及从哪个角度去看它（相机位姿），表示为 5D 向量，$(x, y, z, theta, phi)$，代码里是 6D 向量，$(x, y, z, x', y', z')$
