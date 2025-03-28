@@ -17,3 +17,10 @@
 
 == Chapter 3: Convolutional Neural Networks
 略
+
+== Chapter 4: Recurrent Neural Networks
+略
+
+虽然 RNN 现在用得不多，但其影响依旧广泛。甚至强化学习本质上就是一种 RNN。
+
+

@@ -239,3 +239,97 @@ Pipeline 不再赘述。
 - Multi-Core Evolution (An Early History)
   - 略
 
+= Chapter 5: Memory Overview, Organization, Technology
+- Memory 的功能就是 store 和 load (Programmer's View)
+  - [] 图
+- 理想的计算架构，其中 Data Supply 也就是 memory 部分是目前包括 LLM 等应用中最困难的
+  - [] 图（三个组成的那张）
+  - 观察 ideal memory 的四个特性，它们实际上是互相冲突的
+    + Bigger is slower: Bigger $->$ Takes longer to determine the location
+    + Faster is more expensive: 回顾存储技术 SRAM v.s. DRAM v.s. SSD v.s. Disk v.s. Tape
+    + Higher bandwidth is more expensive: Need more banks, more ports, more channels, higher frequency or faster technology
+  - 几种存储设备的比较
+    - [ ] 图（三个金字塔）
+  - FF v.s. SRAM v.s. DRAM v.s. SSD (Flash Memory)
+
+== SRAM
+- Goal:Efficiently store large amounts of data
+  - A memory array (stores data)
+  - Address selection logic (selects one row of the array)
+  - Readout circuitry (reads data out)
+  - *Advantage*: random access still keeps high performance
+  - *Disadvantage*: low capacity (\~ MBs)
+- Memory Array:
+  - memory array with $N$ address bits and $M$ data bits
+    - *Depth*: number of rows $2^N$ (number of words)
+    - *Width*: number of columns $M$ (size of a word)
+    - *Array Size*: depth $times$ width = $2^N times M$
+    - [ ] 图 51
+  - Bitline:Storage nodes in one column connected to one bitline
+  - Wordline:Address decoder activates only ONE wordline, content of one line of storage available at output
+- SRAM Bit（SRAM 基本单元）
+  - [ ] 图
+- Memory Banking
+  - Memory 被分为 banks，它们可以被独立访问，并且共享 address 和 data buses (to minimize pin cost)
+  - 可以承受 $N$ 个并发访问，如果这 $N$ 个访问发往不同的 banks
+  - [ ] 图
+- SRAM Access
+  #grid(
+    columns: 2,
+    column-gutter: 4pt,
+    fig("/public/assets/Courses/CHIP/2025-03-21-10-55-25.png"),
+    fig("/public/assets/Courses/CHIP/2025-03-21-10-56-01.png")
+  )
+  - Read Sequence
+    + address decode
+    + drive row select
+    + selected bit-cells drive bitlines (entire row is read together)
+    + differential sensing and column select (data is ready)
+    + precharge all bitlines (for next read or write)
+    - 其中 access latency 主要由 steps $2, 3$ 决定；cycling time 主要由 steps $2, 3, 5$ 决定
+      $ &"steps" 2 prop 2^m \ &"steps" 3, 5 prop 2^n $
+
+== DRAM (HBM, DDR)
+- Motivation and Goals
+  - Application Perspective
+  - Performance Perspective
+  - Reliability Perspective
+  - 总之又是重复了很久 memory 的重要性，略
+  - 目前 memory optimization 的方向在于 size (capacity) 和 bandwidth，对 latency 需求不大
+- DRAM (dynamic random access memory)
+  - 使用电压来指示存储数据 (charged $-> 1$, discharged $-> 0$)
+  - 需要周期性地 refresh (read and rewrite) 来保持数据，因为 capacitor leaks through the RC path，DRAM 会随着时间失去电压
+- Building Larger Memories
+  - Idea: 把 memory 分成更小的 arrays 并且把它们连接到 input / output buses
+  - Large memories are hierarchical array structures
+  - DRAM Subsystem Organization: Channel $->$ DIMM（内存条） $->$ Rank（内存条正反面） $->$ Chip $->$ Bank $->$ Row / Column
+  - 这段看 PPT 的图会比较好理解
+- Address Bits of Memory
+  - SRAM 的寻址比较简单
+  - DRAM 需要给出 channel, bank, row, column，导致地址复杂的同时性能也下降
+- Digging Deeper: DRAM Bank Operation —— Row Buffer
+  - 类似于给 DRAM 的 bank 做了 row 层级的 cache，也有 hit / miss 的概念
+    - Page Hit: 最快的时候，指定 column 直接从 row buffer 里面取
+    - Page Close: 第一次激活的时候，里面没有有意义数据，直接覆盖
+    - Page Miss: 需要先写回该 row，再读取所需 row
+  - 这就是 $"Sequential Speed" > "Random Speed"$ 的本质原因
+- DRAM Refresh
+  - 由 memory controller 负责，程序员只需要考虑 load / store 就行了
+  - 副作用
+    + *Energy consumption*: Each refresh consumes energy
+    + *Performance degradation*: DRAM rank/bank unavailable while refreshed
+    + *QoS / predictability impact*: (Long) pause times during refresh
+    + Refresh rate limits DRAM capacity scaling
+
+== SSD
+- Advantage: Large memory size, e.g. 16TB per SSD
+- Disadvantage: Low throughput, high latency, hard to use
+- [ ] 图227
+- 老师的经验之谈：现在用 SSD 的大存储来代替显存，虽然频率差一点但现在也是有可以做的地方的，只要账面实力一算，优化好让两边性能能够 overlap 就行
+
+= Chapter 6: Graphics Processing Units
+没怎么听。
+
+
+
+

@@ -220,11 +220,11 @@ order: 1
 - 采样产生的问题(artifacts)：走样、摩尔纹、车轮效应，本质都是信号变化频率高于采样频率
   - 香农采样定理：采样频率 $>=$ 原始频率的两倍，才能很好地恢复
   - 总体而言主要有两种方式 —— Super Sampling（提高采样率）, Area Sampling（干掉高频信号）
-- Super Sampling —— MSAA(Multi-Sample Anti-Aliasing)，多重采样抗锯齿
+- Super Sampling —— MSAA (Multi-Sample Anti-Aliasing)，多重采样抗锯齿
   - 分辨率定死，但增大采样率。把一个像素划分为几个小点，用小点的覆盖率来模拟大点的颜色
   - 增大计算负担，但也有一些优化，比如只在边缘处采样、复用采样点等
   - 另外的一些里程碑式的抗锯齿方案：FXAA, TAA
-- Area Sampling —— Blurring(Pre-Filtering) Before Sampling
+- Area Sampling —— Blurring (Pre-Filtering) Before Sampling
   - 不能 Sample then filter, or called blurred aliasing
   - 为什么不行？为此介绍*频域、时域*的知识
     - 傅里叶、滤波、卷积
@@ -232,15 +232,15 @@ order: 1
     - 采样不同的间隔，会引起频谱不同间隔进行复制，所相交的部分就是走样
     - 所谓反走样就是把高频信息砍掉，砍掉虚线方块以外，再以原始采样频率进行采样，这样就不易交叉了
 - Super resolution
-  - 把图片从低分辨率放大到高分辨率
-  - 本质跟抗锯齿类似，都是采样频率不够的问题
-  - 可以细分为
-    + 超级采样抗锯齿 (Super-Sampling Anti-Aliasing, SSAA)：直接在更高分辨率的图像上进行采样，然后缩小到目标分辨率，计算成本极高
-    + 多重采样抗锯齿 (Multi-Sampling Anti-Aliasing, MSAA)：只对边缘的像素进行超采样，混合不同采样点的颜色
-    + 时间性抗锯齿 (Temporal Anti-Aliasing, TAA)：每个像素只采样像素中心，将多帧的结果混合，通过连续帧之间的抖动来减少锯齿，在动态场景中可能会出现运动模糊的问题
-    + 快速近似抗锯齿 (Fast Approximate Anti-Aliasing, FXAA)：对图像进行边缘检测，然后对边缘进行模糊处理，是一种后期处理的抗锯齿方法，计算成本非常低
-    + 深度学习超采样 (Deep Learning Super Sampling, DLSS)：使用深度学习模型对图像进行超采样，可以在保持较低计算成本的情况下获得更好的效果
-    + ...
+  - 本质跟抗锯齿类似，都是采样频率不够的问题，但它需要真正地把图片从低分辨率放大到高分辨率
+  - 一个经典成功案例是 NVIDIA 的 DLSS
+- Anti-Aliasing (AA) / Super-Sampling (SS) 方法归类
+  + 超级采样抗锯齿 (Super-Sampling Anti-Aliasing, SSAA)：直接在更高分辨率的图像上进行采样，然后缩小到目标分辨率，计算成本极高
+  + 多重采样抗锯齿 (Multi-Sampling Anti-Aliasing, MSAA)：对 SSAA 的改进，只对边缘的像素超采样、复用采样点，降低计算成本
+  + 时间性抗锯齿 (Temporal Anti-Aliasing, TAA)：每个像素只采样像素中心，将多帧的结果混合，通过连续帧之间的抖动来减少锯齿，在动态场景中可能会出现运动模糊的问题
+  + 快速近似抗锯齿 (Fast Approximate Anti-Aliasing, FXAA)：对图像进行边缘检测，然后对边缘进行模糊处理，是一种后期处理的抗锯齿方法，计算成本非常低，但模糊问题比较严重
+  + 亚像素形态抗锯齿 (Subpixel Morphological Anti-Aliasing, SMAA)：image-based AA solution，使用形态学滤波器检测边缘做矢量化，计算成本较低
+  + 深度学习超采样 (Deep Learning Super Sampling, DLSS)：使用深度学习模型对图像进行超采样，可以在保持较低计算成本的情况下获得更好的效果
 
 = Shading 着色
 #info()[
@@ -345,7 +345,7 @@ order: 1
       - Creating Good Surface Coordinate is Hard!
       #fig("/public/assets/Courses/CG/2024-11-29-15-52-47.png",width:70%)
   - 下面我们就认为已经知道 3D 物体的每一个三角形顶点对应的纹理 $u, v in [0,1]$ 坐标
-- 三角形内插值: 重心坐标(Barycentric Coordinates)
+- 三角形内插值: 重心坐标 (Barycentric Coordinates)
   - 重心坐标
     $ (x,y)=al A + beta B + ga C ~~~~ (al + beta + ga = 1) $
     - 通过 $al, beta, ga >= 0$ 可以任意表示三角形内的点，且与三个顶点所在坐标系无关

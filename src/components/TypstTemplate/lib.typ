@@ -70,6 +70,7 @@
     radius: 2pt,
   )
   show raw: set text(font: (字体.meslo-mono, 字体.思源宋体)) // 代码中文字体
+  show raw.where(block: true): set text(size: 字号.小五 - 2pt)  // 代码块字体小一点
   show raw: it => {
     show regex("pin\d"): it => pin(eval(it.text.slice(3))) // pinit package for raw
     it

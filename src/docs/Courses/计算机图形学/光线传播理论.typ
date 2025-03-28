@@ -257,7 +257,7 @@ order: 3
 
 == 计算机图形学中的材质
 - 这一节，我们将细化之前提到的 BRDF 概念
-  - 在图形学中，材质 == BRDF(Bidirectional Reflectance Distribution Function)
+  - 在图形学中，材质 == BRDF (Bidirectional Reflectance Distribution Function)
 - *漫反射材质(Diffuse)的 BRDF*
   - Light is equally reflected in each output direction
     $ f(i,o) = "constant" $
