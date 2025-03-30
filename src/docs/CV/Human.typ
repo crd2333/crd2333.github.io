@@ -39,7 +39,7 @@ order: 2
   - 跟 Pose Space 的含义差不太多，只不过一个是直接观测到的，一个是变换得到的，类似 predicted value 和 ground truth 的关系，希望它们能够尽可能接近（有的文章可能会区分它们）
 
 == 动画技术 <animation>
-- 在正式进入人体三维重建的领域之前，我们可以先看看工业界是如何表示人体并做动画的。*主要*是基于骨骼动画 (Skeletal Animation) + 蒙皮 (skinning) 来实现（可以看 #link("https://www.bilibili.com/video/BV1jr4y1t7WR?share_source=copy_web&vd_source=19e6fd31c6b081ac5b8486c112eafa1f")[08.游戏引擎的动画技术基础(上) | GAMES104-现代游戏引擎：从入门到实践]）
+- 在正式进入人体三维重建的领域之前，我们可以先看看工业界是如何表示人体并做动画的。*主要*是基于骨骼动画 (Skeletal Animation) 和蒙皮 (skinning) 来实现（可以看 #link("https://www.bilibili.com/video/BV1jr4y1t7WR?share_source=copy_web&vd_source=19e6fd31c6b081ac5b8486c112eafa1f")[08.游戏引擎的动画技术基础(上) | GAMES104-现代游戏引擎：从入门到实践]）
 - 模型是由大量顶点 (Vertex) 组成的，或者每三个一组称为网格 (Mesh)，一般来自 blender 或 Maya 这种专门的建模软件。我们知道图形渲染管线是基于 mesh，密集 mesh 构成 geometry，再往 mesh 上面进行纹理映射，为模型添加 appearance
 - 但如果想移动任何网格，显然直接移动那么多网格的顶点到指定位置是不实际的，需要添加骨骼 (Skeleton)，有时也叫骨架 (Armature)，就像现实世界一样人体由一根根骨头 (Bone) 组成骨骼
   - 如何产生骨架？可以用正向动力学 (Forward Kinematics)、反向动力学 (Inverse Kinematics)
@@ -50,23 +50,27 @@ order: 2
   - 那么蒙皮到底是怎么实现顶点的变换呢？具体而言：
     - 任何骨骼模型都会有：一个初始位姿 (rest pose) 下的 mesh 上所有顶点位置 $v_1, v_2, ..., v_n in RR^3$，每个骨骼 (joint) 的变换矩阵 $M_1, M_2, ..., M_k in RR^(3 times 4)$（一般是在局部坐标系下，需要乘上父节点的变换矩阵才能得到世界坐标系下的变换矩阵）
     - 在骨骼运动后，新顶点的位置由如下公式给出
-    $ overline(v)_i = sum_(j=1)^k w_(i,j) T_j^m (T_j^r)^(-1) v_i $
-    - 其中，任意新顶点 $overline(v)_i$ 表示为受到所有骨骼（业界一般会限制在 $4$ 个以下）的影响，通过权重 $w_(i,1), w_(i,2), ..., w_(i,k) in RR$ 来混合。$T_j^r$ 表示第 $j$ 个骨骼在 rest pose 下从局部坐标系到世界坐标系的变换矩阵，$v_i$ 左乘它的逆也就是变换得到这个顶点相对骨骼 $j$ 的位置；$T_j^m$ 表示第 $j$ 个骨骼在 moved pose 下从局部坐标系到世界坐标系的变换矩阵，左乘它得到 move 后世界坐标系下第 $j$ 块骨骼贡献的 $v_i$ 新位置；我们考虑所有骨骼 $j$ 的影响，将它们加权组合就得到上式
+      $ overline(v)_i = sum_(j=1)^k w_(i,j) T_j^m (T_j^r)^(-1) v_i $
+      - 其中，任意新顶点 $overline(v)_i$ 表示为受到所有骨骼（业界一般会限制在 $4$ 个以下）的影响，通过权重 $w_(i,1), w_(i,2), ..., w_(i,k) in RR$ 来混合
+      - $T_j^r$ 表示第 $j$ 个骨骼在 rest pose 下（因此它是个固定量，不用像 $T_j^m$ 一样每帧计算）从局部坐标系到世界坐标系的变换矩阵，$v_i$ 左乘它的逆也就是变换得到这个顶点相对骨骼 $j$ 的位置
+      - $T_j^m$ 表示第 $j$ 个骨骼在 moved pose 下从局部坐标系到世界坐标系的变换矩阵，左乘它得到移动后世界坐标系下第 $j$ 块骨骼贡献的 $v_i$ 新位置
+      - 考虑所有骨骼 $j$ 的影响，将它们加权组合就得到上式
   - 这时就需要分配这些骨头对该顶点的权重，这是通过各种蒙皮算法实现的。其中最著名的一个就是线性混合蒙皮，而线性混合蒙皮 (LBS) 是指权重是线性的，使用最广泛，但在关节处可能产生不真实的变形
   - 所谓蒙皮，在 Blender 这种建模软件上其实就是一个快捷键的事，一般来说 Blender 的自动权重已经比较准确了，但也可以手动分配，也就是所谓的刷权重 (Weight Painting)
-- 所以整个动画设计的 Pipeline 大致是 (from GAMES104)：
-  + Mesh：四个 Stage: Blockout, Highpoly, Lowpoly, Texture，把高精度的 mesh 转化为低精度，为肘关节添加额外的细节
+- 所以整个动画设计的 Pipeline 大致如下 (from GAMES104)：
+  + Mesh：网格一般分为四个 Stage: Blockout, Highpoly, Lowpoly, Texture。这里一般会制作固定姿势的 mesh (T-pose / A-pose)，把高精度的 mesh 转化为低精度，有时还会为肘关节添加额外的细节来优化
   + Skeleton binding：在工具的帮助下创建一个跟 mesh 匹配的 skeleton，绑定上跟 game play 相关的 joint
-  + skinning：在工具的帮助下通过权重绘制，将骨骼和 mesh 结合起来
-  + Animation creation：做关键帧，之后插值出中间动画
+  + Skinning：在工具的帮助下通过权重绘制，将骨骼和 mesh 结合起来
+  + Animation creation：将骨骼设置为所需姿势，做关键帧，之后插值出中间动画
+  + Exporting：一般把 mesh, skeleton, skinning data, animation clip 等统一导出为 `.fbx` 文件。一些细节上的处理比如跳跃动画的 root 位移不会存下来而是用专门的位移曲线来记录
   #fig("/public/assets/AI/Human/2024-11-02-19-54-23.png", width: 50%)
 - 这里额外拓展一下做动画的其它方法（从 GAMES104 看来的）。实际上业界做动画的几种方式里面，骨骼动画是最基础最广泛的一种，但绝不是唯一（主要是想讲一下 blend shape 方法，因为后面会提到）
   + 对于动作比较小又追求高精度的地方（典型的比如人体面部表情），骨骼动画就不那么适用了，这时候就需要 *Morph 动画*，每个关键帧都存储了 Mesh 所有顶点对应时刻的位置
-    - 这样精度是上去了，但内存占用也变得不可接受。很自然地我们会想，能不能只存储从中性形状 Mesh 到目标形状 Mesh 的 offset，用插值来确定这个形变的强弱，并且用少量这种基础形状的组合 (blend) 来产生动画呢？
-    - 这其实就是 *Blend Shape*（Morgh 动画的一种）。特定地，在面部表情动画里，基础形状就是根据面部动作编码系统 (FACS) 定义的一系列 key poses，通过这些类似基函数的东西组合出各种面部表情
+    - 这样精度是上去了，但内存占用也变得不可接受，并且随着表面细节增多计算量也会变很大。
+    - 另外，很自然地我们会想，能不能只存储从中性形状 Mesh 到目标形状 Mesh 的 offset，用插值来确定这个形变的强弱，并且用少量这种基础形状的组合 (blend) 来产生动画呢？这其实就是 *Blend Shape*（Morgh 动画的一种）。特定地，在面部表情动画里，基础形状就是根据面部动作编码系统 (Facial Action Coding System, FACS) 定义的一系列 key poses，通过这些类似基函数的东西组合出各种面部表情
     - Blend Shape 往往与骨骼动画结合使用。比如面部表情动画中，嘴巴张开这种相对较大的动作还是用骨骼实现，而嘴角弧度等精细控制由 key poses 组合得到
-  + 从驱动的角度来看，除了 *skeletion driven* 之外，还有 *cage driven* 的方法，即在 mesh 外围生成一个低精度的 mesh 包围盒，用这个低精度的变化来控制高精度的 mesh
-  + 对于面部表情动画，还有一个很生草的办法是直接把一系列纹理映射到 head shape 上，对卡通动画比较适用（比如我最喜欢的游戏《塞尔达传说：旷野之息》，还有《动物森友会》也是这么做的）
+  + 从驱动的角度来看，除了 *Skeleton Driven* 之外，还有 *Cage Driven* 的方法，即在 mesh 外围生成一个低精度的 mesh 包围盒，用这个低精度的变化来控制高精度的 mesh
+  + 对于*面部表情动画*，还有一个很生草的办法是直接把一系列纹理映射到 head shape 上 (*UV Texture Facial Animation*)，对卡通动画比较适用（比如我最喜欢的游戏《塞尔达传说：旷野之息》，还有《动物森友会》也是这么做的）。以及还有一些最前沿的停留在科研阶段的方法（影视行业已经开始用了）如 *Muscle Model Animation*，直接基于物理去驱动面部的 $43$ 块肌肉来实现各种表情，也许是引擎的未来
 - 个人认为，所谓骨骼、蒙皮这些概念，就是工业界探索得出的一条既能高精度表示（大量 vertices），又能高效控制（使用蒙皮约束大大减小解空间）的办法，基于图形渲染管线，兼顾美工设计需求（抽象掉了具体的很多细节），更专注于切实可用
 
 == 三维人体重建

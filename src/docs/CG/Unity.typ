@@ -35,7 +35,7 @@
         - 参考 #link("https://blog.csdn.net/qiaoquan3/article/details/56301112")[Unity 多个物体间的脚本执行顺序]
         - 大致意思是说，后挂载的脚本先执行而先挂载的后执行；每个周期执行完所有对象的 `Update` 之后再执行 `LateUpdate`（单线程）；部分函数成对出现，如 `Awake` 紧跟 `OnEnable`，`OnDisable` 紧跟 `OnDestroy`
     ],
-    fig("/public/assets/CG/2025-02-22-18-38-31.png")
+    fig("/public/assets/CG/Unity/2025-02-22-18-38-31.png")
   )
 
 - 一些核心组件
@@ -53,9 +53,9 @@
         - 可以看到，这么一个层级结构跟我们自己用 OpenGL 写小引擎这种图一乐的结构有很多不同（大引擎就是规范啊
       - 而 material 实质上就是 shader 的实例，在 Inspector 上修改 material 的相关属性实质上是在更改 shader 的设置
         - material 中的 maps 包括反照率 (Albedo)、金属质地 (Metallic)、法向 (Normal)、高度 (Height)、遮挡 (Occlusion) 等，它们都可以设置纹理（贴图）
-      #fig("/public/assets/CG/2025-02-22-20-43-10.png")
+      #fig("/public/assets/CG/Unity/2025-02-22-20-43-10.png")
     ],
-    fig("/public/assets/CG/2025-02-22-20-48-32.png")
+    fig("/public/assets/CG/Unity/2025-02-22-20-48-32.png")
   )
   - material 在代码里有 materials 与 sharedMaterials 之分，详见 #link("https://www.jianshu.com/p/b600f9f26f49")[[Unity] Renderer的materials与sharedMaterials]
 
@@ -217,7 +217,7 @@ Unity 提供了一套强大灵活的动画系统，包括 2D, 3D，不过这里�
   + #link("https://zhuanlan.zhihu.com/p/492136094")[【Unity动画系统】汇总篇]
   + #link("https://blog.csdn.net/milu_ELK/article/details/143330428")[【Unity 学习笔记】3D 模型的骨骼，动画使用以及使用 Humanoid 在不同骨骼下的素材复用]、#link("https://zhuanlan.zhihu.com/p/104615381")[Unity 骨骼动画的总结]
 - 一个 Animator 的例子如下
-  #fig("/public/assets/CG/2025-03-09-23-23-08.png", width: 90%)
+  #fig("/public/assets/CG/Unity/2025-03-09-23-23-08.png", width: 90%)
   - 其中，Clip 是基本的动作单元，它们来自外部导入或 Unity 内部创建
   - Clip 显示在 Animator Controller 中，而 Animator 的窗口中显示 Animator Controller 的视图（状态机）
   - Avatar 作为导入角色模型的一部分资源在 Project 窗口中显示，并跟 Controller 并列显示在 Animator 组件中
