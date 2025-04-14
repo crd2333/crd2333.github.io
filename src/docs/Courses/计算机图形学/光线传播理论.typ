@@ -121,6 +121,16 @@ order: 3
 == 辐射度量学(Basic radiometry)、渲染方程与全局光照
 - Motivation：Blinn-phong 着色计算、Whitted styled 光线追踪都不够真实
 - 辐射度量学：在物理上准确定义光照的方法，但依然在几何光学中的描述，不涉及光的波动性、互相干扰等
+- 数学概念
+  - 角度与立体角
+    $ th = l / r \ om = A / r^2 $
+  - 微分拆解立体角
+    $ dif A &= (r dif th) (r sin th dif phi) = r^2 sin th dif th dif phi \ dif om &= (dif A) / r^2 = sin th dif th dif phi $
+  #grid(
+    columns: (70%, 30%),
+    fig("/public/assets/Courses/CG/2025-04-13-21-50-38.png", width: 85%),
+    fig("/public/assets/Courses/CG/2025-04-13-21-51-22.png", width: 85%)
+  )
 - 几个概念：
   + *Radiance Energy 辐射能 $Q$*
     $ Q ~~~~ [J = "Joule"] $
@@ -137,19 +147,24 @@ order: 3
     - *Irradiance* 是指单位照射面积所接收到的 power
     $ E = (dif Phi)/(dif A cos theta) ~~~~ [W/m^2] $
     - 其中 $A$ 是投影后的有效面积
-    - 注意区分 Intensity 和 Irradiance，对一个向外锥形，前者不变而后者随距离减小
+    - 注意区分 Intensity 和 Irradiance，对一个向外锥形，前者不变而后者随距离减小（但都没有方向性）
   + *Radiance 辐亮度 $L$*
     - Light Reflected from a Surface
+    #fig("/public/assets/Courses/CG/2025-04-13-22-12-19.png", width: 30%)
     - *Radiance* 是指每单位立体角，每单位垂直面积的功率。同时指定了光的方向与照射表面所受到的亮度
     $ L = (dif^2 Phi(p, omega))/(dif A cos theta dif omega) ~~~~ [W/(s r ~~ m^2)][(c d)/(m^2)=(l m)/(s r ~~ m^2)=n i t] $
-    - $theta$ 是入射（或出射）光线与法向量的夹角
+    - $theta$ 是入射（或出射）光线与单位面积法向量的夹角
     - Radiance 和 Irradiance, Intensity 的区别在于是否有方向性
     - 把 Irradiance 和 Intensity 联系起来，Irradiance per solid angle 或 Intensity per projected unit area
-    - *Irradiance* 与 *Radiance* 之间的关系
-      $ E(p) = int_(H^2) L_i (p, omega) cos theta dif omega $
-- 双向反射分布函数(Bidirectional Reflectance Distribution Function, BRDF)
+    - *Irradiance*, *Radiance*, *Radiant Intensity* 之间的关系
+      $
+      L_i (p, om) = frac(dif E(p, om), cos th dif om) \
+      E(p) = int_(H^2) L_i (p, omega) cos theta dif omega \
+      L(p,om) = frac(dif I(p,om), dif A cos th)
+      $
+- 双向反射分布函数 (Bidirectional Reflectance Distribution Function, BRDF)
   - 是一个 4D function $f(i,o)$（3D 的方向由于用单位向量表示所以少一个自由度，例如球面的 $th, phi$ 表示）
-  - 如果固定 $i$，就是描述了入射($omega_i$)光线经过某个表面反射后在各个可能的出射方向($omega_r$)上能量分布（反射率）
+  - 如果固定 $i$，就是描述了入射光线 $omega_i$ 经过某个表面反射后在各个可能的出射方向 $omega_r$ 上能量分布（反射率）
   $ f_r (omega_i -> omega_r) = (dif L_r (omega_r))/(dif E_i (omega_i)) = (dif L_r (omega_r)) / (L_i (omega_i) cos theta_i dif omega_i) ~~~~ [1/(s r)] $
 - 用 BRDF 描述的反射方程
   $ L_r (p, omega_r) = int_(H^2) f_r (p, omega_i -> omega_r) L_i (p, omega_i) cos theta_i dif omega_i $
@@ -185,9 +200,8 @@ order: 3
       $ E(F_N) &= E(1/N sumiN frac(f(X_i),p(X_i))) = 1/N sumiN E(f(X_i)/p(X_i)) \ &= 1/N sumiN int_a^b frac(f(x),p(x)) p(x) dif x = 1/N sumiN int_a^b f(x) dif x = int_a^b f(x) dif x $
     - [ ] 还有其它
 - 回忆 Whitted-styled 光线追踪
-  - 摄像机发射光线，打到不透明物体，则认为是漫反射，直接连到光源做阴影判断、着色计算；
-  - 打到透明物体，发生折射、反射
-  - 总之光线只有三种行为——镜面反射、折射、漫反射
+  - 摄像机发射光线，打到不透明物体，则认为是漫反射，直接连到光源做阴影判断、着色计算；打到透明物体，发生折射、反射
+  - 总之光线只有三种行为 —— 镜面反射、折射、漫反射
   - 缺陷：
     + 难以处理毛面光滑材质
     + 忽略了漫反射物体之间的反射影响
@@ -200,15 +214,19 @@ order: 3
     F_N = (2 pi)/N sumiN Y_i
     $
   - 写成伪代码就是
-    #fig("/public/assets/Courses/CG/img-2024-08-01-22-25-38.png", width: 60%)
+    #grid(
+      columns: (50%, 50%),
+      fig("/public/assets/Courses/CG/img-2024-08-01-22-25-38.png"),
+      fig("/public/assets/Courses/CG/2025-04-13-22-25-30.png", width: 40%)
+    )
   - 问题一：$"rays"=N^"bounces"$，指数级增长。当 $N=1$ 时，就称为 *path tracing* 算法
     - $N=1$ 时 noise 的问题：在每个像素内使用 $N$ 条 path，将 path 结果做平均（同时也解决了采样频率，解决锯齿问题）
   - 问题二：递归算法的收敛条件。如果设置终止递归条件，与自然界中光线就是弹射无数次相悖。如何不无限递归又不损失能量？
-    - 俄罗斯轮盘赌 Russian Roulette(RR)
+    - 俄罗斯轮盘赌 Russian Roulette (RR)
       - 以一定的概率停止追踪（类似神经网络的 dropout）
-      - 如果停了要把能量除以继续算的概率(reweighting)
+      - 如果停了要把能量除以继续算的概率 (reweighting)
     - 期望停止次数为 $1/(1-P)$，而结果的正确性由 $E=P times L_o / P + (1-P) times 0 = L_o$ 保证
-    - 不过虽然是无偏，但也是有问题的，会扩大 variance（No Free Lunch: biase 跟 variance 是 trade-off 的关系，物理上叫测不准原理）
+    - 虽然无偏但有问题，会扩大 variance（No Free Lunch: biase 跟 variance 是 trade-off 关系，物理上叫测不准原理）
   - 问题三：低采样数的情况下噪点太多，而高采样率又费性能（当光源越小，越多的光线被浪费）
     - *重要性采样*：直接采样光源的表面（其它方向概率为 $0$），这样就没有光线被浪费。换句话说，我们希望 $p(x)$ 靠近 $f(x)$ 的分布
       - 极端一点，如果 $p(x)$ 跟 $f(x)$ 完全相等，我们都不用采样了，一个点就能得到正确结果。这也揭示出蒙特卡洛的本质：多次采样为的是估计 $f(x)$ 跟 $p(x)$ 的差异
@@ -258,22 +276,22 @@ order: 3
 == 计算机图形学中的材质
 - 这一节，我们将细化之前提到的 BRDF 概念
   - 在图形学中，材质 == BRDF (Bidirectional Reflectance Distribution Function)
-- *漫反射材质(Diffuse)的 BRDF*
+- *漫反射材质 (Diffuse) 的 BRDF*
   - Light is equally reflected in each output direction
     $ f(i,o) = "constant" $
   - 如果再假设入射光也是均匀的，并且有能量守恒定律 $L_o = L_i$，那么：
     #fig("/public/assets/Courses/CG/img-2024-08-04-11-39-26.png",width:80%)
     - 定义反射率 $rho$ 来表征一定的能量损失，还可以对 RGB 分别定义 $rho$
-- *抛光/毛面金属(Glossy)材质的 BRDF*
+- *抛光/毛面金属 (Glossy) 材质的 BRDF*
   - 这种材质散射规律是在镜面反射方向附近，一小块区域进行均匀的散射
-  - 代码实现上，算出*镜面*反射方向$(x,y,z)$，就以$(x,y,z)$为球心（或圆心），内部随机生成点，以反射点到这个点作为真的光线反射方向。在较高 SPP(samples per pixel)下，就能均匀的覆盖镜面反射方向附近的一块小区域
-- *（完全）镜面反射(reflect)的 BRDF *
+  - 代码实现上，算出*镜面*反射方向 $(x,y,z)$，就以 $(x,y,z)$ 为球心（或圆心），内部随机生成点，以反射点到这个点作为真的光线反射方向。在较高 SPP(samples per pixel)下，就能均匀的覆盖镜面反射方向附近的一块小区域
+- *（完全）镜面反射 (reflect) 的 BRDF *
   - 方向描述
     + 直接计算：$omega_o = - omega_i + 2 (omega_i dot n) n$
     + 用天顶角 $phi$ 和方位角 $theta$ 描述：$phi_o = (phi_i+pi) mod 2 pi, ~~ theta_o = theta_i$
     + 还有之前讲过的半程向量描述（简化计算）$h = frac(i+o,norm(i+o))$
   - 镜面反射的 BRDF 不太好写，因为它是一个 delta 函数，只有在某个方向上有值，其它方向上都是 $0$
-- *折射材质(ideal reflective/refractive)的 BRDF*
+- *折射材质 (ideal reflective/refractive) 的 BRDF*
   - Snell's Law（斯涅耳定律，折射定律）：$n_1 sin theta_1 = n_2 sin theta_2$
   - $cos theta_t = sqrt(1 - (n_1/n_2)^2 (1 - (cos theta_i)^2))$，有全反射现象（光密介质$->$光疏介质）
   - 折射无法用严格意义上的 BRDF 描述，而应该用 BTDF(T: transmission)

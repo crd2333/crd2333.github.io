@@ -16,7 +16,7 @@
   + #link("https://www.zhihu.com/column/c_1473816420539097088")[知乎 | GAMES202 高质量实时渲染-个人笔记 by 风烟流年]（这个可能整理得更好一些）
   + #link("https://blog.csdn.net/yx314636922/category_11601225.html")[CSDN | GAMES202 by 我要吐泡泡了哦]（这个也不错）
 
-另外，这门课据闫令琪的说法，不会有 GAMES101 那样贯穿的主线，而是分几个 topic 来介绍。
+另外，这门课据闫令琪的说法，不会有 GAMES101 那样贯穿的主线，而是分几个 topic 来介绍。Global Illumination (GI) 部分加入 Games104 的内容。
 
 == Lec1: Introduction
 
@@ -59,7 +59,7 @@ RTR does not trust in Complexity! 实时渲染里面，一切都看最终跑起�
   - sdf + ray marching $->$ safe distance
   - sdf for shadow $->$ safe angle
   - sdf 的存储，一般用 hierarchy 的方法存一棵树，只在物体边界的叶子附近才存值。还有一些用深度学习压缩的方法（闫令琪评价：毫无意义！）
-  - 至于怎么计算 sdf，一般都认为是其它领域研究的问题（比如 cv，233），cg 这边就当作是能直接拿到的东西
+  - 至于怎么计算 sdf，一般都认为是其它领域研究的问题（比如 CV，233），CG 这边就当作是能直接拿到的东西
   - sdf 的优势是，在做阴影层面（不考虑生成存储的情况下）对硬阴影软阴影处理相同，比 shadow map 方法快，效果也很不错；另外对于移动物体它也可以处理；但问题在于不好处理物体形变，以及 sdf 生成的物体没法做贴图
 
 == Lec5/6: Real-time Environment Lighting
@@ -103,8 +103,7 @@ RTR does not trust in Complexity! 实时渲染里面，一切都看最终跑起�
   - 问题：由于 voxel 的分辨率导致 light leaking
     - 工业界使用多分辨率 voxel，叫 cascaded LPV，学术界叫 multi-scale 或 level of detail
   - LPV 不需要预计算，光源和场景都是可以变化的，但是计算量可能还是稍大
-- VXGI (Voxel Global Illumination)
-  - VXGI 是 NVIDIA 提出的一个基于 voxel 的全局光照方法
+- *VXGI (Voxel Global Illumination)* 是 NVIDIA 提出的一个基于 voxel 的全局光照方法
   - 它的基本思想也是把场景分为 (hierarchical) voxel，跟 RSM 一样是个 two-pass algorithm，但不同在于：
     + 从 RSM 直接照亮 pixels $->$ (hierarchical) voxel；
     + 从 LPV 的构建体素后一次 propagation $->$ 构建体素后每个 shading point 都根据其 normal 做 cone tracing 再次跟体素求交（当然这跟 RSM 也不一样，前者是次级光源主动去找其它体素，而后者是 shading point 去找次级光源）

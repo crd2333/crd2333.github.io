@@ -241,15 +241,15 @@ Pipeline 不再赘述。
 
 = Chapter 5: Memory Overview, Organization, Technology
 - Memory 的功能就是 store 和 load (Programmer's View)
-  - [] 图
+  #fig("/public/assets/Courses/CHIP/2025-03-31-20-55-48.png", width: 20%)
 - 理想的计算架构，其中 Data Supply 也就是 memory 部分是目前包括 LLM 等应用中最困难的
-  - [] 图（三个组成的那张）
+  #fig("/public/assets/Courses/CHIP/2025-03-31-20-56-20.png", width: 50%)
   - 观察 ideal memory 的四个特性，它们实际上是互相冲突的
     + Bigger is slower: Bigger $->$ Takes longer to determine the location
     + Faster is more expensive: 回顾存储技术 SRAM v.s. DRAM v.s. SSD v.s. Disk v.s. Tape
     + Higher bandwidth is more expensive: Need more banks, more ports, more channels, higher frequency or faster technology
   - 几种存储设备的比较
-    - [ ] 图（三个金字塔）
+    #fig("/public/assets/Courses/CHIP/2025-03-31-20-57-02.png", width: 50%)
   - FF v.s. SRAM v.s. DRAM v.s. SSD (Flash Memory)
 
 == SRAM
@@ -264,21 +264,21 @@ Pipeline 不再赘述。
     - *Depth*: number of rows $2^N$ (number of words)
     - *Width*: number of columns $M$ (size of a word)
     - *Array Size*: depth $times$ width = $2^N times M$
-    - [ ] 图 51
+    #fig("/public/assets/Courses/CHIP/2025-03-31-20-57-37.png", width: 50%)
   - Bitline:Storage nodes in one column connected to one bitline
   - Wordline:Address decoder activates only ONE wordline, content of one line of storage available at output
 - SRAM Bit（SRAM 基本单元）
-  - [ ] 图
+  #fig("/public/assets/Courses/CHIP/2025-03-31-20-58-38.png", width: 30%)
 - Memory Banking
   - Memory 被分为 banks，它们可以被独立访问，并且共享 address 和 data buses (to minimize pin cost)
   - 可以承受 $N$ 个并发访问，如果这 $N$ 个访问发往不同的 banks
-  - [ ] 图
+  #fig("/public/assets/Courses/CHIP/2025-03-31-20-59-29.png", width: 50%)
 - SRAM Access
   #grid(
     columns: 2,
     column-gutter: 4pt,
-    fig("/public/assets/Courses/CHIP/2025-03-21-10-55-25.png"),
-    fig("/public/assets/Courses/CHIP/2025-03-21-10-56-01.png")
+    fig("/public/assets/Courses/CHIP/2025-03-31-21-05-59.png", width: 90%),
+    fig("/public/assets/Courses/CHIP/2025-03-31-21-05-28.png", width: 90%)
   )
   - Read Sequence
     + address decode
@@ -324,12 +324,13 @@ Pipeline 不再赘述。
 == SSD
 - Advantage: Large memory size, e.g. 16TB per SSD
 - Disadvantage: Low throughput, high latency, hard to use
-- [ ] 图227
+#fig("/public/assets/Courses/CHIP/2025-03-31-21-02-00.png", width: 50%)
 - 老师的经验之谈：现在用 SSD 的大存储来代替显存，虽然频率差一点但现在也是有可以做的地方的，只要账面实力一算，优化好让两边性能能够 overlap 就行
 
 = Chapter 6: Graphics Processing Units
 没怎么听。
 
-
+= Chapter 7: GPU Optimization
+没听。
 
 
