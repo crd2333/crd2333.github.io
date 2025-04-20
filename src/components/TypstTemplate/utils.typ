@@ -169,8 +169,10 @@ font: 字体.宋体,
 }
 
 // 快捷文字着色，实现了红色蓝色，黑色则为粗体，两个 * 即可
-#let redt(body) = text(fill: colors.red, body) // red-text
-#let bluet(body) = text(fill: colors.blue, body) // blue-text
+#let redt(body) = text(fill: colors.red, body)       // red-text
+#let bluet(body) = text(fill: colors.blue, body)     // blue-text
+#let greent(body) = text(fill: colors.green, body)   // green-text
+#let yellowt(body) = text(fill: colors.yellow, body) // yellow-text
 
 // 快捷 grid
 #let grid2(alignment: center, body1, body2, ..args) = align(alignment, grid(

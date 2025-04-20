@@ -17,7 +17,7 @@
   )
 
   // 导入 show 规则
-  show: checklist.with(fill: luma(95%), stroke: blue, radius: .2em, show-list-set-block:(above: 1.2em))
+  show: checklist.with(fill: luma(95%), stroke: blue, radius: .2em, show-list-set-block:(above: 0.8em))
   show: shorthand // 导入 math shorthand
   show: show-theorion.with()
   show: zebraw-init.with(
@@ -41,10 +41,11 @@
   }
   // 设置字体与语言
   set text(font: 字体.宋体, size: 字号.小五, lang: lang)
-  set par(first-line-indent: 0em)
+  set par(first-line-indent: 0em, spacing: 1.2em, leading: 0.65em)
   // 设置 bullet list 和 enum 的 marker，相比默认更像 markdown，另外刻意调大了一点（适合老年人
-  set list(marker: ([●], [○], [■], [□], [►]), tight: false, spacing: .8em)
-  set enum(numbering: numbly("{1}.", "{2:a}.", "{3:i}."), full: true, tight: false, spacing: .8em)
+  // 关于 spacing，list 和 enum 的 spacing，如果设为 auto，会使用 par 的 leading (tight: true) / spacing，另外 tight 这个值在这里赋是没用的，在 markup mode 下会根据是否空行自动决定（那 tm 开放给 set 又有什么意义。。。）
+  set list(marker: ([●], [○], [■], [□], [►]), spacing: 0.8em)
+  set enum(numbering: numbly("{1}.", "{2:a}.", "{3:i}."), full: true, spacing: 0.8em)
   // 将 list and enum 用 block 撑开 (for math.equation and figures)
   show: align_list_enum
 

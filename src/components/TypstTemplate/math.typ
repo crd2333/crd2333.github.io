@@ -1,9 +1,28 @@
 #import "@preview/quick-maths:0.2.1": shorthands
 #import "@preview/mitex:0.2.5": *
 
+// ---------- 数学公式中的函数 ----------
 #let dcases(..args) = math.cases(..args.pos().map(math.display)) // cases with display style
-
 #let cnum(num) = str.from-unicode(9311 + num)  // 带圈数字
+#let iprod(a, b) = $lr(angle.l #a mid(|) #b angle.r)$
+#let rbox(fill: false, inset: 4pt, baseline: 4pt, ..args, body) = box(baseline: baseline, inset: inset, fill: if (fill) {red.lighten(50%)}, stroke: red, $display(body)$) // boxes for math
+#let bbox(fill: false, inset: 4pt, baseline: 4pt, ..args, body) = box(baseline: baseline, inset: inset, fill: if (fill) {blue.lighten(50%)}, stroke: blue, $display(body)$)
+#let gbox(fill: false, inset: 4pt, baseline: 4pt, ..args, body) = box(baseline: baseline, inset: inset, fill: if (fill) {green.lighten(50%)}, stroke: green, $display(body)$)
+#let obox(fill: false, inset: 4pt, baseline: 4pt, ..args, body) = box(baseline: baseline, inset: inset, fill: if (fill) {orange.lighten(50%)}, stroke: orange, $display(body)$)
+#let ybox(fill: false, inset: 4pt, baseline: 4pt, ..args, body) = box(baseline: baseline, inset: inset, fill: if (fill) {yellow.lighten(50%)}, stroke: yellow, $display(body)$)
+#let cancelbox(
+  fill: false, inset: 4pt, baseline: 4pt,
+  cross: true, stroke: red,
+  ..args, body
+) = box(
+  baseline: baseline, inset: inset, fill: if (fill) {red}, stroke: red,
+  math.cancel(
+    cross: cross,
+    stroke: stroke,
+    length: 100% + 3pt + inset,
+    body
+  )
+)
 
 // ---------- 文本运算符 ----------
 #let argmax = math.op("argmax", limits: true)
@@ -16,6 +35,7 @@
 #let corr = math.op("corr", limits: true)
 #let rank = math.op("rank", limits: true)
 
+
 // ---------- 符号缩写 ----------
 #let shorthand = shorthands.with(
   ($+-$, $plus.minus$),
@@ -23,7 +43,8 @@
   ($=<$, $<=$),                // =< becomes '≤'
   ($<=$, math.arrow.l.double), // Replaces '≤'，似乎需要某一边有东西才能正常工作，原因未知
   ($~~$, $#h(0.5em)$),  // two med's width
-  ($!!$, $#h(-0.5em)$)  // inverse of '~'
+  ($!!$, $#h(-0.5em)$), // inverse of '~'
+  ($\*$, $ast.op$)
 )
 
 // ---------- 文本缩写和杂项 ----------
