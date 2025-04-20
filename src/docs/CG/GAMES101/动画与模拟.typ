@@ -45,10 +45,10 @@ order: 4
   #grid(
     columns: (.3fr, 1fr) * 2,
     row-gutter: 6pt,
-    fig("/public/assets/Courses/CG/img-2024-08-06-13-54-14.png", width: 3em),[1. 不能模拟布料，因为它不具备布的特性（不能抵抗切力、不能抵抗对折力）],
-    fig("/public/assets/Courses/CG/img-2024-08-06-13-54-32.png", width: 4em),[2. 改进了一点，虽然能抵抗图示对角线的切力，但是存在各向异性。另外依然不能抵抗折叠],
-    fig("/public/assets/Courses/CG/img-2024-08-06-13-54-45.png", width: 4em),[3. 可以抵抗切力，有各向同性，不抗对折],
-    fig("/public/assets/Courses/CG/img-2024-08-06-13-54-52.png", width: 4em),[4. 红色 skip connection 比较小，仅起辅助作用。现在可以比较好的模拟布料],
+    fig("/public/assets/CG/GAMES101/img-2024-08-06-13-54-14.png", width: 3em),[1. 不能模拟布料，因为它不具备布的特性（不能抵抗切力、不能抵抗对折力）],
+    fig("/public/assets/CG/GAMES101/img-2024-08-06-13-54-32.png", width: 4em),[2. 改进了一点，虽然能抵抗图示对角线的切力，但是存在各向异性。另外依然不能抵抗折叠],
+    fig("/public/assets/CG/GAMES101/img-2024-08-06-13-54-45.png", width: 4em),[3. 可以抵抗切力，有各向同性，不抗对折],
+    fig("/public/assets/CG/GAMES101/img-2024-08-06-13-54-52.png", width: 4em),[4. 红色 skip connection 比较小，仅起辅助作用。现在可以比较好的模拟布料],
   )
 - Aside: FEM(Finite Element Method) instead of Springs 也能很好地模拟这些问题
 - 粒子系统(Particle Systems)

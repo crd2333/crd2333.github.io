@@ -35,7 +35,7 @@
 - OpenGL 是 Event Driven Programming
   - 通过注册回调函数(callbacks)来处理事件
   - 事件包括键盘、鼠标、窗口大小变化等
-  #fig("/public/assets/Courses/CG/2024-09-22-16-45-55.png", width: 50%)
+  #fig("/public/assets/CG/API/2024-09-22-16-45-55.png", width: 50%)
 - Double buffering
   - 隐藏绘制过程，避免闪烁
   - 有时也会用到 Triple buffering
@@ -63,7 +63,7 @@
 - Vulkan 是 Khronos 组织在 2015 年底发布的新一代图形 API
 - Vulkan vs. GL/GLES
   - 发展历程
-    #fig("/public/assets/Courses/CG/2025-01-11-13-38-00.png")
+    #fig("/public/assets/CG/API/2025-01-11-13-38-00.png")
   - 特性对比
     #grid(
       columns: 2,
@@ -78,7 +78,7 @@
         [Shader 支持], [支持 SPIR-V 开放标准], [Shader Compiler\ 由各个驱动实现，\ 没有统一标准],
         [Debug 支持], [由开源 Validation Layer\ 完成，动态加载], [包含在驱动中],
       ),
-      [#fig("/public/assets/Courses/CG/2025-01-11-13-48-47.png", width: 90%)],
+      [#fig("/public/assets/CG/API/2025-01-11-13-48-47.png", width: 90%)],
     )
   - 优缺点
     #grid(

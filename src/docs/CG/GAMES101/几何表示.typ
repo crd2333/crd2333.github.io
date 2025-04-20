@@ -64,11 +64,11 @@ order: 2
   - 更进一步，可以使用 basis functions 的思想，不表示为标准 $[a,b,c,d]$ 形式，用 $4$ 个基 $bH_1 (t),bH_2 (t),bH_3 (t),bH_4 (t)$ 来表示
     $ P(t) = sumi^3 h_i bH(t) $
   - 指定 $4$ 个基函数如下
-    #fig("/public/assets/Courses/CG/2024-11-13-08-44-14.png",width:60%)
+    #fig("/public/assets/CG/GAMES101/2024-11-13-08-44-14.png",width:60%)
   - 这个 $bH_1 (t)$ 比较有意思，因为比较平滑，可以借以构建伪动画
 - Catmull-Rom Curves
   - Hermite 曲线的优化，用 $4$ 个点插值出一条曲线，用点 $0,2$ 连线模拟点 $1$ 的导数，用点 $1,3$ 连线模拟点 $2$ 的导数
-  #fig("/public/assets/Courses/CG/2024-11-13-15-21-18.png",width:60%)
+  #fig("/public/assets/CG/GAMES101/2024-11-13-15-21-18.png",width:60%)
 - 贝塞尔曲线
   - 用三个控制点确定一条二次贝塞尔曲线（de Casteljau 算法），三次、四次等也是一样的思路（如果是尺规作图或者可视化可以这么做）
   - 本质上是用伯恩斯坦 (Bernstein) 多项式定义出 $n$ 个控制点（作为基）对曲线上点的权重
@@ -76,7 +76,7 @@ order: 2
     C(t) = sumi^n B_(i,n) (t) P_i ~~, t in [0,1] \
     B_(i,n) (t) = C_n^i t^i (1-t)^(n-i)
     $
-    #fig("/public/assets/Courses/CG/2024-11-13-15-21-38.png",width:60%)
+    #fig("/public/assets/CG/GAMES101/2024-11-13-15-21-38.png",width:60%)
   - 贝塞尔曲线好用的性质
     + 首/尾两个控制点一定是起点/终点
     + 对称性：由 ${P_0,P_1,dots,P_(n-1)}$ 确定的曲线和 ${P_(n-1),dots,P_1,P_0}$ 确定的曲线是一样的
@@ -102,7 +102,7 @@ order: 2
   $ S(u,v) = sum_(i=0)^n sum_(j=0)^m P_ij B_(i,n) (u) B_(j,m) (v) 0 =< u,v =< 1 $
 - 贝塞尔曲面：将贝塞尔曲线扩展到曲面
   - 用 $4 times 4$ 个控制点得到三次贝塞尔曲面。每四个控制点绘制出一条贝塞尔曲线，这 $4$ 条曲线上每一时刻的点又绘制出一条贝塞尔曲线，得到一个贝塞尔曲面
-  #fig("/public/assets/Courses/CG/2024-11-20-08-12-39.png",width:60%)
+  #fig("/public/assets/CG/GAMES101/2024-11-20-08-12-39.png",width:60%)
   - 怎么求曲面上的法向量？用曲面的参数方程求出 $u,v$ 方向的切线，然后叉乘得到法向量
 - 跟曲线一样，可以自然推广到 B-spline Surface 和 NURBS Surface
 

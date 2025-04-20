@@ -37,7 +37,7 @@ order: 3
 - 为什么要有光线追踪，光栅化不能很好的模拟全局光照效果：难以考虑 glossy reflection（反射性较强的物体）, indirect illuminaiton（间接光照）；不好支持 soft shadow；是一种近似的效果，不准确、不真实
 - 首先定义图形学中的光线：光沿直线传播；光线之间不会相互影响、碰撞；光路可逆(reciprocity)，从光源照射到物体反射进入人眼，反着来变成眼睛发射光线照射物体
 - Recursive (Whitted-Style) Ray Tracing
-  #fig("/public/assets/Courses/CG/2024-11-28-22-28-10.png",width:60%)
+  #fig("/public/assets/CG/GAMES101/2024-11-28-22-28-10.png",width:60%)
   - 两个假设前提：人眼是一个点；场景中的物体，光线打到后都会进行完美的反射/折射；
   - 每发生一次折射或者反射（弹射点）都计算一次着色，前提是该点不在阴影内，如此递归计算
     + 从视点从成像平面发出光线，检测是否与物体碰撞
@@ -66,11 +66,11 @@ order: 3
   - 求交方法一：遍历物体每个三角形，判断与光线是否相交
     + 光线-平面求交
     + 计算交点是否在三角形内
-    #fig("/public/assets/Courses/CG/2024-11-28-22-33-57.png",width: 40%)
+    #fig("/public/assets/CG/GAMES101/2024-11-28-22-33-57.png",width: 40%)
   - 求交方法二：Möller-Trumbore 射线-三角形求交算法（MT 算法）
     - 计算光线是否在三角形内以及与平面交点
     - 核心出发点是用重心坐标表示平面
-    #fig("/public/assets/Courses/CG/img-2024-07-30-14-36-34.png",width: 40%)
+    #fig("/public/assets/CG/GAMES101/img-2024-07-30-14-36-34.png",width: 40%)
     - 具体步骤
       + 求解 $t，b1，b2$（三个式子三个未知数，求解方法为克莱姆法则）
       + 解出来之后，看是否合理：#cnum(1) 沿着这个方向（$t$ 非负）；#cnum(2) 在三角形内（$b1，b2$ 非负）
@@ -88,7 +88,7 @@ order: 3
   $ t_"enter"=max{t_min}, t_"exit"=min{t_max} $
   - 算 $t_"enter"$ 和 $t_"exit"$，光线与 box 有交点的判定条件当且仅当
     $ t_"enter" < t_"exit" "&&" t_"exit" >= 0 $
-  #fig("/public/assets/Courses/CG/2024-11-28-22-45-08.png",width: 60%)
+  #fig("/public/assets/CG/GAMES101/2024-11-28-22-45-08.png",width: 60%)
 - 包围盒的划分，一般有 Uniform grids，Spatial Partitions 和 Object Partitions 三种
 
 === Uniform Grid
@@ -105,11 +105,11 @@ order: 3
   + BSP-Tree：空间二分的方法，每次选一个方向砍一刀，不是横平竖直（并非 AABB），所以不好求交，维度越高越难算
   + *KD-Tree*：每次划分只沿着某个轴砍一刀，XYZ 交替砍，不一定砍正中间，每次分出两块，类似二叉树结构
     - KD-tree 的缺陷：不好计算三角形与包围盒的相交性（不好初始化）；一个三角形可能属于多个包围盒导致冗余计算
-  #fig("/public/assets/Courses/CG/2024-11-28-22-51-25.png",width:50%)
+  #fig("/public/assets/CG/GAMES101/2024-11-28-22-51-25.png",width:50%)
 
 === Object Partitions
 - 对象划分 Bounding Volume Hierarchy(BVH)
-  #fig("/public/assets/Courses/CG/2024-11-28-22-52-20.png",width:50%)
+  #fig("/public/assets/CG/GAMES101/2024-11-28-22-52-20.png",width:50%)
   - 将一个场景用一个包围盒包住，按照一定划分方案递归地将盒子划分成两组，对两组物体再求一个包围盒（$x y z$ 的最值作为边界），最终划分到叶子节点时每个都只包含少量三角形
   - 这样每个包围盒可能有相交（无伤大雅）但三角形不会有重复（不会出现在多个包围盒中），并且求包围盒的办法省去了三角形与包围盒求交的麻烦
   - 分组方法一般采用启发式
@@ -120,16 +120,16 @@ order: 3
 
 == 辐射度量学(Basic radiometry)、渲染方程与全局光照
 - Motivation：Blinn-phong 着色计算、Whitted styled 光线追踪都不够真实
-- 辐射度量学：在物理上准确定义光照的方法，但依然在几何光学中的描述，不涉及光的波动性、互相干扰等
-- 数学概念
+- 辐射度量学：在物理上准确定义光照的方法，但依然是在几何光学中的描述，不涉及光的波动性、互相干扰等
+- *数学概念*
   - 角度与立体角
     $ th = l / r \ om = A / r^2 $
   - 微分拆解立体角
     $ dif A &= (r dif th) (r sin th dif phi) = r^2 sin th dif th dif phi \ dif om &= (dif A) / r^2 = sin th dif th dif phi $
   #grid(
     columns: (70%, 30%),
-    fig("/public/assets/Courses/CG/2025-04-13-21-50-38.png", width: 85%),
-    fig("/public/assets/Courses/CG/2025-04-13-21-51-22.png", width: 85%)
+    fig("/public/assets/CG/GAMES101/2025-04-13-21-50-38.png", width: 85%),
+    fig("/public/assets/CG/GAMES101/2025-04-13-21-51-22.png", width: 85%)
   )
 - 几个概念：
   + *Radiance Energy 辐射能 $Q$*
@@ -150,7 +150,7 @@ order: 3
     - 注意区分 Intensity 和 Irradiance，对一个向外锥形，前者不变而后者随距离减小（但都没有方向性）
   + *Radiance 辐亮度 $L$*
     - Light Reflected from a Surface
-    #fig("/public/assets/Courses/CG/2025-04-13-22-12-19.png", width: 30%)
+    #fig("/public/assets/CG/GAMES101/2025-04-13-22-12-19.png", width: 30%)
     - *Radiance* 是指每单位立体角，每单位垂直面积的功率。同时指定了光的方向与照射表面所受到的亮度
     $ L = (dif^2 Phi(p, omega))/(dif A cos theta dif omega) ~~~~ [W/(s r ~~ m^2)][(c d)/(m^2)=(l m)/(s r ~~ m^2)=n i t] $
     - $theta$ 是入射（或出射）光线与单位面积法向量的夹角
@@ -162,6 +162,25 @@ order: 3
       E(p) = int_(H^2) L_i (p, omega) cos theta dif omega \
       L(p,om) = frac(dif I(p,om), dif A cos th)
       $
+  + *Radiance, Irradiance and the Irradiance Volume*
+    - 以上 Irradiance 和 Radiance 是定义在表面上的，拓宽到空间中就更复杂，形成 *radiance distribution function*
+    - 相关概念应用于 Irradiance Map, Radiance Map, Irradiance Volume 等，若不搞清楚，深入 GI 领域时将晕头转向。比如，笔者一度疑惑于为什么很多论文、算法中会有“Irradiance 的方向 $E(p, om)$”这一概念（明明我们这里说 $E(p)$ 是没有方向性的）
+      - 更奇怪的是，不知是否是因为 GAMES101 在国内影响太大，我竟找不到什么中文资料解释这一拓展概念
+      - 但就上面这个问题，实际上就是对空间中任一点 $p$ 假设有一微表面，具有一个法向量。$E(p, om)$ 就是以这法向为中心对 $L(p, om)$ 做半球积分得到的 irradiance 值。这样的描述比原始 radiance 更低频（在方向上做了滤波）
+    - 可以参考
+      + #link("https://www.sci.utah.edu/~bigler/images/msthesis/The%20irradiance%20volume.pdf")[The_Irradiance_Volume.pdf]
+      + #link("https://zhuanlan.zhihu.com/p/622940005")[四十九、The Irradiance Volume]，翻译、重述了上述论文
+      + #link("https://www.cnblogs.com/KillerAery/p/16828304.html#cache-%E5%BD%A2%E5%BC%8F")[基于 Probe 的实时全局光照 (Probe-based Global Illumination) \# Cache 形式 ]
+  - 贴一个物理学、辐射度量学 Radiometry、光度学 Photometry 之间的术语及译名对应
+    #csvtbl(```
+      Basic Quantity, Radiometric Terminology, Photometric Terminology
+      Energy 能量, Radiant energy 辐射能, Luminous energy 光量
+      FIux 通量, Radiant flux 辐射通量, Luminous flux 光通量
+      Intensity 强度, Radiant intensity 辐射强度, Luminous intensity 光强度
+      Flux density 通量密度, Irradiance 辐射照度, llluminance 光照度
+      Sterance 亮度, Radiance 辐射亮度, Luminance 光亮度
+      Exitance 出射度, Radiant exitance 辐射出射度, Luminous exitance 光出射度
+    ```)
 - 双向反射分布函数 (Bidirectional Reflectance Distribution Function, BRDF)
   - 是一个 4D function $f(i,o)$（3D 的方向由于用单位向量表示所以少一个自由度，例如球面的 $th, phi$ 表示）
   - 如果固定 $i$，就是描述了入射光线 $omega_i$ 经过某个表面反射后在各个可能的出射方向 $omega_r$ 上能量分布（反射率）
@@ -174,7 +193,7 @@ order: 3
   $ L_o (p, omega_o) = L_e (p, omega_o) + int_(Omega^+) f_r (p, omega_i, omega_o) L_i (p, omega_i) (n dot omega_i) dif omega_i $
   - 换一个角度看，把式子通过“算子”概念简写为 $L=E+K L$
     - 然后移项泰勒展开得到 $L = E + K E + K^2 E + ...$，如下图
-      #fig("/public/assets/Courses/CG/img-2024-07-31-23-36-46.png", width: 60%)
+      #fig("/public/assets/CG/GAMES101/img-2024-07-31-23-36-46.png", width: 60%)
     - 即我们考虑 $L_i$ 可以不止来自光源，也能来自其它物体的弹射
     - 光栅化实质上是只考虑了前两项（直接光照），这也是为什么我们需要光线追踪
     - *全局光照 = 直接光照(Direct Light) + 间接光照(Indirect Light)*
@@ -216,8 +235,8 @@ order: 3
   - 写成伪代码就是
     #grid(
       columns: (50%, 50%),
-      fig("/public/assets/Courses/CG/img-2024-08-01-22-25-38.png"),
-      fig("/public/assets/Courses/CG/2025-04-13-22-25-30.png", width: 40%)
+      fig("/public/assets/CG/GAMES101/img-2024-08-01-22-25-38.png"),
+      fig("/public/assets/CG/GAMES101/2025-04-13-22-25-30.png", width: 40%)
     )
   - 问题一：$"rays"=N^"bounces"$，指数级增长。当 $N=1$ 时，就称为 *path tracing* 算法
     - $N=1$ 时 noise 的问题：在每个像素内使用 $N$ 条 path，将 path 结果做平均（同时也解决了采样频率，解决锯齿问题）
@@ -280,7 +299,7 @@ order: 3
   - Light is equally reflected in each output direction
     $ f(i,o) = "constant" $
   - 如果再假设入射光也是均匀的，并且有能量守恒定律 $L_o = L_i$，那么：
-    #fig("/public/assets/Courses/CG/img-2024-08-04-11-39-26.png",width:80%)
+    #fig("/public/assets/CG/GAMES101/img-2024-08-04-11-39-26.png",width:80%)
     - 定义反射率 $rho$ 来表征一定的能量损失，还可以对 RGB 分别定义 $rho$
 - *抛光/毛面金属 (Glossy) 材质的 BRDF*
   - 这种材质散射规律是在镜面反射方向附近，一小块区域进行均匀的散射
@@ -312,33 +331,32 @@ order: 3
   - 宏观上 —— 平坦且略有粗糙(flat & rough)。总之，从近处看能看到不同的几何细节，拉远后细节消失
   - 微表面 BRDF 的核心是认为每个微表面都有自己的法向量，它们的分布对整体的法向量有贡献
 - 用法线分布描述表面粗糙程度
-  #fig("/public/assets/Courses/CG/img-2024-08-04-12-48-55.png",width: 30%)
+  #fig("/public/assets/CG/GAMES101/img-2024-08-04-12-48-55.png",width: 30%)
 - 微表面的 BRDF (Microfacet Material's BRDF)
   - 可以看到，微表面材质模型对前面说的几种模型做了整合
-  #fig("/public/assets/Courses/CG/img-2024-08-04-12-52-57.png",width: 50%)
+  #fig("/public/assets/CG/GAMES101/img-2024-08-04-12-52-57.png",width: 50%)
   - $F$ 函数是菲涅尔项
     - 它解释了菲涅耳效应，该效应使得与表面成较高的入射角的光线会以更高的镜面反射率进行反射
+    - 一般采用 Schlick approximation
+      $ F(om_i, h) = R_0 + (1 - R_0) (1 - cos th_i)^5 \ R_0 = (frac(n_1 - n_2,n_1 + n_2))^2 $
   - $G$ 是几何衰减项
-    - 当入射光以非常平(Grazing Angle 掠射角度)的射向表面时，有些凸起的微表面就会遮挡住后面的微表面，也就是 *shadowing*
+    - 当入射光以非常平的角度（Grazing Angle 掠射角度）射向表面时，凸起的微表面就会遮挡住后面的微表面，也就是 *shadowing*
     - 当出射光以非常平的角度离开表面时，有些凸起的微表面就会遮挡住前面的微表面，也就是 *masking*
     - $G$项 其实对这些情况做了修正
+    $ G(om_i, om_o, h) = min(1, frac(2 (h dot n) (o dot n), o dot n), frac(2 (h dot n) (i dot n), o dot n)) $
   - $D$ 是法向分布项
-    - 它解释了在观看者角度反射光的微平面的比例，描述了在这个表面周围的法线分布情况
-    - 例如，当输入向量 $h$ 时，如果微平面中有 $35%$ 与向量 $h$ 取向一致，则法线分布函数就会返回 $0.35$
+    - 它解释了在观看者角度反射光的微平面的比例，描述了在这个表面周围的法线分布情况。例如，当输入向量 $h$ 时，如果微平面中有 $35%$ 与向量 $h$ 取向一致，则法线分布函数就会返回 $0.35$
+    - 一般采用 Beckmann distribution / GGX distribution
+      $
+      D_"Beckmann" (om) = frac(exp(- (tan^2 th_h) / al^2), pi al^2 cos^4 th_h) \
+      D_"GGX" (om) = frac(al^2, pi [(al^2 - 1) cos^2 th_h + 1]^2)
+      $
   - 不同的 microfacet BRDFs 主要在 $D$ 上有所不同，经典模型包括: Blinn, Cook-Torrance, Ashikmin, GGX, Oren-Nayar
-  - 以 Cook-Torrance Model 为例
-    $
-    D = frac(e^(frac(-tan^2 (al),m^2)), pi m^2 cos^4 (al)), ~~~~ al = arccos (n dot h)\
-    G = min(1, frac(2 (h dot n) (o dot n), o dot n), frac(2 (h dot n) (i dot n), o dot n))
-    $
-    - D is the Beckmann distribution
-    - Parameter m controls the shape of highlight
-    - Highly compact representation
 - 可以根据物体微表面是否具有方向性将物体分类 —— 各向同性(Isotropic)和各向异性(Anisotropic)材质
   - *各向同性* —— 各个方向法线分布相似；
   - *各向异性* —— 各个方向法线分布不同，如沿着某个方向刷过的金属
   - 后者会造成一个现象，高光方向会跟物体的方向不一致
-    #fig("/public/assets/Courses/CG/2024-11-27-18-53-25.png",width: 40%)
+    #fig("/public/assets/CG/GAMES101/2024-11-27-18-53-25.png",width: 40%)
   - 用 BRDF 定义，各向同性材质满足 BRDF 与方位角 $phi$ 无关
     $ f_r (th_i,phi_i; th_r, phi_r) = f_r (th_i, th_r, |phi_r - phi_i|) $
     - $phi_i,phi_r$ 各自的描述变为它们的差值，BRDF 从 4D 降低到 3D
@@ -392,26 +410,26 @@ order: 3
 - Metropolis Light Transport(MLT)
   - 马尔可夫链蒙特卡洛(Markov Chain Monte Carlo, MCMC)的应用
   - 马尔可夫链可以根据一个样本，生成跟这个样本靠近的下一个样本，使得这些样本的分布跟被积函数曲线相似，这样的 variance 较小。用在路径追踪里面，就可以实现“局部扰动现有路径去获取一个新的路径”（在现有采样点附近生成新采样点，连起来得到新路径）
-  - 适用于复杂场景（间接光照、Caustics 现象），只要找到一条，我就能生成很多条
+  - 适用于复杂场景（间接光照、Caustics 现象），只要找到一条，就能生成很多条
   - 缺陷：难以估计收敛速度，不知道跑多久能产生没有噪点的渲染结果图；不能保证每像素的收敛速度相等，通常会产生“肮脏”的结果，因此一般不用于渲染动画
 
 == 有偏光线传播方法
-- 光子映射(Photon Mapping)
-  - 适用于渲染焦散(caustics)、Specular-Diffuse-Specular(SDS)路径
+- 光子映射 (Photon Mapping)
+  - 适用于渲染焦散 (caustics)、Specular-Diffuse-Specular (SDS) 路径
   - 实现方法（两步）
-    + Stage 1——photon tracing：光源发射光子，类似光线一样正常传播（反射、折射），打到 Diffuse 表面后停止并记录
-    + Stage 2——photon collection(final gathering)：摄像机出发打出子路径，正常传播，打到 Diffuse 表面后停止
+    + Stage 1 —— photon tracing：光源发射光子，类似光线一样正常传播（反射、折射），打到 Diffuse 表面后停止并记录
+    + Stage 2 —— photon collection (final gathering)：摄像机出发打出子路径，正常传播，打到 Diffuse 表面后停止
     + Calculation——local density estimation：对于每个像素，找到它附近的 $N$ 个光子（怎么找？把光子排成加速结构如 k 近邻），计算它们的密度为 $N/A$
-  - 这种渲染方法，往往是模糊和噪声(bias & variance)之间的平衡：$N$ 取小则噪声大，$N$ 取大则变模糊
+  - 这种渲染方法，往往是模糊和噪声 (bias & variance) 之间的平衡：$N$ 取小则噪声大，$N$ 取大则变模糊
     - BTW，有偏 == 模糊；一致 == 样本接近无穷则能收敛到不模糊的结果
   - 由于局部密度估计应该估计每个着色点的密度 $(di N) / (di A)$，但是实际计算的是 $(Delta N) / (Delta A)$，只有加大 $N$ 使 $Delta A$ 趋近于 $0$ 才能使估计值趋近于真实值，因此是一个有偏但一致的方法
     - 此时我们也能明白为什么用固定 $N$ 计算 $A$ 的方法而不是固定 $A$，因为后者永远有偏
 - 光子映射 + 双向路径追踪 (Vertex Connection and Merging, VCM)
   - 很复杂，但是想法很简单，依旧是提高采样效率
   - 在 BDPT 的基础上，如果光源的子路径和摄像机的子路径最后交点非常接近但又不可能反射折射到对方，那么就把光源子路径认为是发射光子的路径，从而把这种情况也利用起来
-- 实时辐射度算法(Instant Radiosity, IR)
+- 实时辐射度算法 (Instant Radiosity, IR)
   - 有时也叫 many-light approaches
-  - 关键思想： 把光源照亮的点（经过 $1$ 次或多次弹射）当做一堆新的点光源(Vritual Point Light, VPL)，用它们照亮着色点。然后用普通的光线追踪算法计算
+  - 关键思想：把光源照亮的点（经过 $1$ 次或多次弹射）当做一堆新的点光源 (Vritual Point Light, VPL)，用它们照亮着色点。然后用普通的光线追踪算法计算
   - 从相机发射光线击中的每个着色点，都连接到这些光源计算光照。对于那些 VPL，是从真正光源发射后经过弹射形成，某种意义上也是一种双向路径追踪。宏观上看，这个方法实现了用直接光照的计算方法得到的间接光照的结果
   - 优点是计算速度快，通常在漫反射场景会有很好的表现；缺点是不能处理 Glossy 材质，以及当光源离着色点特别近时会出现异常亮点（因为渲染方程中有 $1/r^2$ 项）
 
@@ -434,11 +452,11 @@ order: 3
   - 通过 SSAO 可以在不增加光源的情况下，增加场景的真实感
   - 但是 SSAO 也有一些问题，比如在边缘处会产生阴影，而且计算量也比较大
 
-== 非表面模型(Non-Surface Models)
-=== 参与介质(Participating Media)或散射介质
+== 非表面模型 (Non-Surface Models)
+=== 参与介质 (Participating Media) 或散射介质
 - 类似云、雾霾等，显然不是定义在一个表面上的，而是定义在空间中的。当光线穿过，介质会吸收一定的能量，并且朝各个方向散射能量
 - 定义参与介质以何种方式向外散射的函数叫相位函数(Phase Function)，很像 3D 的 BRDF
-  #fig("/public/assets/Courses/CG/img-2024-08-04-20-58-32.png", width: 80%)
+  #fig("/public/assets/CG/GAMES101/img-2024-08-04-20-58-32.png", width: 80%)
 - 如何渲染：随机选择一个方向反弹（决定散射）；随机选择一个行进距离（决定吸收）；每个点都连到光源（感觉有点像 Whitted-Styled），但不再用渲染方程而是用新的 3D 的方程来算着色
 - 事实上我们之前考虑的很多物体都不算完美的表面，只是光线进入多跟少的问题
 
@@ -452,14 +470,14 @@ order: 3
     + TRT：穿过第一层表面折射后，在第二层的内壁发生反射，然后再从第一层折射出去，也是一块锥形区域
   - 把人的毛发认为类似于玻璃圆柱体，分为表皮(cuticle)和皮质(cortex)。皮质层对光线有不同程度的吸收，色素含量决定发色，黑发吸收多，金发吸收少
     #grid2(
-      fig("/public/assets/Courses/CG/img-2024-08-04-21-10-19.png", width: 70%),
-      fig("/public/assets/Courses/CG/img-2024-08-04-21-13-52.png", width: 80%)
+      fig("/public/assets/CG/GAMES101/img-2024-08-04-21-10-19.png", width: 70%),
+      fig("/public/assets/CG/GAMES101/img-2024-08-04-21-13-52.png", width: 80%)
     )
 - 动物皮毛(Animal Fur Appearance)
   - 如果直接把人头发的模型套用到动物身上效果并不好
   - 从生物学的角度发现，皮毛最内层还可以分出*髓质*(medulla)，人头发的髓质比动物皮毛的小得多。而光线进去这种髓质更容易发生散射
   - 双层圆柱模型(Double Cylinder Model)：某些人（闫）在之前的毛发模型基础上多加了两种作用方式 TTs, TRTs，总共五种组成方式
-    #fig("/public/assets/Courses/CG/img-2024-08-04-21-25-48.png", width: 60%)
+    #fig("/public/assets/CG/GAMES101/img-2024-08-04-21-25-48.png", width: 60%)
 
 === 颗粒状材质(Granular Material)
 - 由许多小颗粒组成的物体，如沙堡等
@@ -470,10 +488,10 @@ order: 3
 - 实际上不太应该翻译成“半透明”(semi-transparent)，因为它不仅仅是半透明所对应的吸收，还有一定的散射
 - *次表面散射*(Subsurface Scattering)：光线从一个点进入材质，在表面的下方（内部）经过多次散射后，从其他一些点射出
   - 双向次表面散射反射分布函数(BSSRDF)：是对 BRDF 概念的延伸，某个点出射的 Radiance 是其他点的入射 Radiance 贡献的
-    #fig("/public/assets/Courses/CG/img-2024-08-04-21-35-28.png", width: 70%)
+    #fig("/public/assets/CG/GAMES101/img-2024-08-04-21-35-28.png", width: 70%)
   - 计算比较复杂，因此又有一种近似的方法被提出
 - Dipole Approximation：引入两个点光源来近似达到次表面散射的效果
-  #fig("/public/assets/Courses/CG/img-2024-08-04-21-38-45.png", width: 70%)
+  #fig("/public/assets/CG/GAMES101/img-2024-08-04-21-38-45.png", width: 70%)
 
 === 布料材质(Cloth)
 - 布料有一系列缠绕的纤维组成
@@ -487,8 +505,8 @@ order: 3
 - 如果使用法线贴图来把这些起伏细节都定义出来，会非常耗时。使用路径追踪困难的点在于，微表面的镜面反射在法线分布复杂的情况下，很难建立有效的的光线通路从相机出发打到光源（反之也是一样）
 - 我们可以让一个像素对应一块小区域(patch)，用 patch 的统计意义的法线分布来反射光线。当 patch 变得微小时，一样能够显示出细节（感觉又是速度和细度的 trade-off）
   #grid2(
-    fig("/public/assets/Courses/CG/img-2024-08-05-10-44-43.png"),
-    fig("/public/assets/Courses/CG/img-2024-08-05-10-45-02.png")
+    fig("/public/assets/CG/GAMES101/img-2024-08-05-10-44-43.png"),
+    fig("/public/assets/CG/GAMES101/img-2024-08-05-10-45-02.png")
   )
 - 另外，在深入到这么微小的尺度后，波动光学效应也变得明显。这方面的公式完全没有提到（涉及复数域上的积分等），波动光学的 BRDF 结果与几何光学类似，但由于干涉出现不连续的特点
 
@@ -506,7 +524,7 @@ order: 3
 - 针孔相机：没有景深，任何地方都是锐利的而不是虚化的
 - 视场(Field of Vied, FOV)
   - 定义针孔相机的 $h$ 和 $f$，$"FOV" = 2 * arctan(0.5 * h / f)$
-  #fig("/public/assets/Courses/CG/img-2024-08-05-12-08-38.png",width: 60%)
+  #fig("/public/assets/CG/GAMES101/img-2024-08-05-12-08-38.png",width: 60%)
   - 通常描述焦距都会换算到 $h=35"mm"$ 所对应的焦距长度
   - 如果改传感器大小，涉及到传感器和胶片的关系，一般认为混淆着使用二者概念
 - 曝光(Exposure)
@@ -524,8 +542,8 @@ order: 3
     + 假设薄透镜的焦距可以任意改变（用透镜组来实现）
   - 薄透镜公式：$1/f = 1/z_i + 1/z_o$
   - Circle of Confusion(CoC)：可以看出C和A成正比——光圈越大越模糊
-    #fig("/public/assets/Courses/CG/img-2024-08-05-13-53-49.png",width: 70%)
-- 渲染中模拟透镜(Ray Tracing Ideal Thin Lenses)
+    #fig("/public/assets/CG/GAMES101/img-2024-08-05-13-53-49.png",width: 70%)
+- 渲染中模拟透镜 (Ray Tracing Ideal Thin Lenses)
   - 一般光线追踪和光栅化使用的是针孔摄像机模型，但是如果想做出真实相机中的模糊效果，需要模拟薄透镜相机（而且不再需要 MVP 等）
   - (One possible setup)定义成像平面尺寸、透镜焦距 $f$、透镜尺寸（光圈影响模糊程度）、透镜与相机成像平面的距离 $z_i$，根据公式$1/f = 1/z_o + 1/z_i$，算出 focal plane 到透镜的距离 $z_o$
   - 渲染
@@ -533,10 +551,10 @@ order: 3
     + 在透镜平面随机采样 SPP 个点 $x''$，*以 $x''$ 作为光线的起点*。一般 SPP 不为 $1$(e.g. 50, cover the whole len)
     + 以 $(x'''-x'')/(|x'''-x''|)$ 得到光线方向$arrow(d)$
     + 计算最近交点，最终得到 radiance，记录到 $x'$
-  - 好像还有简化的方法，参考 #link("https://blog.csdn.net/Motarookie/article/details/122998400#:~:text=简化实现方法")[根据我抄的笔记]
+  - 好像还有简化的方法，参考 #link("https://blog.csdn.net/Motarookie/article/details/122998400#:~:text=简化实现方法")[参考这篇笔记]
 - 景深(Depth of Field)
   - 在 focal point 附近的一段范围内的 CoC 并不大（比一个像素小或者差不多大），如果从场景中来的光经过理想透镜后落在这一段内，可以认为场景中的这段深度的成像是清晰、锐利的
-    #fig("/public/assets/Courses/CG/img-2024-08-05-14-27-55.png",width: 70%)
+    #fig("/public/assets/CG/GAMES101/img-2024-08-05-14-27-55.png",width: 70%)
 
 = Color and Perception 光场、颜色与感知
 - 光场(Light Field / Lumigraph)
@@ -550,11 +568,11 @@ order: 3
   - 一般空间中，我们用 5D 来描述：3D 位置 $(x, y, z)$ + 2D 方向 $(th, phi)$（这里似乎隐含了固定极坐标轴朝向的意思，可能默认轴对齐了）
   - 光场中用 4D 来描述：2D 位置 + 2D 方向 $(th, phi)$，这是怎么理解呢？
 - 黑盒（包围盒）思想与光场
-  - 我们是怎么看物体的？就像前面的案例一样，我们其实可以不关心物体是什么、怎么组成，当做黑盒。我只需要知道，从某个位置看某个方向过去，能看到什么。
+  - 我们是怎么看物体的？就像前面的案例一样，我们其实可以不关心物体是什么、怎么组成，当做黑盒。我们只需要知道，从某个位置看某个方向过去，能看到什么。
   - 用一个包围盒套住物体。从任何位置、任何方向看向物体，与包围盒有一个交点；由于光路可逆，也可以描述为：从包围盒上这个交点，向任意方向发射光线。如果我们知道包围盒(2D)上任意一点向任意方向(2D)发射光线的信息(radiance)，这就是光场（个人理解：有点往 Path Tracing 里面引入纹理映射的感觉）
   - 再升级一步，由于两点确定一条直线：2D 位置 + 2D 方向 $->$ 2D 位置 + 2D 位置。于是，我们可以用两个平面（两个嵌套的盒子）来描述光场
   - 双平面参数化后的两种视角，物体在 st 面的右侧。图 a 从 uv 面看 st，描述了从不同位置能看到什么样的物体；图 b 从 st 面看 uv，描述了对物体上的同一个点，从不同方向看到的样子（神经辐射场理解方式：每个像素存的是 irradiance ，遍历 uv 面所有点就是把 irradiance 展开成 radiance）
-    #fig("/public/assets/Courses/CG/img-2024-08-05-15-37-39.png", width: 80%)
+    #fig("/public/assets/CG/GAMES101/img-2024-08-05-15-37-39.png", width: 80%)
   - 双平面参数化后在实现上也变得更好理解，直接用一排摄像机组成一个平面就好
 
 == 光场照相机
@@ -562,8 +580,8 @@ order: 3
 - 原理（事实上，昆虫的复眼大概就是这个原理）：
   - 一般的摄像机传感器的位置在下图那一排透镜所在的平面上，每个透镜就是一个像素，记录场景的 irradiance。现在，光场摄像机将传感器后移一段距离，原本位置一个像素用透镜替换，然后光穿过透镜后落在新的传感器上，击中一堆像素，这一堆像素记录不同方向的 radiance
   - 从透镜所在平面往左看，不同的透镜对应不同的拍摄位置，每个透镜又记录了来自不同方向的 radiance。总而言之，原本一个像素记录的 irradiance，通过替换为透镜的方法，拆开成不同方向的 radiance 用多个“像素”存储
-    #fig("/public/assets/Courses/CG/img-2024-08-05-17-51-25.png", width: 80%)
-- 变焦：对于如何实现后期变焦比较复杂，但思想很简单，首先我已经得到了整个光场，只需算出应该对每个像素查询哪条“像素”对应光线，也可能对不同像素查询不同光线
+    #fig("/public/assets/CG/GAMES101/img-2024-08-05-17-51-25.png", width: 80%)
+- 变焦：对于如何实现后期变焦比较复杂，但思想很简单，首先我们已经得到了整个光场，只需算出应该对每个像素查询哪条“像素”对应光线，也可能对不同像素查询不同光线
 - 不足之处：分辨率不足，原本 $1$ 个像素记录的信息，需要可能 $100$ 个像素来存储；高成本，为了达到普通相机的分辨率，需要更大的胶片，并且仪器造价高，设计复杂
 
 == 颜色的物理、生物基础
@@ -578,7 +596,7 @@ order: 3
   - Cones 相对少很多，用来感知颜色，它又被分为 $3$ 类(S-Cone, M-Cone, L-Cone)，SML 三类细胞对光的波长敏感度（回应度）不同
     - 事实上，不同的人这三种细胞的比例和数量呈现很大的差异（也就是颜色在不同人眼中是不一样的，只是定义统一成一样）
 - 人看到的不是光谱，而是两种曲线积分后得到 SML 再叠加的结果
-  #fig("/public/assets/Courses/CG/2024-11-14-14-03-31.png", width:70%)
+  #fig("/public/assets/CG/GAMES101/2024-11-14-14-03-31.png", width:70%)
   - 那么一定存在一种现象：两种光，对应的光谱不同，但是积分出来的结果是一样的，即同色异谱(Metamerism)；事实上，还有同谱异色
 
 == 色彩复制 / 匹配
@@ -588,7 +606,7 @@ order: 3
 - CIE sRGB 颜色匹配
   - 利用 RGB 三原色匹配单波长光，SPD 表现为集中在一个波长上（如前所述，有其它 SPD 也能体现出同样的颜色，但选择最简单的）
   - 然后，给定任意波长的*单波长光*（目标测试光），我们可以测出它需要上述 RGB 的匹配（可能为负，意思是加色系统匹配不出来，但可以把目标也加个色），得到*匹配曲线*
-    #fig("/public/assets/Courses/CG/img-2024-08-05-18-32-22.png", width: 70%)
+    #fig("/public/assets/CG/GAMES101/img-2024-08-05-18-32-22.png", width: 70%)
   - 然后对于自然界中并非单波长光的任意 SPD，我们可以把它分解成一系列单波长光，然后分别匹配并加权求和，也就是做积分
 
 == 颜色空间
