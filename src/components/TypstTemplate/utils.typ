@@ -1,6 +1,5 @@
 // 导入本地包
 #import "fonts.typ":*
-#import "/src/components/TypstLocal/admonition/lib.typ": *
 
 // 导入 preview 包
 // 树、图文包裹、图标、真值表
@@ -172,7 +171,7 @@ font: 字体.宋体,
 #let redt(body) = text(fill: colors.red, body)       // red-text
 #let bluet(body) = text(fill: colors.blue, body)     // blue-text
 #let greent(body) = text(fill: colors.green, body)   // green-text
-#let yellowt(body) = text(fill: colors.yellow, body) // yellow-text
+#let yellowt(body) = text(fill: colors.yellow.darken(20%), body) // yellow-text (darken 20% to make it more readable)
 
 // 快捷 grid
 #let grid2(alignment: center, body1, body2, ..args) = align(alignment, grid(
