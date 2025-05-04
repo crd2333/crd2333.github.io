@@ -122,13 +122,13 @@ order: 1
 - 因此现在我们往往转向*深度学习*方法，以往传统方法一般是只拿某个组件来用了。然而深度学习方法之间亦有差距，我个人将其粗略划分为三个时代：前 NeRF 时代、NeRF 时代、3DGS 时代
 
 === 前 NeRF 时代
-- SIREN#link("http://crd2333.github.io/note/Reading/Representations/SIREN")[（笔记链接）]
+- SIREN#link("http://crd2333.github.io/note/Reading/3D%20Representations/SIREN")[（笔记链接）]
   - 相比起其它探索三维表示的工作，SIREN 关注的是用于三维隐式表示的媒介，即用于拟合的那个神经网络。SIREN 证明了使用正弦函数作为激活函数的 MLP 在捕捉高频信息、周期信息方面比 ReLU-based MLP 更具有优势
-- DeepSDF#link("http://crd2333.github.io/note/Reading/Representations/DeepSDF")[（笔记链接）]
+- DeepSDF#link("http://crd2333.github.io/note/Reading/3D%20Representations/DeepSDF")[（笔记链接）]
   - DeepSDF 用神经网络做回归任务去拟合离散的 SDF；并且引入了 latent code $bz$ 来得到一定程度的泛化性，使用 decoder-only 的架构预训练出 decoder。推理时利用场景部分输入来优化 $bz$，从而得到可以用 $(x,y,z)$ query 的整个场景的 SDF 表示
 
 === NeRF
-- 然后再看相对近代和比较重要的 #link("http://crd2333.github.io/note/Reading/Representations/NeRF")[NeRF]
+- 然后再看相对近代和比较重要的 #link("http://crd2333.github.io/note/Reading/3D%20Representations/NeRF")[NeRF]
   - NeRF 本质上是用 MLP 拟合一个隐式表示场（场景中任意点和方向可以查询颜色和密度），结合了 Ray-Marching 和体渲染的方法实现新视角图片的合成
   - NeRF 究竟好在哪里呢？我个人参考一些资料提出以下几点
     + 相比传统方法，NeRF 是端到端的，也就是说前面步骤出错，可以基于后续反馈来反传去修正，而以前的方法只是一系列 hand-crafted 步骤
@@ -136,7 +136,7 @@ order: 1
     + 从优化的角度它有很多好处，它把重建问题转化为优化问题，并且直接把最终的视觉质量作为优化目标。基于此，无论是 geometry, color，甚至 illumination（虽然不是基于物理的，但是）它可以把这些变化用一个 code 去表示，作为网络的输入。其次很重要的一点就是 volume rendering 的过程比较简单（一个线性的方程），导致 loss function 本身就会相对好优化
     + NeRF 这个框架相对好改造，能塞进很多东西，比如那个 PE，比如各种先验知识，以及后续的一些融合几何 + 语义表示的工作。换句话说，神经网络这种东西比较好魔改，能融进深度学习发展至今的很多 technique
   - NeRF 的待改进点在于：速度优化，泛化性，动态场景与大场景，可解释性，视角需求数，物理模拟等
-- #link("http://crd2333.github.io/note/Reading/Representations/NeRF%20改进工作")[NeRF 的改进工作]（可能看得还不够多）
+- #link("http://crd2333.github.io/note/Reading/3D%20Representations/NeRF%20改进工作")[NeRF 的改进工作]（可能看得还不够多）
   - 关于 NeRF 的*速度*：NeRF 的核心制约因素在于速度，它慢就慢在两点
     + Ray-Marching 逐像素射线并采样点，点的分布不高效
       - NSVF 从采样的角度出发试图解决问题，为后续很多工作所借鉴；
@@ -149,13 +149,13 @@ order: 1
   - 关于 NeRF 的*大场景无界渲染*问题，NeRF++, Mip-NeRF, Mip-NeRF 360 的思路基本上是要么用非线性变换控制场景的采样频率，要么是把光线渲染变成光锥渲染（本质上也是控制了采样频率）
 
 === 3DGS
-- #link("http://crd2333.github.io/note/Reading/Representations/3DGS")[3DGS] 一经提出，就以它的即时速度引起巨大关注，基本薄纱 NeRF 了
+- #link("http://crd2333.github.io/note/Reading/3D%20Representations/3DGS")[3DGS] 一经提出，就以它的即时速度引起巨大关注，基本薄纱 NeRF 了
   - 3DGS 本质上是又回到了显式表示 —— 3D 高斯球（Gaussion 本身作为一种概率描述，其在 3D 场景中的分布可以被看作是一个椭球），使用 splatting 代替 volume rendering 方法（某种程度上可以看作是一种逆变换），实现高速渲染
   - 它为什么快呢？首先它是显式表示，不用像 NeRF 那样去过网络，直接查值即可；其次 splatting 方法把三维的辐射场“拍平”到二维图像上，复杂度上就降了一个量级。事实上从 NeRF 逐渐转回到显式表示的方法如 PlenOctrees, Plenoxels, InstantNGP 早有预兆，这也反映出一种趋势：对实时性的追求
   - 另外 3DGS 虽然是显式表示，但吸收了*神经网络参数优化*的思想（和*现代算力*的加持），可以看作是把*整个场景都视为一个神经网络*，从而把参数调到最优
     - 我觉得这是挺有意思的一点，站在现代回顾传统方法（用高斯球表示场景并渲染在 EWA splatting, 2001 里早已出现），依旧能给技术带来巨大进步。其实隐式函数也是一样，几十年前就有了，但在神经网络加持下又以隐式神经表示的形式重新出现
   - 从*离散和连续*的角度来看，我们高斯球可以被视作有体积、各项异性的一个个点云，这是离散的；但在高斯球内部又是连续的、可微的（投影到图像坐标系下，对渲染结果的贡献是连续的、可微的，场景表达更连贯）。我们要建模的辐射场是连续的，而 Gaussion 表示在离散和连续间取得一种平衡，用离散加连续的方式去拟合连续场，所谓*中庸之道*，莫过于此
-- #link("http://crd2333.github.io/note/Reading/Representations/3DGS%20改进工作")[3DGS 的改进工作]
+- #link("http://crd2333.github.io/note/Reading/3D%20Representations/3DGS%20改进工作")[3DGS 的改进工作]
   - 围绕 3DGS 的工作就没有那么 focus on 速度，而是变得五花八门，并且把之前 NeRF 上做过的各种应用都拿过来刷了一遍，但是我现在看得还不多
   - 像是 $3D -> 2D$, $3D -> 4D$ 的工作，都挺有趣的
 #v(3em)

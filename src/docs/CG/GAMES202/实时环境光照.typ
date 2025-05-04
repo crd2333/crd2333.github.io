@@ -11,7 +11,7 @@ order: 2
 
 有点后悔没有早点开始看这门课，里面的很多概念当初我在网上四处扒资料才理解了一点点……
 
-- GAMES202 也没有咋写详细笔记，可以参考这些笔记
+- 其他可以参考的笔记
   + #link("https://zhuanlan.zhihu.com/p/363333150")[知乎 | Games202 高质量实时渲染课堂笔记 by CarlHer]
   + #link("https://www.zhihu.com/column/c_1473816420539097088")[知乎 | GAMES202 高质量实时渲染-个人笔记 by 风烟流年]（这个可能整理得更好一些）
   + #link("https://blog.csdn.net/yx314636922/category_11601225.html")[CSDN | GAMES202 by 我要吐泡泡了哦]（这个也不错）

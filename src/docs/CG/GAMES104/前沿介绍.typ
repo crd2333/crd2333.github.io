@@ -656,7 +656,7 @@ Nanite 自定义了一套 rasterization 方法，来应对当几何精细到近�
 === Nanite Deferred Material
 前面介绍过 Visibility Buffer 的原理，在着色计算阶段的一种实现是维护一个全局材质表（存储材质参数以及相关贴图的索引），根据每个像素的 MaterialID 找到对应材质并解析，利用 Virtual Texture 等方案获取对应数据。对于简单的材质系统这是可行的，但是 UE 包含了一套极其复杂的材质系统，每种材质有不同的 Shading Model，同种 Shading Model 下各个材质参数还可以通过材质编辑器进行复杂的连线计算……简单来说，Nanite 想要支持完全由 artist 创建的 fragment shader。
 
-为了保证每种材质的 shader code 仍然能基于材质编辑器动态生成，每种材质的 fragment shader 至少要执行一次，这样复杂的材质系统显然无法用上述方案实现。Nanite 的材质 shader 是在 Screen Space 执行的，以此将可见性计算和材质参数计算解耦，这也是 Deferred Material 名字的由来。
+为了保证每种材质的 shader code 仍然能基于材质编辑器动态生成，每种材质的 fragment shader 至少要执行一次，这样复杂的材质系统显然无法用上述方案实现（Not Cache-friendly，所用材质在内存中跳来跳去）。Nanite 的材质 shader 是在 Screen Space 执行的，以此将可见性计算和材质参数计算解耦，这也是 Deferred Material 名字的由来。
 
 - *Material Classify*
   - Nanite 为每种材质赋予一个唯一的 material depth，每个材质都用一个 full screen quad 去绘制，深度检测函数采用 “等于通过”

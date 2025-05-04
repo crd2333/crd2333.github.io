@@ -105,7 +105,7 @@ order: 1
 - 从另外一个思路出发，SMPL 的那个 template mesh $bT$ 就是一个刨除 pose 影响下的静息姿态，我们称为在 canonical space 下；当调整了 pose 后，通过 SMPL 的蒙皮权重，我们可以将这个 template mesh 用 LBS 转换到 pose space 下
 - 后续的一个思路是通过 Pose Space 与 Canonical Space 之间的转换，实现广义的“归一化”，从而方便后续的处理，容易改变人体的姿态（从一个规整的姿势去变换而不是从五花八门的姿势去变换）
 - 从 HPS 得到 $beta, th$，通过 SMPL 的蒙皮权重 (skinning weights) 可以从 canonical space 下的 rest pose template $T$ 转化到 pose space；至于逆过来也简单，把那个算 $G'_k (th, J(beta)) = G_k (th, J(beta)) G_k (th^*, J(beta))^(-1)$ 的 $th,th^*$ 位置换一换
-  - HumanNeRF 和 SHERF 就是这么做的，只不过 HumanNeRF 特殊一点，转化成了可学习的 volume 表达，而 SHERF 就直接用估计出来写死的权重去做了（因为前者是 Optimization-based，而后者是 Learning-based 的、要泛化的），具体看 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/SHERF")[SHERF 笔记]
+  - HumanNeRF 和 SHERF 就是这么做的，只不过 HumanNeRF 特殊一点，转化成了可学习的 volume 表达，而 SHERF 就直接用估计出来写死的权重去做了（因为前者是 Optimization-based，而后者是 Learning-based 的、要泛化的），具体看 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Recon/SHERF")[SHERF 笔记]
 
 #v(1em)
 

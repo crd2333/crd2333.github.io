@@ -22,8 +22,8 @@ order: 2
 
 == 术语 & 前置知识
 - avatar：数字人，属于一种虚拟资产，我们希望它能有自己的形象、能动、能说话、能表情、能交互等等。在人体三维重建领域，一般关注重建后的 (clothed) 人体能摆出各种姿势，能动画化
-- LBS：线性混合蒙皮，详细见 @animation 或 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/SMPL")[SMPL 笔记]
-- SMPL，详细见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/SMPL")[SMPL 笔记]
+- LBS：线性混合蒙皮，详细见 @animation 或 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Recon/SMPL")[SMPL 笔记]
+- SMPL，详细见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Recon/SMPL")[SMPL 笔记]
   - 提到三维重建中的人体重建话题，SMPL 是绕不开的一个模型。如果要做分类的话，它属于 explicit 方法中的 mesh-based model，因此很自然地与图形渲染管线兼容
   - SMPL 影响力非常大，已经成为人体重建任务广泛应用的一个基础先验 (prior) 或模板 (template)，它主要是针对裸体人体的 shape（高矮胖瘦）和 pose（动作姿势）进行*参数化 (parametric)* 建模（不是神经网络那个参数化的意思！），因此可以给人体重建任务最关键的 geometry and appearance 中的前者提供先验。因为 shape 参数是通过 PCA 降维出的对人体表示影响最大的几个维度，因此 SMPL 也被称为基于 *statistical* 的模型
     - 后续的工作中对它有各种各样的叫法，mesh-based, explicit, prior, template, parametric, statistical... 实际上很多都是指 SMPL 及其衍生模型
@@ -123,7 +123,7 @@ order: 2
   - GTA 用 ViT 提取图像信息，并用 learnable embeddings 以及 transformer 更好地解耦、利用了 tri-plane 的空间信息表示，然后进一步融合 SMPL 重建 occupancy field
   - SIFU 用 ViT 提取图像信息，用 SMPL 渲染出的法向图做 query 解耦出 $4$ 个侧面的特征，再融合起来重建 occupancy field。并且进一步利用 3D-Consistent Diffusion Model 和 UV map 进行 Texture Refinement
   - Human-LRM 首先用 single-view LRM 模型 encode 再 decode 出 triplane，再用从中渲染出的新视图作为 condition 和 reference 用 Diffusion Model 生成多视图，最后再用相对更成熟的 multi-view reconstruction model 来重建人体
-  - HumanSplat
+  - HumanSplat 把 3DGS 引入单视图人体重建，用 CLIP 生成图像特征并借助扩散模型拓展到多视角，再利用 transformer 融合多视角信息和预测出的 SMPL 信息，随后 MLP 预测高斯属性重建人体
   - [ ] GeneMan
 
 

@@ -45,17 +45,17 @@ order: 5
 
 == 相关工作
 - *Human NeRF*。给定多视角图片或单目视频，Human NeRF 能够高质量合成新视角或姿态，激发了人体重建的工作。Neural Body 把稀疏卷积应用于辐射场，而其它方法使用 SMPL LBS weights or optimizing LBS weights with appearance 在 canonical space 中建模 human NeRF。但是他们需要密集观察和长时间优化，为此探索从 single image 用一次前向过程泛化的 generalizable 方案，同时提出 animatable 的追求
-- *Monocular Human Reconstruction*。基于统计的 3D 人体模型通过估计 coarse human shapes and poses 来建模人体（或者叫 Parametric, template 的方法，都是一个意思，即利用 SMPL 来约束单目重建的 geometry）。通过估计 mesh deformation 来建模 clothed humans 的复杂形状。Implicit representations(e.g. SDF)，被用来提高 geometry 质量。为了充分利用 explicit and implicit representations，研究者探索了 hybrid 的方法来得到更好的重建质量和泛化性，比如我看过的 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/ICON%20%26%20ECON")[ICON & ECON]。相比之下，NeRF 的优势在于不需要 3D ground truth 进行训练；此外，作者在 canonical space 中重建人体，可以很容易地改变人体的姿态
+- *Monocular Human Reconstruction*。基于统计的 3D 人体模型通过估计 coarse human shapes and poses 来建模人体（或者叫 Parametric, template 的方法，都是一个意思，即利用 SMPL 来约束单目重建的 geometry）。通过估计 mesh deformation 来建模 clothed humans 的复杂形状。Implicit representations(e.g. SDF)，被用来提高 geometry 质量。为了充分利用 explicit and implicit representations，研究者探索了 hybrid 的方法来得到更好的重建质量和泛化性，比如我看过的 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Recon/ICON%20%26%20ECON")[ICON & ECON]。相比之下，NeRF 的优势在于不需要 3D ground truth 进行训练；此外，作者在 canonical space 中重建人体，可以很容易地改变人体的姿态
 - *Generalizable NeRF*。NeRF 需要密集的带位姿视图，但最近一些发展使得用很少甚至单个视图来训练 generalizable NeRF 成为可能。Cross-scene multi-view aggregators 可以通过学习如何 aggregate sparse views 来合成新视图；其它方法将观察 encode 到 latent space 中，然后 decode 到 NeRF。作者的工作则专注于将单视图 encode 到 canonical space 中的 generalizable Human NeRF
 
 == Preliminary
 - 在看 SHERF 之前，我们先来简单看一下它的前置技术（都看过了，这里不展开，仅列一下核心公式）
-  + 一是 NeRF（#link("http://crd2333.github.io/note/Reading/Representations/NeRF")[我的 NeRF 笔记]）
+  + 一是 NeRF（#link("http://crd2333.github.io/note/Reading/3D%20Representations/NeRF")[我的 NeRF 笔记]）
     $ hC(br) = int_(t_n)^(t_f) T(t) si (br(t)) bc(br(t),bd) dif t $
-  + 二是 SMPL（#link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/SMPL")[我的 SMPL 笔记]）
+  + 二是 SMPL（#link("http://crd2333.github.io/note/Reading/Sparse%20view%20Recon/SMPL")[我的 SMPL 笔记]）
     $ bx^o = sumkK w_k bG(bth,bJ) bx^c $
 - 不过这里我们可以看一看非 generalizable 的普通 Human NeRF 是怎么做的
-  - 把 NeRF 用到人体重建的想法非常自然，所以归类于 Human NeRF 的方法也不少，SHERF 在 related works 里列了很多，不过比较有代表性和影响力的是 #link("https://arxiv.org/abs/2201.04127")[HumanNeRF: Free-viewpoint Rendering of Moving People from Monocular Video] (CVPR2022 oral)，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/HumanNeRF")[HumanNeRF 笔记]
+  - 把 NeRF 用到人体重建的想法非常自然，所以归类于 Human NeRF 的方法也不少，SHERF 在 related works 里列了很多，不过比较有代表性和影响力的是 #link("https://arxiv.org/abs/2201.04127")[HumanNeRF: Free-viewpoint Rendering of Moving People from Monocular Video] (CVPR2022 oral)，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Recon/HumanNeRF")[HumanNeRF 笔记]
 
 == 方法
 #fig("/public/assets/Reading/Human/2024-11-15-22-23-42.png",width:80%)

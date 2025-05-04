@@ -35,7 +35,7 @@ order: 5
     - 2022.08 Comp Vis 发布 SD1.1 #wave SD1.4
     - 2022.10 Runway ML 发布 SD1.5
     - 2022.11 Stability Al 发布 SD2.0
-    - 至今 ~~~~ 此后发布便一直以Stability AI名义发布模型
+    - 至今 ~~~~ 此后发布便一直以 Stability AI 名义发布模型
     #fig("/public/assets/Reading/Generation/2025-03-01-20-34-06.png", width: 80%)
 
 == LDM
@@ -128,7 +128,7 @@ order: 5
   - 后面介绍
 
 = Fine-Tuning of Diffusion Models
-- 参考 #link("")[]
+- 参考 #link("https://www.bilibili.com/video/BV1Hk4y1p7nN")[【详解】LoRA, ControlNet等Stable Diffusion微调方法原理详解！]
 - Textual Inversion —— 简易
   - 在 CLIP 的字典中新增一个伪词的 embedding，finetune 这个 embedding，其它参数都冻结
   - 训练量极小，只需一张图；但完全不改神经网络参数效果有限
@@ -146,7 +146,7 @@ order: 5
     - 实验发现，低维矩阵对高维矩阵的替代损失不大。所以即便训练的矩阵小，训练效果仍然很好，已经成为一种 customization image generation 范式
   - LORA 后来在结构上改进出不同的版本，例如 LoHa，LyCORIS 等
     - 典型修改方案 LyCORIS，这个以二次元人物命名的方法把 LORA 的思想应用在卷积层做改进，并且结合了一些其他算法进行了参数调整
-  #fig("/public/assets/Reading/Generation/2025-03-05-22-18-57.png")
+  #fig("/public/assets/Reading/Generation/2025-03-05-22-18-57.png", width: 40%)
 - ControlNet —— 彻底
   - 一种高效微调 text-to-image diffusion models 的方法，可以*让 diffusion model 学习空间条件注入信息*
   - ControlNet 冻结 stable diffusion 的参数，复用它的 encoding layers 来训练，其中复用的 encoding layers 的参数为零初始化 ("zero convolutions" , zero-initialized convolution layers)，确保没有有害的噪声影响微调

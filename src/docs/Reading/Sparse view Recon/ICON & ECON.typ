@@ -44,16 +44,16 @@ order: 4
 #q[
   首先，明确 ICON 的任务：给一张彩色图片，将二维纸片人，还原成拥有丰富几何细节的三维数字人。围绕这一任务，之前有许多基于显式表达的方法 (expliclit representation: mesh, voxels, depth map & point cloud, etc)，但直到三年前 PIFu (ICCV'19) 第一个把隐式表达 (implicit representation) 用到这个问题，衣服的几何细节才终于好到 —— 艺术家愿意扔到 Blender 里面玩一玩的地步。但 PIFu 有两个严重的缺陷，速度慢 + 姿势鲁棒性差。我们在 MonoPort(ECCV'20) 中一定程度上解决了 “速度慢” 这个问题，整个推理到渲染加一块，普通显卡，可以做到 15FPS 的速度，后来我们把重建和 AR 做了一个结合，用 iPad 陀螺仪控制渲染的相机位姿，最后有幸获得 SIGGRAPH Real-Time Live 的 Best Show Award (#link("https://www.zhihu.com/question/415544564/answer/1436374579")[SIGGRAPH 2020 有哪些不容错过的内容？])
 ]
-- 显式表示和隐式表示可以参考 #link("http://crd2333.github.io/note/CV/Representations")[我之前的笔记]
-- 关于 PIFu 因为比较经典所以还是去了解一下，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/PIFu%20&%20PIFuHD")[PIFu 笔记]
+- 显式表示和隐式表示可以参考 #link("http://crd2333.github.io/note/CV/3D%20Representations")[我之前的笔记]
+- 关于 PIFu 因为比较经典所以还是去了解一下，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Recon/PIFu%20&%20PIFuHD")[PIFu 笔记]
 - 至于 ICON 作者的 MonoPort: Octree surface localization Hard Negative Mining，算是比较简单，从名字基本就了解了
   + 一是用 Octree 减少无用空间的点 query
   + 二是集中精力攻克难关，加大复杂纹理处的采样密度
 #q[
   但是“姿态鲁棒性”一直没有得到很好的解决。PIFuHD 将 PIFu 做到了 4K 图片上，把数字人的几何细节又提了一个档次，但还是只能在站立 / 时装姿势 (fashion pose) 下得到满意的结果。ARCH 以及 ARCH++ 尝试把问题从姿态空间 (pose space) 转换到标准空间（canonical space, 把人摆成“大”字）来解决，但这种转换，首先很依赖于姿态估计 (HPS) 的准确性，其次，由于转换依赖于 SMPL 自带的蒙皮骨骼权重 (skinning weights)，这个权重是写死的且定义在裸体上，强行用到穿衣服的人上，由动作带动的衣服褶皱细节就不那么自然。
 ]
-- PIFuHD 是 PIFu 原作者的新作，发于 CVPR2020 (oral)，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/PIFu%20&%20PIFuHD")[PIFuHD 笔记]
-- *Human Pose and Shape estimation(HPS)*，一般都是以 SMPL 为基础去优化它的那个参数化表示，然后重建出一个 body mesh（body 的意思是不包含衣服细节和纹理）。为了理解这段话，我去详细阅读了 SMPL (2015) 并写了 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/SMPL")[SMPL 笔记]
+- PIFuHD 是 PIFu 原作者的新作，发于 CVPR2020 (oral)，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Recon/PIFu%20&%20PIFuHD")[PIFuHD 笔记]
+- *Human Pose and Shape estimation(HPS)*，一般都是以 SMPL 为基础去优化它的那个参数化表示，然后重建出一个 body mesh（body 的意思是不包含衣服细节和纹理）。为了理解这段话，我去详细阅读了 SMPL (2015) 并写了 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Recon/SMPL")[SMPL 笔记]
 - 并简单看了看 #link("https://zhuanlan.zhihu.com/p/443392971")[ARCH++ 的解读]，*ARCH++* 的核心思路是为每个点找到其 spatial feature 和 apperance feature
   #fig("/public/assets/Reading/Human/2024-11-06-21-58-09.png",width: 90%)
   - 对 spatial feature，文章首先预测出一个带有 blending weight 的 mesh template，且可以实现 posed space 和 canonical space 的双向变换（这可以用 SMPL 或者作者之前工作 ARCH 的 "semantic deformation field"）。将 posed mesh (pose space) 变换到 template mesh (canonical space) 下，在后者的 mesh 表面均匀采点，输入到 Pointnet++ 中为每个采样点 encode 出 spatial feature。空间中任意点 $(x,y,z)$ 的特征根据这些采样点插值得到（找距离最近的 k 个点，结合距离插值）
@@ -63,7 +63,7 @@ order: 4
 #q[
   另外一个思路，就是加几何先验 (geometric prior)，通俗点说，就是我给你一个粗糙的人体几何，然后根据图像信息，来雕琢出来一个细致的人体几何。GeoPIFu (+estimated voxel), PaMIR (+voxelized SMPL), S3 (+lidar) 都有做尝试。我尝试过直接把准确的几何先验 (ground truth SMPL) 灌给 PaMIR，但 PaMIR 依旧不能在训练集中没见过的姿态上（比如舞蹈，运动，功夫，跑酷等）重建出满意的结果。
 ]
-- PaMIR 是 TPAMI2020 的工作，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/PaMIR")[PaMIR 笔记]
+- PaMIR 是 TPAMI2020 的工作，见 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Recon/PaMIR")[PaMIR 笔记]
 
 === 为什么要提高姿势水平
 #q[那么，有没有可能，扔掉昂贵且费时费力的扫描流程，用 PIFu 从视频中做逐帧重建 (Images to Meshes)，然后把重建结果直接扔给 SCANimate 做建模呢 (Meshes to Avatar)？]

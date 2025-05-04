@@ -599,7 +599,7 @@ Anyway，这些都是相对 old-fashion 的东西，现在效果最好害得看 
 ]
 
 === 3D representations
-- 这里可以参考我 #link("http://crd2333.github.io/note/CV/Representations")[另外的笔记]
+- 这里可以参考我 #link("http://crd2333.github.io/note/CV/3D%20Representations")[另外的笔记]
 
 === 3D surface reconsturction
 - 现在我们想要知道如何从深度图得到三角网格，基本的步骤如下：

@@ -53,7 +53,7 @@ order: 8
 - *Hybrid reconstruction*
   - 一些新兴方法把 parametric 方法和 implicit reconstruction methods 结合在一起来改进泛化性
     - ICON 以给定图像和估计的 SMPL mesh 为起点，从局部查询的特征中回归出形状以泛化到 unseen poses，基于此有工作用 GAN-based generative component 进一步拓展
-    - ICON 原班人马又推出 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/ICON%20&%20ECON")[ECON]，利用 variational normal integration 和形状补全来保留松散衣物的细节
+    - ICON 原班人马又推出 #link("http://crd2333.github.io/note/Reading/Sparse%20view%20Recon/ICON%20&%20ECON")[ECON]，利用 variational normal integration 和形状补全来保留松散衣物的细节
     - D-IF 通过自适应的不确定性分布函数额外建模了 occupancy 的不确定性
     - GTA 使用 hybrid prior fusion 策略 (3D spatial and SMPL prior-enhanced features)
     - SIFU 进一步使用 side-view conditioned features 增强 3D 特征
@@ -62,7 +62,7 @@ order: 8
   - NeRF 仅从 2D 观察中学习对象的 3D 表示，标志着 3D 重建的一个重要里程碑。一些工作专注于重建 human NeRF，但通常集中在 fine-tuning 单个视频或图像这种设置上，计算时间长（几十分钟到几小时）且无法泛化
     - 相比之下，这篇文章的重点在于用 feed-forward 范式（几秒钟内）出图
   - 最近一些工作也采用 NeRF + feed-forward 范式来实现泛化性，利用 SMPL 作为几何先验，并从 sparse observations 中聚合特征（换句话说，需要多视图）
-    - 有一项更相关的工作 (#link("http://crd2333.github.io/note/Reading/Sparse%20view%20Reconstruction/SHERF")[SHERF]) 进一步考虑了只用单个图像，但依赖于 ground truth SMPL body meshes，限制了模型表示能力
+    - 有一项更相关的工作 (#link("http://crd2333.github.io/note/Reading/Sparse%20view%20Recon/SHERF")[SHERF]) 进一步考虑了只用单个图像，但依赖于 ground truth SMPL body meshes，限制了模型表示能力
   - 而本文方法是完全 template-free 的，使得 NeRF-based 人体重建更适用和实用
 - *Diffusion-based novel view synthesis*
   - 最近很多工作利用了扩散模型来进行新视图合成，但在 geometry 和 colors 上保持 multi-view consistency 仍是一个挑战

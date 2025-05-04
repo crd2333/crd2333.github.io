@@ -35,8 +35,6 @@ order: 2
 - Visibility
   - 视锥剔除，一般在 CPU 上做
   - PVS (Potentially Visible Set) 把世界分区域，预计算每个区域能看到哪些区域
-    - 实际上现在完全用 PVS 做的游戏基本没有了，更多是作为一种思想，把世界划分为类似的 zone
-    - 大世界里面这种方法的使用也相对减少
   - GPU Culling
     - Early-Z
 - Texture Compression
@@ -323,46 +321,95 @@ order: 2
 == Rendering Pipeline
 这里把几种渲染管线都梳理一遍，不止老师上课讲的那几种。
 
-- *Forward Rendering*
-  - 最原始的渲染管线：Shadow Pass $->$ Shading Pass $->$ Post-Processing Pass
-    - Shading Pass 内的像素着色阶段先进行着色计算 (fragment shader)，再进行输出合并（深度测试、模板测试、混合等）
-  - 问题
-    + 透明度排序，需要从远到近绘制，有时物体由于交叉而无法排序，需要顺序无关半透明算法（参考 #link("https://blog.csdn.net/qq_35312463/article/details/115827894")[vulkan\_顺序无关的半透明混合 (OIT)]）
-    + 难以处理 Multiple Light
-    + 原始未优化版本的 overdraw 比较多，很多无效的着色计算
-  - *Early-Z*
-    - 这是针对*渲染流水线内部*而言的，仍然只执行*一次渲染*，把输出合并阶段的深度测试提到着色计算之前
-    - 硬件层面优化，一般是默认开启，但如果在 fragment shader 里写了 `discard` 或修改 depth 的语句就会失效
-    - 对于比较友好的顺序来说，能有效避免无效着色计算，但在比较恶心的顺序下依然会 overdraw（除非预先进行排序）
-    - 还有一个类似的概念 *Z-Culling*，似乎跟 Tile-Based 有关，以及通过 on-chip 缓存比 Early-Z 少一次读深度操作
-  - *Z-PrePass*
-    - 延迟渲染的前身，*把一次渲染变成两次渲染*，第一次只写入 Z-Buffer，第二次关闭深度写入，只有通过深度测试的像素才计算光照（这可以看出它必须跟 Early-Z 结合才起效，Z-PrePass 其实是一种软件技术）
-    - 彻底解决了一个像素多次绘制的问题，但需要执行两次 vertex shader，或者说第二次渲染依旧需要对全场景各个物体进行绘制（为此后面提出了 Deferred Rendering，通过 G-Buffer 使第二次渲染可以不执行 vertex shader）
-- *Deferred Rendering*
-  - 也是分两次渲染，第一个 pass 先渲染 G-Buffer 而不做实际着色，第二个 pass 严格来说已经不走渲染流水线，而是直接对 G-Buffer 的操作
-  - 优点
-    + 只会在 visible fragments 上计算着色，节省大量 overdraw 的无效计算
-    + 只对可见像素着色更重要的是，将光源数量和场景复杂度解耦（$n$ 个物体、$m$ 个光源，从 $O(m \* n)$ 变为 $O(m + n)$）
-    + 同时真正着色时 G-Buffer 的信息利用起来更方便（更好进行 post-processing），也更好 debug
-  - 缺点
-    + 需要大量的内存来存储 G-Buffer，带宽也是个问题（尤其是移动端）
-    + 透明物体处理困难
-    + 一般来说不支持太多种类的 shader，尤其是应美术要求做的可能需要奇奇怪怪中间值的 shader 没法支持（没法存到 G-Buffer）
-    + 不支持 MSAA（又是 buffer 的问题，参考 #link("https://zhuanlan.zhihu.com/p/135444145")[延迟渲染与 MSAA 的那些事]）
-  - 现在的大型电脑游戏基本都已经是延迟渲染，而手游大多还停留在前向渲染，或是魔改出 Tile-Based Rendering 变相实现延迟渲染
-  - *Hi-Z*
-    - 核心原理是利用上一帧的深度图和相机矩阵，来对当前帧的场景做剔除。如果没有被覆盖怎么办？原始的 Hi-Z 是一个保守算法，它宁可少剔除也不愿错误剔除
-    - 因为逐像素对比性能太差，为此提出 Hierarchical-Z Buffer（也是由此得名），构建一个 min-value mipmap 来加速，只有通过剔除的物体才会写入 Deferred Rendering 的 G-Buffer
-    - 一些资料中说它是 CPU 端的剔除，又有一些资料中说它是 GPU-Driven Render Pipeline 的一环，个人理解其实两者都是对的
-      - 如果是在 CPU 端的剔除，顶点可以直接不提交 GPU。比 Early-Z, Z-PrePass 这种不能减少 vertex shader 计算量的方式受益大得多，适用于细碎且数量多的模型。但涉及到深度图从 GPU 回读到 CPU 问题（也可以做分帧回读，但会让延迟更大）
-      - 如果是 GPU 端的剔除，涉及到 GPU -Driven Render Pipeline，修改风险太高且很多团队不具备该开发能力。当然现在随着 compute shader 的发展，在 GPU 上进行通用计算不再是新鲜事，慢慢地 Hi-Z 更多已经变成 GPU 端剔除的一环了
-    - Hi-Z 不仅仅用于剔除，这种层级结构的思想在 GI 中也可应用于加速 tracing (SSR, Lumen)
+=== Culling Methods 剔除方案
+剔除是为了尽量避免无效计算，是渲染管线最重要的环节之一。一些剔除算法可以嵌入到已有的经典渲染管线中，而一些剔除算法本身就定义了一套渲染管线 (e.g. Visibility Buffer)，可以说剔除和渲染管线几乎是密不可分的概念。这里对前者单开一节来讲。
+
+- *View Frustum Culling*
+  - 视锥剔除，一般在 CPU 上做，没什么好说的
+- *Potentially Visible Set (PVS)*
+  - 把世界分区域，预计算每个区域能看到哪些区域
+  - 实际上现在完全用 PVS 做的游戏基本没有了，更多是作为一种思想，把世界划分为类似的 zone；大世界里面这种方法的使用也相对减少
+- *Early-Z*
+  - 这是针对*渲染流水线内部*而言的，仍然只执行*一次渲染*，把输出合并阶段的深度测试提到着色计算之前
+  - 属于硬件层面的优化，一般是默认开启，但如果在 fragment shader 里写了 `discard` 或修改 depth 的语句就会失效
+  - 对于比较友好的顺序来说，能有效避免无效着色计算，但在比较恶心的顺序下依然会 overdraw（除非预先进行排序）
+  - 还有一个类似的概念 *Z-Culling*，似乎跟 Tile-Based 有关，以及通过 on-chip 缓存比 Early-Z 少一次读深度操作
+- *Z-PrePass*
+  - 延迟渲染的前身，*把一次渲染变成两次渲染*，第一次只写入 Z-Buffer，第二次关闭深度写入，只有通过深度测试的像素才计算光照（这可以看出它必须跟 Early-Z 结合才起效，Z-PrePass 其实是一种软件技术）
+  - 彻底解决了一个像素多次绘制的问题，但需要执行两次 vertex shader，或者说第二次渲染依旧需要对全场景各个物体进行绘制（为此后面提出了 Deferred Rendering，通过 G-Buffer 使第二次渲染可以不执行 vertex shader）
+- *Hi-Z*
+  - 核心原理是利用上一帧的深度图和相机矩阵，来对当前帧的场景做剔除。如果没有被覆盖怎么办？原始的 Hi-Z 是一个保守算法，它宁可少剔除也不愿错误剔除
+  - 因为逐像素对比性能太差，为此提出 Hierarchical-Z Buffer（也是由此得名），构建一个 max-value mipmap 来加速，只有通过剔除的物体才会写入 Deferred Rendering 的 G-Buffer
+  - 一些资料中说它是 CPU 端的剔除，又有一些资料中说它是 GPU-Driven Render Pipeline 的一环，个人理解其实两者都是对的
+    - 如果是在 CPU 端的剔除，顶点可以直接不提交 GPU。比 Early-Z, Z-PrePass 这种不能减少 vertex shader 计算量的方式受益大得多，适用于细碎且数量多的模型。但涉及到深度图从 GPU 回读到 CPU 问题（也可以做分帧回读，但会让延迟更大）
+    - 如果是 GPU 端的剔除，涉及到 GPU -Driven Render Pipeline，修改风险太高且很多团队不具备该开发能力。当然现在随着 compute shader 的发展，在 GPU 上进行通用计算不再是新鲜事，慢慢地 Hi-Z 更多已经变成 GPU 端剔除的一环了
+  - Hi-Z 不仅仅用于剔除，这种层级结构的思想在 GI 中也可应用于加速 tracing (e.g. SSR, Lumen)
+
+=== Forward Rendering 前向渲染
+- 最原始的渲染管线：Shadow Pass $->$ Shading Pass $->$ Post-Processing Pass
+  - Shading Pass 内的像素着色阶段先进行着色计算 (fragment shader)，再进行输出合并（深度测试、模板测试、混合等）
+- 问题
+  + 透明度排序，需要从远到近绘制，有时物体由于交叉而无法排序，需要顺序无关半透明算法（参考 #link("https://blog.csdn.net/qq_35312463/article/details/115827894")[vulkan\_顺序无关的半透明混合 (OIT)]）
+  + 难以处理 Multiple Light $-->$ Uber Shader: 把所有计算在一个 shader 里做完，根据光源数目选取不同的预编译好的 shader
+  + 原始未优化版本的 overdraw 比较多，很多无效的着色计算
+- Forward+: Forward Rendering 结合后面的 Tile-Based Rendering 就叫做 Forward+，算是 CG 行业的黑话
+
+=== Deferred Rendering 延迟渲染
+- 分两次渲染，第一个 pass 先渲染 G-Buffer 而不做实际着色，第二个 pass 严格来说已经不走渲染流水线，而是直接对 G-Buffer 的操作。其核心思想就在于利用 G-Buffer 将着色计算推迟
+- *First Pass —— Generate Geometry Buffer Pass*
+  - 常见的 G-Buffer 需要
+    + 3D 位置向量 (Position) $x, y, z$，或者存储为深度值 (Depth) $z$
+    + 3D 法线向量 (Normal) $n_x, n_y, n_z$
+    + RGB 颜色向量 (Albedo) $r, g, b$
+    + 一些材质信息如 Roughness, Specular, Metallic 等
+  - 所有这些信息的存储都得益于 Multiple Render Targets (MRT) 的支持，可以在一次渲染中得到
+- *Second Pass —— Lighting Pass*
+  - 最最传统的延迟渲染 (Naïve Solution)
+    - 基于 G-Buffer 思想，在不做任何优化的情况下，我们可以直接绘制一个 full screen quad，从 G-Buffer 拿信息进行计算
+    - 由于光照计算线性可叠加，只要把最终 color buffer 的 blend mode 设置为 `ADD`，src 和 dst 的权重设为相同，对每个光源进行一次这样的 drawcall 即可
+    - 一种更简单但耗费资源的做法：可以直接将光源数量写死，并把所有光源信息传至一个 shader，在一个 shader 中进行所有光源的计算与累积
+  - 传统延迟渲染 —— Light Volume
+    - 核心思想是光照强度随距离平方衰减，如果做一个阈值，那么光源的影响范围是一个 Sphere / Frustum / Cube。于是我们可以仅对光源影响范围内的像素进行着色计算，真正把物体绘制和光照计算解耦开
+    - 具体实现上，“仅对光源影响范围内”不能通过分支语句实现（大部分的 GPU 架构会让所有着色器执行单元进行同一个分支的预测），一般通过把 light volume 实际绘制出来辅以模板缓冲 (Stencil Buffer) 方式实现
+    - 另外，为了防止同一像素被光源正反面计算两次，需要在绘制 light volume 的时候使用单面渲染
+      + 如果摄像机在光源内，则开启 front face culling，并将 depth test 设置为 `farOrEqual`
+      + 如果摄像机在光源外，则开启 back face culling，并将 depth test 设置为 `nearOrEqual`
+- 优点
+  + 只会在 visible fragments 上计算着色，节省大量 overdraw 的无效计算
+  + 对多光源支持更好，将光源数量和场景复杂度解耦 —— $n$ 个物体、$m$ 个光源，$O(m \* n) -> O(m + n)$
+  + 同时真正着色时 G-Buffer 的信息利用起来更方便（更好进行 post-processing），也更好 debug。也正是 G-Buffer 的出现才使得越来越多方法从 3D Space 转到 Screen Space 成为可能
+- 缺点
+  + 需要大量的内存来存储 G-Buffer，带宽也是个问题（尤其是移动端）
+  + 透明物体处理困难
+  + 一般来说不支持太多种类的 shader，尤其是应美术要求做的可能需要奇奇怪怪中间值的 shader 没法支持（没法存到 G-Buffer）
+  + 不支持 MSAA（又是 buffer 的问题，参考 #link("https://zhuanlan.zhihu.com/p/135444145")[延迟渲染与 MSAA 的那些事]）
+- 现状
+  - 现在的大型电脑游戏基本都已经是延迟渲染（及其魔改），甚至往更新的渲染管线进发
+  - 而手游大多还停留在前向渲染，或是魔改出 Tile-Based Rendering 变相实现延迟渲染
+
+=== Deferred Rendering Variants 延迟渲染变种
+- *Light Pre-Pass / Deferred Lighting*
+  - Deferred Rendering 的一个变种，咋一看又 pre 又 defer 会很矛盾，实际上是分别针对 light properties 和 light result 而言
+  - 以一个简单的 Blinn-Phong 着色模型为例
+    $
+    L_o &= sum_(i=0)^k L_i * (k_d max(0, n dot l) + k_s max(0, n dot h)^p) \
+    &= k_d sum_(i=0)^k L_i max(0, n dot l) + k_s sum_(i=0)^k L_i max(0, n dot h)^p
+    $
+    - 也就是说，对同一个像素 $K_d $ 和 $K_s$ 可以作为常数提取出来，从而减少原本 Lighting Pass 对材质的读写，减小带宽压力。在 lighting 时分别累加存储两个和式的结果，再额外加一个 shading 流程读取 $k_d, k_s$ 并利用该结果渲染即可
+    - 相应的，我们需要存储两张 lighting buffer 累计 light properties，当然也可以只存储 Albedo (for diffuse) 和 Luminance (restore specular) 到一张图里
+      $ "RGB"("spec") = frac("RGB"("diff") * "Lumin"("spec"), "Lumin"("spec") + ep) $
+  - 具体而言，分四个阶段进行渲染：
+    + 渲染场景中不透明物体，只在 G-Buffer 中存储 Depth, Normal 和 specular fractor $p$（对比传统 Deferred Render，少了 Diffuse Color, Specular Color）
+    + 渲染光照（对应于普通 Deferred Rendering 的 light volume 绘制阶段）利用 G-Buffer 计算出 light properties，将结果进行 blend add 并存入 lighting buffer
+    + 通过 forward rendering 对不透明物体进行第二次渲染，读取 lighting buffer 信息进行计算，将结果写入最终的颜色缓冲区
+    + 使用非延迟着色方法渲染半透明物体
+  - 总体的时间复杂度 —— $n$ 个物体、$m$ 个光源，$O(m + n) -> O(n + m + n)$，分别对应第一二三阶段，复杂度上并没有优化，甚至多一个 pass 还会更复杂。但在材质的读写有了很大优化；另外相对于传统延迟渲染，Light Pre-Pass 第三步使用的其实是前向渲染，可以对每个 mesh 设置其材质；最后，对使用 MSAA 也更有利
+
 - *Tile-Based Rendering & Cluster-Based Rendering*
-  - Key Observation 是光照强度随距离平方衰减，如果做一个阈值，那么光源的影响范围是一个球体
-  - Tile-Based Rendering
+  - 在 Deferred Rendering 的 Light Volume 基础上，进一步优化了空间中物体跟光源的交互
+  - *Tile-Based Rendering*
     - 从屏幕的视角分成若干个小块 (tile)，每个小块只跟相交的光源交互（通过 Pre-z pass 得到 min/max depth，维护光源索引列表）
-    - Forward+: Forward Rendering 结合 Tile-Based Rendering 就叫做 Forward+，算是 CG 行业的黑话
-  - Cluster-Based Rendering
+  - *Cluster-Based Rendering*
     - 将以上思想进一步发扬光大，每个小块（3D 空间中是一个视锥）可以在深度方向进行切片，形成一个 3D grid (cluster)，每个 cluster 只跟相交的光源交互
     - 还有一种也叫 Cluster 的技术 —— Mesh Cluster Rendering，它所指的 cluster 是将每个 mesh instance 切分为小块，从而实现更彻底的剔除。名字类似但所指不同，切勿搞混
   - 这类方法可以有效避免无意义 shading（尤其是在多光源情形下），最初实际上来源于移动端显存不足的问题，通过切分为 tile 来减小 G-Buffer 需求，一小块渲染好了放到 Framebuffer 中再算下一小块（因此也可以减小 Framebuffer 的读写压力）
@@ -399,6 +446,7 @@ order: 2
 - 参考资料
   + #link("https://zhuanlan.zhihu.com/p/389396050")[渲染杂谈：early-z、z-culling、hi-z、z-perpass到底是什么？]
   + #link("https://zhuanlan.zhihu.com/p/386420933")[Shader 学习 (20) 延迟渲染和前向渲染]
+  + #link("https://blog.csdn.net/ljytower/article/details/89344084")[实时渲染学习（六）延迟渲染 (Deferred Rendering)]
   + #link("https://zhuanlan.zhihu.com/p/85615283")[Forward+ Shading]
   + #link("https://zhuanlan.zhihu.com/p/278793984")[Compute Shader 进阶应用：结合 Hi-Z 剔除海量草渲染]
   + #link("https://zhuanlan.zhihu.com/p/47615677")[Hi-Z GPU Occlusion Culling]
@@ -406,22 +454,21 @@ order: 2
   + #link("https://zhuanlan.zhihu.com/p/416731287")[Hierarchical Z-Buffer Occlusion Culling 到底该怎么做？]
   + #link("https://zhuanlan.zhihu.com/p/683761529")[Visibility Buffer 在 Unity 中的一些实践]
 
-- *GPU-Driven Rendering Pipeline*
-  - 又是一个巨大的话题，这里只是简单提一提趋势，具体的实践可以看最后《前沿介绍》一节
-  - 传统 CPU 驱动的渲染管线有何弊端？
-    + draw primitives 比较昂贵，哪怕只画一个 triangle 也要把整个管线走一遍，为此经常需要 batch 化
-      - Explosion of DrawCalls: 在如今复杂游戏中，drawcall 组合爆炸，并不是那么好 batch 化
-      $ "Meshes" x "RenderStates" x "LoDs" x "Materials" x "Animations" $
-    + GPU 等待 CPU 使其不能满载运行
-      - CPU 不仅需要做 Frustum / Occlusion Culling，准备 drawcall，无法跟上 GPU
-  - 未来的趋势又如何？
-    + Compute Shader - General Computation on GPU
-      - GPU 上 compute shader 的发展允许我们把一些通用计算搬到 GPU 上，依然保持高速、并行的特点
-      - 这样渲染全权交给 GPU (e.g. Lod selection, visibility culling, ...)，CPU 就能空出来做其它事情 (e.g. AI, GameLogic, ...)
-    + Draw-Indirect Graphics API
-      - 可以将大量的 drawcall 合并为一个单一的 drawcall（即使网格拓扑不同），构成一个间接绘制的命令。在不同的平台上叫法不同，但其表现形式都是往 GPU buffer 或 GPU compute program 里指定特定参数 (e.g. `vkCmdDrawIndexedIndirect` (Vulkan), `ExecuteIndirect` (D3D12), ...)
-      - 从而真正把 DrawPrimitive 变成 DrawScene，避免 CPU 跟 GPU 的频繁通信
-
+=== GPU-Driven Rendering Pipeline
+- 又是一个巨大的话题，这里只是简单提一提趋势，具体的实践可以看最后《前沿介绍》一节
+- 传统 CPU 驱动的渲染管线有何弊端？
+  + draw primitives 比较昂贵，哪怕只画一个 triangle 也要把整个管线走一遍，为此经常需要 batch 化
+    - Explosion of DrawCalls: 在如今复杂游戏中，drawcall 组合爆炸，并不是那么好 batch 化
+    $ "Meshes" x "RenderStates" x "LoDs" x "Materials" x "Animations" $
+  + GPU 等待 CPU 使其不能满载运行
+    - CPU 不仅需要做 Frustum / Occlusion Culling，准备 drawcall，无法跟上 GPU
+- 未来的趋势又如何？
+  + Compute Shader - General Computation on GPU
+    - GPU 上 compute shader 的发展允许我们把一些通用计算搬到 GPU 上，依然保持高速、并行的特点
+    - 这样渲染全权交给 GPU (e.g. Lod selection, visibility culling, ...)，CPU 就能空出来做其它事情 (e.g. AI, GameLogic, ...)
+  + Draw-Indirect Graphics API
+    - 可以将大量的 drawcall 合并为一个单一的 drawcall（即使网格拓扑不同），构成一个间接绘制的命令。在不同的平台上叫法不同，但其表现形式都是往 GPU buffer 或 GPU compute program 里指定特定参数 (e.g. `vkCmdDrawIndexedIndirect` (Vulkan), `ExecuteIndirect` (D3D12), ...)
+    - 从而真正把 DrawPrimitive 变成 DrawScene，避免 CPU 跟 GPU 的频繁通信
 
 == 其它
 - *游戏引擎中的挑战*

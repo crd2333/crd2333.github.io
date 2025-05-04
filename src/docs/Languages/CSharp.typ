@@ -10,7 +10,7 @@
 = C Sharp 笔记
 C\# 语言是由 Microsoft 公司开发的 OOP 编程语言，属于 .NET 平台的一部分。顾名思义它跟 Cpp 有很多相似之处，在有 Cpp 基础的情况下，其实学起来算比较快。
 
-*为什么要学* C\#？对于我而言主要是因为 Unity 使用 C\# 作为脚本语言，文件后缀名为 `.C\#`。不过老实说在 Unity 走下坡路而基于 Cpp 的 Unreal Engine 持续上升的情况下，我学习 Unity 和 C\# 的动力有点被打击到。但毕竟用到了，没办法，老老实实学咯。
+*为什么要学* C\#？对于我而言主要是因为 Unity 使用 C\# 作为脚本语言，文件后缀名为 `.cs`。不过老实说在 Unity 走下坡路而基于 Cpp 的 Unreal Engine 持续上升的情况下，我学习 Unity 和 C\# 的动力有点被打击到。但毕竟用到了，没办法，老老实实学咯。
 
 *如何学习* C\#？我搜集了以下资源：
 + 快速翻阅（有 Cpp 基础不难）一遍 #link("https://www.runoob.com/csharp/csharp-tutorial.html")[菜鸟教程 - C\#]
